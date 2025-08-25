@@ -1,0 +1,196 @@
+{
+  "main": {
+    "id": "da198892c5266bdc",
+    "type": "split",
+    "children": [
+      {
+        "id": "1eb67e0971756e9b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "109ffe993404e14b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Vitest.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Vitest"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6057abb33c6fa3a2",
+    "type": "split",
+    "children": [
+      {
+        "id": "2a52570814c9b2ca",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a090c3a07ab5cccb",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "fa3a89384bad22ca",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "5d5ac00bd47f3954",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "dbe227e4dcad61dd",
+    "type": "split",
+    "children": [
+      {
+        "id": "d8475a9e7ce610d9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "07b15244a3504586",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Conversation Kickoff Prompt.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Conversation Kickoff Prompt"
+            }
+          },
+          {
+            "id": "41ba910268303c6a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Conversation Kickoff Prompt.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Conversation Kickoff Prompt"
+            }
+          },
+          {
+            "id": "c9724ec860eb62d9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ad9da26dd3a90b94",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Conversation Kickoff Prompt.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Conversation Kickoff Prompt"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "daily-notes:Open today's daily note": false,
+      "bases:Create new base": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "109ffe993404e14b",
+  "lastOpenFiles": [
+    "Vitest.md",
+    "Technology/Prettier.md",
+    "Technology/ESLint.md",
+    "Technology/Embedding XML in HTML documents.md",
+    "Project init checklist.md",
+    "FOSS notes",
+    "Project management/Scroll-Deck E-Learning - High-Level Technical Summary.md",
+    "Project management",
+    "LLM notes",
+    "Project management/Scroll-Deck E-Learning - High-Level Overview.md",
+    "Project management/Positioning Statement.md",
+    "Project management/Elevator pitch.md",
+    "LLM notes/Conversation Kickoff Prompt.md",
+    "Market Research/Reddit/V2 - Reddit Post.md",
+    "Market Research/Reddit/V3 - Reddit post.md",
+    "Market Research/Reddit/V1 - Reddit post.md",
+    "Technology",
+    "Market Research/Stack Exchange/V1 - SE post.md",
+    "Market Research/Stack Exchange",
+    "Market Research/Reddit",
+    "Market Research"
+  ]
+}
