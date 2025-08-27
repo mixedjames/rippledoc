@@ -1,8 +1,11 @@
-export function test(m: string): number {
-  if (m === 'farts') {
-    m = 'Censored';
-  }
+import { makeLexer } from './expressions/lexer';
 
-  console.log(m);
-  return 42;
+const longLex = makeLexer([
+  { name: 'MINUSMINUS', pattern: /^--/ },
+  { name: 'MINUS', pattern: /^-/ },
+]);
+const iter = longLex('---');
+const tokens = [];
+while (iter.next()) {
+  tokens.push(iter.token());
 }

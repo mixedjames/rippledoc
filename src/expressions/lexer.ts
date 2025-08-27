@@ -60,6 +60,8 @@ function lex(theString: string, rules: Rule[]): Token[] {
       const substring = theString.slice(i);
       const result = pattern.exec(substring);
 
+      console.dir(result);
+
       if (result) {
         if (!ignore) {
           tokens.push({ type: name, value: result[0], index: i });

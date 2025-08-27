@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "be93a8d89cfe440a",
+        "id": "2669443d968d9f86",
         "type": "tabs",
         "children": [
           {
-            "id": "e3291b60d60ea65a",
+            "id": "005c3623386533e1",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Project management/Elevator pitch.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Elevator pitch"
             }
           }
         ]
@@ -165,10 +169,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "e3291b60d60ea65a",
+  "active": "a090c3a07ab5cccb",
   "lastOpenFiles": [
+    "Journal/August 2025.md",
     "Vitest.md",
-    "August 2025.md",
     "Journal",
     "Technology/Prettier.md",
     "Technology/ESLint.md",
