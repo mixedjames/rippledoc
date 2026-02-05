@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    "baseUrl": ".",
+
+    "composite": true,
+    "declaration": true,
+
+    "paths": {
+      "@core/*": ["packages/core/src/*"]
+    },
+
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+  }
+}
