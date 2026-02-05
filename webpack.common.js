@@ -1,4 +1,5 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   resolve: {
@@ -6,7 +7,7 @@ module.exports = {
 
     alias: {
       "@core": path.resolve(__dirname, "./packages/core/src"),
-      "@ui": path.resolve(__dirname, "./packages/ui/src")
+      "@expressions": path.resolve(__dirname, "./packages/expressions/src"),
     }
   },
 
@@ -21,7 +22,19 @@ module.exports = {
           }
         },
         exclude: /node_modules/
+      },
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|woff2?|ttf|eot)$/i,
+        type: "asset/resource"
       }
     ]
-  }
+  },
+
+  plugins: [
+    // We'll let per-app config pass template path
+  ]
 };

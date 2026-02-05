@@ -1,15 +1,18 @@
 {
   "devDependencies": {
+    "css-loader": "^7.1.3",
+    "html-webpack-plugin": "^5.6.6",
+    "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "webpack": "^5.105.0",
     "webpack-cli": "^6.0.1"
   },
-
   "scripts": {
     "tsc-watch": "tsc -b --watch",
-
     "build:test": "webpack --config apps/test/webpack.config.js",
-    "watch:test": "webpack --config apps/test/webpack.config.js --watch"
+    "watch:test": "webpack --config apps/test/webpack.config.js --watch",
+    "build:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js",
+    "watch:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js --watch"
   }
 }

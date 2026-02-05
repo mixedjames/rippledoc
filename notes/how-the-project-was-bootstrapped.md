@@ -17,7 +17,7 @@ The basic steps were as follows:
 
 ## Git
 Git is sufficiently complex (and generic) that I have split this off into a separate document:
-`how-to-bootstrap-a-github-project.md`
+[Getting Started with GitHub](getting-started-with-github.md)
 
 The basic steps were:
 1. Create a new repo on GitHub
