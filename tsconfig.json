@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/expressions" },
+    { "path": "./packages/presentation" },
 
     { "path": "./apps/test" },
     { "path": "./apps/expressions-demo" }
