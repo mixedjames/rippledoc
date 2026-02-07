@@ -35,7 +35,7 @@ describe("PresentationBuilder", () => {
 		expect(presentation.slideWidth).toBe(800);
 		expect(presentation.slideHeight).toBe(600);
 		expect(presentation.sections).toHaveLength(1);
-		const builtSection = presentation.sections[0];
+		const builtSection = presentation.sections[0]!;
 		expect(builtSection.elements).toHaveLength(1);
 	});
 
