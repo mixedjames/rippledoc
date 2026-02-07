@@ -6,10 +6,28 @@
   </head>
   <body>
     <h1>Expressions Demo</h1>
-    <p>
-      This demo shows how to use expressions in a simple application. It uses the
-      <code>useExpression</code> hook to evaluate an expression and display the
-      result.
-    </p>
+
+    <main>
+      <section class="editor">
+        <p>
+          Enter one expression per line in the form
+          <code>name = expression</code>. Expressions can refer to other
+          previously or subsequently defined names.
+        </p>
+
+        <label for="expr-input" class="editor-label">Named expressions</label>
+        <textarea id="expr-input" class="editor-input" rows="10" spellcheck="false"></textarea>
+
+        <div class="editor-actions">
+          <button id="evaluate-btn" type="button">Evaluate</button>
+          <span id="status" class="status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section class="results">
+        <h2>Results</h2>
+        <div id="results"></div>
+      </section>
+    </main>
   </body>
 </html>

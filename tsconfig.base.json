@@ -13,7 +13,8 @@
     "declaration": true,
 
     "paths": {
-      "@core/*": ["packages/core/src/*"]
+      "@core/*": ["packages/core/src/*"],
+      "@expressions": ["packages/expressions"]
     },
 
     "esModuleInterop": true,
