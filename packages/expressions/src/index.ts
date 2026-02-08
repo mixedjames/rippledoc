@@ -1,9 +1,15 @@
-export { parseExpression } from "./Parser";
-export { DefaultBindingContext } from "./BindingContext";
-export { NameType } from "./NameType";
-export { resolveExpressions } from "./Resolver";
-export { Expression } from "./Expression";
-export { createNativeExpression } from "./NativeExpression";
+export { parseExpression } from "./parser/Parser";
+export { DefaultBindingContext } from "./DefaultBindingContext";
+export type { BindingContext } from "./parser/BindingContext";
+export { NameType } from "./parser/NameType";
+export { resolveExpressions } from "./modules/Resolver";
+export { Module } from "./modules/Module";
+export { Expression } from "./expressions/Expression";
+export { createNativeExpression } from "./native/NativeExpression";
 
-export type { UnboundExpression } from "./UnboundExpression";
-export type { DependentExpression } from "./DependentExpression";
+export { Lexer } from "./lexer/Lexer";
+export { TokenType } from "./lexer/Token";
+export type { Token } from "./lexer/Token";
+
+export type { UnboundExpression } from "./expressions/UnboundExpression";
+export type { DependentExpression } from "./expressions/DependentExpression";

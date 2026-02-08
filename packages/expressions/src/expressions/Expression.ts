@@ -1,4 +1,4 @@
-import type { AstNode } from "./AST";
+import type { AstNode } from "../parser/AST";
 
 /**
  * Wrapper around a resolved AST (phase 3).

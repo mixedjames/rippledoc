@@ -1,5 +1,5 @@
-import type { DependentExpression } from "./DependentExpression";
-import type { Expression } from "./Expression";
+import type { DependentExpression } from "../expressions/DependentExpression";
+import type { Expression } from "../expressions/Expression";
 
 /**
  * Resolve a collection of DependentExpressions in dependency order.

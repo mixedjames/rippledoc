@@ -1,4 +1,4 @@
-import type { AstNode } from "./AST";
+import type { AstNode } from "../parser/AST";
 import { Expression } from "./Expression";
 
 /**

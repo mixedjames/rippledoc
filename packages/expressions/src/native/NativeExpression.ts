@@ -1,7 +1,7 @@
-import type { BindingContext } from "./BindingContext";
-import type { DependentExpression } from "./DependentExpression";
-import { AstNode } from "./AST";
-import { UnboundExpression } from "./UnboundExpression";
+import type { BindingContext } from "../parser/BindingContext";
+import type { DependentExpression } from "../expressions/DependentExpression";
+import { AstNode } from "../parser/AST";
+import { UnboundExpression } from "../expressions/UnboundExpression";
 
 /**
  * AST node that wraps a native JavaScript function.

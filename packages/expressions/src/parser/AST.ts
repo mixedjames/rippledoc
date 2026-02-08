@@ -1,6 +1,7 @@
 import type { BindingContext } from "./BindingContext";
-import type { DependentExpression } from "./DependentExpression";
-import { TokenType } from "./Token";
+import type { DependentExpression } from "../expressions/DependentExpression";
+import type { Expression } from "../expressions/Expression";
+import { TokenType } from "../lexer/Token";
 import { NameType } from "./NameType";
 
 /**
@@ -245,9 +246,9 @@ class LinkedNamedExpression extends AstNode {
 
 class ResolvedNamedExpression extends AstNode {
 
-	private readonly expression: import("./Expression").Expression;
+	private readonly expression: Expression;
 
-	constructor(expression: import("./Expression").Expression) {
+	constructor(expression: Expression) {
 		super();
 		this.expression = expression;
 	}

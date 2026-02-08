@@ -1,12 +1,6 @@
 import "../css/styles.css";
 
-import {
-	parseExpression,
-	DefaultBindingContext,
-	NameType,
-	resolveExpressions,
-} from "@expressions";
-import type { UnboundExpression, DependentExpression } from "@expressions";
+import { Module } from "@expressions";
 
 interface Definition {
 	name: string;
@@ -79,76 +73,50 @@ function evaluateNamedExpressions(source: string): {
 		return { results: [], errors: ["No expressions provided."] };
 	}
 
-	const context = new DefaultBindingContext();
-	const unboundExpressions: { def: Definition; expr: UnboundExpression }[] = [];
-	const parseErrors: string[] = [];
+	const root = Module.createRootModule();
+	const getters: { def: Definition; get: () => unknown }[] = [];
+	const errors: string[] = [];
 
-	// Phase 1: parse all expressions and register them in the binding context.
+	// Phase 1: register all expressions with the module.
 	for (const def of definitions) {
 		try {
-			const unbound = parseExpression(def.expression);
-			context.addExpression(def.name, NameType.VALUE, unbound);
-			unboundExpressions.push({ def, expr: unbound });
+			const get = root.addExpression(def.name, def.expression);
+			getters.push({ def, get });
 		} catch (err) {
-			parseErrors.push(
-				`Line ${def.line}: could not parse '${def.name}' – ${(err as Error).message}`,
+			errors.push(
+				`Line ${def.line}: could not add '${def.name}' – ${(err as Error).message}`,
 			);
 		}
 	}
 
-	if (unboundExpressions.length === 0) {
-		return { results: [], errors: parseErrors };
+	if (getters.length === 0) {
+		return { results: [], errors };
 	}
 
-	// Phase 2: bind.
-	const dependentExpressions: DependentExpression[] = [];
+	// Phase 2: compile the module (parsing, binding, dependency resolution).
 	try {
-		for (const { expr } of unboundExpressions) {
-			dependentExpressions.push(expr.bind(context));
-		}
+		root.compile();
 	} catch (err) {
-		return {
-			results: [],
-			errors: [
-				...parseErrors,
-				`Binding error: ${(err as Error).message}`,
-			],
-		};
+		errors.push(`Compilation error: ${(err as Error).message}`);
+		return { results: [], errors };
 	}
 
-	// Phase 3: resolve dependency order and detect cycles.
-	try {
-		resolveExpressions(dependentExpressions);
-	} catch (err) {
-		return {
-			results: [],
-			errors: [
-				...parseErrors,
-				`Resolution error: ${(err as Error).message}`,
-			],
-		};
-	}
-
-	// All expressions are now safe to evaluate.
+	// Phase 3: evaluate all expressions via the getters.
 	const results: EvaluationResult[] = [];
-	for (let i = 0; i < unboundExpressions.length; i++) {
-		const item = unboundExpressions[i];
-		const de = dependentExpressions[i];
-		if (!item || !de) {
-			continue;
-		}
-		const { def } = item;
+	for (const { def, get } of getters) {
 		try {
-			const value = de.expression.evaluate();
+			// get() returns the bound Expression; evaluate() yields the value.
+			const expr = get() as { evaluate: () => number };
+			const value = expr.evaluate();
 			results.push({ name: def.name, value });
 		} catch (err) {
-			parseErrors.push(
+			errors.push(
 				`Evaluation error for '${def.name}' (line ${def.line}): ${(err as Error).message}`,
 			);
 		}
 	}
 
-	return { results, errors: parseErrors };
+	return { results, errors };
 }
 
 function parseDefinitions(source: string): Definition[] {

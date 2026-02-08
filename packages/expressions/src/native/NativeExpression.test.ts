@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createNativeExpression } from "./NativeExpression";
-import { DefaultBindingContext } from "./BindingContext";
+import { DefaultBindingContext } from "../DefaultBindingContext";
 
 function evalNative(fn: () => number): number {
 	const unbound = createNativeExpression(fn);

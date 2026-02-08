@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseExpression } from "./Parser";
-import { DefaultBindingContext } from "./BindingContext";
+import { DefaultBindingContext } from "../DefaultBindingContext";
 
 /**
  * Helper to bind, resolve, and evaluate an expression string

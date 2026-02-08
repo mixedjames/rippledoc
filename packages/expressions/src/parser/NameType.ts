@@ -11,4 +11,7 @@ export enum NameType {
 
   /** Function-like name (callable entities) */
   FUNCTION = "FUNCTION",
+
+  /** Object-like name (objects, modules, etc.) */
+  OBJECT = "OBJECT",
 }

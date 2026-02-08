@@ -3,9 +3,9 @@
 // Recursive-ascent expression parser.
 // Produces a single unbound AST wrapped in UnboundExpression.
 
-import { TokenType } from "./Token";
-import type { Token } from "./Token";
-import { Lexer } from "./Lexer";
+import { TokenType } from "../lexer/Token";
+import type { Token } from "../lexer/Token";
+import { Lexer } from "../lexer/Lexer";
 
 import {
 	AstNode,
@@ -15,7 +15,7 @@ import {
 	NameExpression,
 } from "./AST";
 
-import { UnboundExpression } from "./UnboundExpression";
+import { UnboundExpression } from "../expressions/UnboundExpression";
 
 /**
  * Parse an expression string into an UnboundExpression.

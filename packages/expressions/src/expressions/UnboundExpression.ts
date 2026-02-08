@@ -1,5 +1,5 @@
-import type { AstNode } from "./AST";
-import type { BindingContext } from "./BindingContext";
+import type { AstNode } from "../parser/AST";
+import type { BindingContext } from "../parser/BindingContext";
 import { DependentExpression } from "./DependentExpression";
 
 /**

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { resolveExpressions } from "./Resolver";
-import { Parser } from "./Parser";
-import { Lexer } from "./Lexer";
-import { DefaultBindingContext } from "./BindingContext";
-import type { DependentExpression } from "./DependentExpression";
+import { Parser } from "../parser/Parser";
+import { Lexer } from "../lexer/Lexer";
+import { DefaultBindingContext } from "../DefaultBindingContext";
+import type { DependentExpression } from "../expressions/DependentExpression";
 
 function makeDependent(expr: string): DependentExpression {
 	const parser = new Parser(new Lexer(expr));
