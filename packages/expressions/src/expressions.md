@@ -82,11 +82,7 @@ Note that it is a **logical move** operation - each type becomes invalid after t
 Each form keeps a reference to the next phase type: UnboundExpression has .dependentExpression
 and DependentExpression has .expression.
 
-```
-// Phase 1
-const unboundExpression1 = parseExpression('42');
-const unboundExpression2 = parseExpression('a+1');
-
+```ts
 // Names are defined via BindingContext
 const ctx = new BindingContext();
 ctx.addExpression('a', NameType.VALUE, unboundExpression1);
@@ -98,4 +94,36 @@ const dependentExpressions =
 
 // Phase 3
 const expressions = resolveExpressions(dependentExpressions);
+
 ```
+
+## Using the Module facade
+
+Most consumers should prefer the higher-level `Module` API over wiring the three phases manually.
+
+`Module` is a facade that:
+- Parses all added expressions
+- Binds them with correct name resolution (including parent and mapped modules)
+- Resolves dependency order and detects cycles during `compile()`
+
+The typical usage pattern is:
+
+```ts
+import { Module } from "@expressions";
+
+// 1. Create a root module and add named expressions.
+const root = Module.createRootModule();
+const getA = root.addExpression("a", "1 + 2");
+const getB = root.addExpression("b", "a * 3");
+
+// 2. Compile once to perform parsing, binding and dependency resolution.
+root.compile();
+
+// 3. Use the getters to obtain bound expressions and evaluate them.
+const a = getA().evaluate(); // 3
+const b = getB().evaluate(); // 9
+```
+
+For more advanced scenarios you can use submodules (scoping via parent/child modules) and mapped
+modules (member access like `moduleName.expressionName`), as demonstrated in the `Module` tests and
+the expressions demo app.
