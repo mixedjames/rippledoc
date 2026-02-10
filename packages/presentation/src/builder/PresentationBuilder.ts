@@ -90,6 +90,18 @@ export class PresentationBuilder {
 
 		// Finalize each section builder
 		this.sections.forEach((s) => s.finalize());
+
+		// Wire named sections under the 'sections' namespace
+		const namedSections = this.module.rootModule.addSubModule();
+		this.sections.forEach((sectionBuilder) => {
+			const name = sectionBuilder.getName();
+			if (!name || name.length === 0) {
+				return;
+			}
+
+			namedSections.mapModule(name, sectionBuilder.moduleInstance);
+		});
+		this.module.mapModule("sections", namedSections);
 	}
 
 	// ───────────────────────────────────────────────

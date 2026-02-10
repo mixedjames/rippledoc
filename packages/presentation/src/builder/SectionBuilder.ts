@@ -19,6 +19,7 @@ export class SectionBuilder {
 	private readonly module: Module;
 	private readonly viewFactory: ViewFactory;
 	private readonly elements: ElementBuilder[] = [];
+	private name = "";
 
 	private prevSectionBuilder: SectionBuilder | null = null;
 	private nextSectionBuilder: SectionBuilder | null = null;
@@ -41,6 +42,15 @@ export class SectionBuilder {
 	// ─────────────────────────────────────────────────────────────
 	// Construction-phase API
 	// ─────────────────────────────────────────────────────────────
+
+	setName(name: string): void {
+		this.assertNotBuilt("setName");
+		this.name = name;
+	}
+
+	getName(): string {
+		return this.name;
+	}
 
 	setPrevious(prev: SectionBuilder): void {
 		this.assertNotBuilt("setPrevious");
@@ -93,6 +103,7 @@ export class SectionBuilder {
 
 	createElement(): ElementBuilder {
 		this.assertNotBuilt("createElement");
+
 		const element = new ElementBuilder({
 			parentModule: this.module,
 			viewFactory: this.viewFactory,
@@ -131,6 +142,7 @@ export class SectionBuilder {
 		const { parent } = options;
 
 		const section = new Section({
+			name: this.name,
 			parent,
 			sectionTop: this.get("sectionTop"),
 			sectionHeight: this.get("sectionHeight"),
@@ -192,7 +204,6 @@ export class SectionBuilder {
 
     // Wire element adjacency
     // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.
-    console.log("***&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 		for (let i = 0; i < this.elements.length; i++) {
 			if (i > 0) {
         this.elements[i]!.setPrevious(this.elements[i - 1]!);
@@ -203,6 +214,16 @@ export class SectionBuilder {
       }
 		}
 
+    // Wire named elements
+    const namedElements = this.module.rootModule.addSubModule();
+    this.elements.forEach((el) => {
+      if (el.getName().length === 0) {
+        return;
+      }
+
+      namedElements.mapModule(el.getName(), el.moduleInstance);
+    }); 
+    this.module.mapModule("elements", namedElements);
 	}
 
 	private registerExpressions(): void {

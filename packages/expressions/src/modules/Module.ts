@@ -96,6 +96,18 @@ export class Module {
     return new Module();
   }
 
+  get parentModule(): Module | null {
+    return this.parent;
+  }
+
+  get rootModule(): Module {
+    let current: Module = this;
+    while (current.parent) {
+      current = current.parent;
+    }
+    return current;
+  }
+
   addSubModule(): Module {
     if (this.compiled) {
       throw new Error("addSubModule: Cannot add a submodule to a compiled module");

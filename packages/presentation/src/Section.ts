@@ -21,16 +21,19 @@ import type { ViewFactory } from "./view/ViewFactory";
  */
 export class Section {
 
-	private elementsInternal: Element[];
+	private readonly name_: string;
 
-	private readonly sectionTopExpr: Expression;
-	private readonly sectionHeightExpr: Expression;
-	private readonly sectionBottomExpr: Expression;
+	private elements_: Element[];
 
-	private readonly parentInternal: Presentation | null;
-	private readonly viewInternal: SectionView;
+	private readonly sectionTop_: Expression;
+	private readonly sectionHeight_: Expression;
+	private readonly sectionBottom_: Expression;
+
+	private readonly parent_: Presentation;
+	private readonly view_: SectionView;
 
 	/**
+	 * @param options.name Section name.
 	 * @param options.parent Parent presentation.
 	 * @param options.sectionTop Top position expression.
 	 * @param options.sectionHeight Height expression.
@@ -40,7 +43,8 @@ export class Section {
 	 * @internal Use SectionBuilder instead.
 	 */
 	constructor(options: {
-		parent?: Presentation | null;
+		name: string;
+		parent: Presentation;
 		sectionTop: Expression;
 		sectionHeight: Expression;
 		sectionBottom: Expression;
@@ -48,7 +52,8 @@ export class Section {
 		viewFactory: ViewFactory;
 	}) {
 		const {
-			parent = null,
+			name,
+			parent,
 			sectionTop,
 			sectionHeight,
 			sectionBottom,
@@ -56,22 +61,27 @@ export class Section {
 			viewFactory,
 		} = options;
 
-		this.parentInternal = parent;
-		this.sectionTopExpr = sectionTop;
-		this.sectionHeightExpr = sectionHeight;
-		this.sectionBottomExpr = sectionBottom;
-		this.elementsInternal = elements;
-		this.viewInternal = viewFactory.createSectionView(this);
+		if (typeof name !== "string") {
+			throw new Error("Section: name must be a string");
+		}
+
+		this.name_ = name;
+		this.parent_ = parent;
+		this.sectionTop_ = sectionTop;
+		this.sectionHeight_ = sectionHeight;
+		this.sectionBottom_ = sectionBottom;
+		this.elements_ = elements;
+		this.view_ = viewFactory.createSectionView(this);
 	}
 
 	realiseView(): void {
-		this.viewInternal.realise();
-		this.elementsInternal.forEach((element) => element.realiseView());
+		this.view_.realise();
+		this.elements_.forEach((element) => element.realiseView());
 	}
 
 	layoutView(): void {
-		this.viewInternal.layout();
-		this.elementsInternal.forEach((element) => element.layoutView());
+		this.view_.layout();
+		this.elements_.forEach((element) => element.layoutView());
 	}
 
 	/**
@@ -85,7 +95,7 @@ export class Section {
 	 * @param elements Built elements to attach to this section.
 	 */
 	_setElements(elements: Element[]): void {
-		this.elementsInternal = elements;
+		this.elements_ = elements;
 	}
 
 	// --------------------
@@ -93,11 +103,19 @@ export class Section {
 	// --------------------
 
 	/**
+	 * Get the section name.
+	 * @returns The section name.
+	 */
+	get name(): string {
+		return this.name_;
+	}
+
+	/**
 	 * Get the top position value (evaluates the sectionTop expression).
 	 * @returns The section top position in pixels.
 	 */
 	get sectionTop(): number {
-		return this.sectionTopExpr.evaluate();
+		return this.sectionTop_.evaluate();
 	}
 
 	/**
@@ -105,7 +123,7 @@ export class Section {
 	 * @returns The section height in pixels.
 	 */
 	get sectionHeight(): number {
-		return this.sectionHeightExpr.evaluate();
+		return this.sectionHeight_.evaluate();
 	}
 
 	/**
@@ -113,7 +131,7 @@ export class Section {
 	 * @returns The section bottom position in pixels.
 	 */
 	get sectionBottom(): number {
-		return this.sectionBottomExpr.evaluate();
+		return this.sectionBottom_.evaluate();
 	}
 
 	// --------------------
@@ -123,7 +141,7 @@ export class Section {
 	 * @returns Array copy of elements.
 	 */
 	get elements(): readonly Element[] {
-		return this.elementsInternal.slice();
+		return this.elements_.slice();
 	}
 
 	/**
@@ -131,7 +149,7 @@ export class Section {
 	 * @returns The parent presentation.
 	 */
 	get parent(): Presentation | null {
-		return this.parentInternal;
+		return this.parent_;
 	}
 
 	/**
@@ -139,6 +157,6 @@ export class Section {
 	 * @returns The section's view object.
 	 */
 	get view(): SectionView {
-		return this.viewInternal;
+		return this.view_;
 	}
 }

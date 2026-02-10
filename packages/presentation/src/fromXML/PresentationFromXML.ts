@@ -73,61 +73,90 @@ function buildPresentationFromDocument(
 	builder.setSlideWidth(Number(width));
 	builder.setSlideHeight(Number(height));
 
-	// Parse <section> elements
+	// Parse <section> and <element> elements
+	loadSectionsFromDocument(xmlDoc, builder);
+
+	return builder.build();
+}
+
+function loadSectionsFromDocument(
+	xmlDoc: Document,
+	builder: PresentationBuilder,
+): void {
 	const sections = xmlDoc.querySelectorAll("section");
 	sections.forEach((sectionEl) => {
 		const section = builder.createSection();
-
-		const h = sectionEl.getAttribute("h");
-		const b = sectionEl.getAttribute("b");
-
-		// Set whichever is non-empty
-		if (h && h.trim() !== "") {
-			section.setHeight(h);
-		}
-
-		if (b && b.trim() !== "") {
-			section.setBottom(b);
-		}
-
-		// Parse <element> children
-		const elements = sectionEl.querySelectorAll("element");
-		elements.forEach((elementEl) => {
-			const element = section.createElement();
-
-			const l = elementEl.getAttribute("l");
-			const r = elementEl.getAttribute("r");
-			const w = elementEl.getAttribute("w");
-			const t = elementEl.getAttribute("t");
-			const bEl = elementEl.getAttribute("b");
-			const hEl = elementEl.getAttribute("h");
-
-			// Set each non-empty attribute
-			if (l && l.trim() !== "") {
-				element.setLeft(l);
-			}
-
-			if (r && r.trim() !== "") {
-				element.setRight(r);
-			}
-
-			if (w && w.trim() !== "") {
-				element.setWidth(w);
-			}
-
-			if (t && t.trim() !== "") {
-				element.setTop(t);
-			}
-
-			if (bEl && bEl.trim() !== "") {
-				element.setBottom(bEl);
-			}
-
-			if (hEl && hEl.trim() !== "") {
-				element.setHeight(hEl);
-			}
-		});
+		loadSection(sectionEl, section);
 	});
+}
 
-	return builder.build();
+function loadSection(
+	sectionEl: Element,
+	section: ReturnType<PresentationBuilder["createSection"]>,
+): void {
+	const nameAttr = sectionEl.getAttribute("name");
+	if (nameAttr && nameAttr.trim() !== "") {
+		section.setName(nameAttr);
+	}
+
+	const h = sectionEl.getAttribute("h");
+	const b = sectionEl.getAttribute("b");
+
+	// Set whichever is non-empty
+	if (h && h.trim() !== "") {
+		section.setHeight(h);
+	}
+
+	if (b && b.trim() !== "") {
+		section.setBottom(b);
+	}
+
+	// Parse <element> children
+	const elements = sectionEl.querySelectorAll("element");
+	elements.forEach((elementEl) => {
+		const element = section.createElement();
+		loadElement(elementEl, element);
+	});
+}
+
+function loadElement(
+	elementEl: Element,
+	element: ReturnType<ReturnType<PresentationBuilder["createSection"]>["createElement"]>,
+): void {
+	const l = elementEl.getAttribute("l");
+	const r = elementEl.getAttribute("r");
+	const w = elementEl.getAttribute("w");
+	const t = elementEl.getAttribute("t");
+	const bEl = elementEl.getAttribute("b");
+	const hEl = elementEl.getAttribute("h");
+	const nameAttr = elementEl.getAttribute("name");
+
+	if (nameAttr && nameAttr.trim() !== "") {
+		element.setName(nameAttr);
+	}
+
+	// Set each non-empty attribute
+	if (l && l.trim() !== "") {
+		element.setLeft(l);
+	}
+
+	if (r && r.trim() !== "") {
+		element.setRight(r);
+	}
+
+	if (w && w.trim() !== "") {
+		element.setWidth(w);
+	}
+
+	if (t && t.trim() !== "") {
+		element.setTop(t);
+	}
+
+	if (bEl && bEl.trim() !== "") {
+		element.setBottom(bEl);
+	}
+
+	if (hEl && hEl.trim() !== "") {
+		element.setHeight(hEl);
+	}
 }

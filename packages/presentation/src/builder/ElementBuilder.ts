@@ -30,6 +30,7 @@ type LayoutKey =
 export class ElementBuilder {
 	private readonly module: Module;
 	private readonly viewFactory: ViewFactory;
+	private name = "";
 
   private prevElementBuilder: ElementBuilder | null = null;
   private nextElementBuilder: ElementBuilder | null = null;
@@ -39,12 +40,8 @@ export class ElementBuilder {
 
 	private built = false;
 
-	constructor(options: {
-		parentModule: Module;
-		viewFactory: ViewFactory;
-	}) {
+	constructor(options: { parentModule: Module; viewFactory: ViewFactory }) {
 		const { parentModule, viewFactory } = options;
-
 		this.module = parentModule.addSubModule();
 		this.viewFactory = viewFactory;
 	}
@@ -52,6 +49,15 @@ export class ElementBuilder {
 	// ─────────────────────────────────────────────────────────────
 	// Construction-phase API
 	// ─────────────────────────────────────────────────────────────
+
+	setName(name: string): void {
+		this.assertNotBuilt("setName");
+		this.name = name;
+	}
+
+  getName(): string {
+    return this.name;
+  }
 
 	setLeft(expr: string): void {
 		this.setExpression("left", expr);
@@ -150,6 +156,7 @@ export class ElementBuilder {
 		const { parent } = options;
 
 		return new Element({
+			name: this.name,
 			parent,
 			left: this.get("left"),
 			right: this.get("right"),

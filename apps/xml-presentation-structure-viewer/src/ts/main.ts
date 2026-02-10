@@ -109,7 +109,10 @@ function renderPresentationStructure(
 
 		const title = document.createElement("div");
 		title.className = "tree-label";
-		title.textContent = `Section ${index + 1}: top=${section.sectionTop}, height=${section.sectionHeight}, bottom=${section.sectionBottom}`;
+		const sectionNameSuffix = section.name && section.name.trim() !== ""
+			? ` name="${section.name}"`
+			: "";
+		title.textContent = `Section ${index + 1}:${sectionNameSuffix} top=${section.sectionTop}, height=${section.sectionHeight}, bottom=${section.sectionBottom}`;
 		sectionItem.appendChild(title);
 
 		if (section.elements.length > 0) {
@@ -122,7 +125,10 @@ function renderPresentationStructure(
 
 				const elLabel = document.createElement("div");
 				elLabel.className = "tree-label";
-				elLabel.textContent = `Element ${elIndex + 1}: left=${element.left}, top=${element.top}, width=${element.width}, height=${element.height}, right=${element.right}, bottom=${element.bottom}`;
+				const nameSuffix = element.name && element.name.trim() !== ""
+					? ` name="${element.name}"`
+					: "";
+				elLabel.textContent = `Element ${elIndex + 1}:${nameSuffix} left=${element.left}, top=${element.top}, width=${element.width}, height=${element.height}, right=${element.right}, bottom=${element.bottom}`;
 				
 				elementItem.appendChild(elLabel);
 				elementsList.appendChild(elementItem);

@@ -35,8 +35,16 @@ describe("Presentation", () => {
 	});
 
 	it("returns sections array and view instance", () => {
+		const dummyGeometry = new PresentationGeometry();
+		const dummyPresentation = new Presentation({
+			sections: [],
+			viewFactory: nullViewFactory,
+			geometry: dummyGeometry,
+		});
+
 		const section = new Section({
-			parent: null,
+			name: "Test Section",
+			parent: dummyPresentation,
 			sectionTop: makeConstExpression(0),
 			sectionHeight: makeConstExpression(100),
 			sectionBottom: makeConstExpression(100),
@@ -60,8 +68,26 @@ describe("Presentation", () => {
 	});
 
 	it("delegates realiseView and layoutView to sections and views", () => {
+		const dummyGeometry = new PresentationGeometry();
+		const dummyPresentation = new Presentation({
+			sections: [],
+			viewFactory: nullViewFactory,
+			geometry: dummyGeometry,
+		});
+
+		const section = new Section({
+			name: "Section for realise/layout",
+			parent: dummyPresentation,
+			sectionTop: makeConstExpression(0),
+			sectionHeight: makeConstExpression(100),
+			sectionBottom: makeConstExpression(100),
+			elements: [],
+			viewFactory: nullViewFactory,
+		});
+
 		const element = new Element({
-			parent: null,
+			name: "test-element",
+			parent: section,
 			left: makeConstExpression(10),
 			right: makeConstExpression(110),
 			width: makeConstExpression(100),
@@ -70,15 +96,7 @@ describe("Presentation", () => {
 			height: makeConstExpression(50),
 			viewFactory: nullViewFactory,
 		});
-
-		const section = new Section({
-			parent: null,
-			sectionTop: makeConstExpression(0),
-			sectionHeight: makeConstExpression(100),
-			sectionBottom: makeConstExpression(100),
-			elements: [element],
-			viewFactory: nullViewFactory,
-		});
+		section._setElements([element]);
 		const geometry = new PresentationGeometry();
 		geometry.basis.width = 640;
 		geometry.basis.height = 480;
