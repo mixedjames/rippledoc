@@ -38,20 +38,13 @@ export class PresentationBuilder {
 
 	setSlideWidth(value: number): void {
 		this.assertNotBuilt("setSlideWidth");
-    
-		if (value <= 0) {
-      throw new Error("Slide width must be > 0");
-    }
 
-    this.geometry.basis.width = value;
+		this.geometry.setBasisDimensions(value, this.geometry.basis.height);
 	}
 
 	setSlideHeight(value: number): void {
 		this.assertNotBuilt("setSlideHeight");
-		if (value <= 0) {
-      throw new Error("Slide height must be > 0");
-    }
-    this.geometry.basis.height = value;
+		this.geometry.setBasisDimensions(this.geometry.basis.width, value);
 	}
 
 	createSection(): SectionBuilder {

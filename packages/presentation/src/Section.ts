@@ -148,7 +148,7 @@ export class Section {
 	 * Get the parent presentation of this section.
 	 * @returns The parent presentation.
 	 */
-	get parent(): Presentation | null {
+	get parent(): Presentation {
 		return this.parent_;
 	}
 

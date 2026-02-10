@@ -15,6 +15,8 @@ export default defineConfig({
     alias: {
       "@core": path.resolve(__dirname, "packages/core/src"),
       "@expressions": path.resolve(__dirname, "packages/expressions/src"),
+      "@presentation": path.resolve(__dirname, "packages/presentation/src"),
+      "@htmlPresentationView": path.resolve(__dirname, "packages/htmlPresentationView/src")
     },
   },
 });

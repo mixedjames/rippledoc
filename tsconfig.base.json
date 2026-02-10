@@ -16,7 +16,8 @@
       "@core/*": ["packages/core/src/*"],
       "@expressions": ["packages/expressions"],
       "@presentation": ["packages/presentation"],
-      "@htmlPresentation": ["packages/htmlPresentation"]
+      "@htmlPresentation": ["packages/htmlPresentation"],
+      "@htmlPresentationView": ["packages/htmlPresentationView"]
     },
 
     "esModuleInterop": true,

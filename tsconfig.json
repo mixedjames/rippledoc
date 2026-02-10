@@ -4,11 +4,12 @@
     { "path": "./packages/core" },
     { "path": "./packages/expressions" },
     { "path": "./packages/presentation" },
-    { "path": "./packages/htmlPresentation" },
+    { "path": "./packages/htmlPresentationView" },
 
     { "path": "./apps/test" },
     { "path": "./apps/expressions-demo" },
-    { "path": "./apps/xml-presentation-structure-viewer" }
+    { "path": "./apps/xml-presentation-structure-viewer" },
+    { "path": "./apps/html-presentation-view-demo" }
   ]
 
 }

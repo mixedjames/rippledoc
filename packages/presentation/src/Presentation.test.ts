@@ -20,9 +20,7 @@ function makeConstExpression(value: number): Expression {
 
 describe("Presentation", () => {
 	it("exposes slide dimensions from geometry", () => {
-		const geometry = new PresentationGeometry();
-		geometry.basis.width = 800;
-		geometry.basis.height = 600;
+			const geometry = new PresentationGeometry({ basisWidth: 800, basisHeight: 600 });
 
 		const presentation = new Presentation({
 			sections: [],
@@ -52,9 +50,7 @@ describe("Presentation", () => {
 			viewFactory: nullViewFactory,
 		});
 
-		const geometry = new PresentationGeometry();
-		geometry.basis.width = 1024;
-		geometry.basis.height = 768;
+			const geometry = new PresentationGeometry({ basisWidth: 1024, basisHeight: 768 });
 
 		const presentation = new Presentation({
 			sections: [section],
@@ -97,9 +93,7 @@ describe("Presentation", () => {
 			viewFactory: nullViewFactory,
 		});
 		section._setElements([element]);
-		const geometry = new PresentationGeometry();
-		geometry.basis.width = 640;
-		geometry.basis.height = 480;
+			const geometry = new PresentationGeometry({ basisWidth: 640, basisHeight: 480 });
 
 		const presentation = new Presentation({
 			sections: [section],
