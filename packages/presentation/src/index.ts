@@ -4,7 +4,7 @@ export { Element } from "./Element";
 export { PresentationBuilder } from "./builder/PresentationBuilder";
 export { SectionBuilder } from "./builder/SectionBuilder";
 export { ElementBuilder } from "./builder/ElementBuilder";
-export { presentationFromXML } from "./fromXML/PresentationFromXML";
+//export { presentationFromXML } from "./fromXML/PresentationFromXML";
 
 export type { PresentationView } from "./view/PresentationView";
 export type { SectionView } from "./view/SectionView";

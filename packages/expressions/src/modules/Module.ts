@@ -2,6 +2,7 @@ import { DependentExpression } from "../expressions/DependentExpression";
 import { Expression } from "../expressions/Expression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 import { parseExpression } from "../parser/Parser";
+import { createNativeExpression } from "../native/NativeExpression";
 import { resolveExpressions } from "./Resolver";
 import { NameType } from "../parser/NameType";
 import type { BindingContext } from "../parser/BindingContext";
@@ -121,6 +122,33 @@ export class Module {
     }
 
     const unboundExpression = parseExpression(expression);
+    this.names.set(name, { type: NameType.VALUE, value: unboundExpression });
+
+    // Return a function that will return the bound expression after compilation.
+    return () => {
+      if (!unboundExpression.dependentExpression || !unboundExpression.dependentExpression.expression) {
+        throw new Error(`Cannot access expression "${name}" before the module is compiled`);
+      }
+      return unboundExpression.dependentExpression.expression;
+    };
+  }
+
+  /**
+   * Adds a named native expression to the module.
+   * Returns a function that, after the module is compiled, will return the bound expression.
+   * 
+   * @param name The name of the expression.
+   * @param expression The expression function.
+   * @returns A function that returns the bound expression after compilation.
+   */
+  addNativeExpression(name: string, expression: () => number): () => Expression {
+    this.assertNotCompiled("addNativeExpression");
+
+    if (this.names.has(name)) {
+      throw new Error(`Expression with name "${name}" already exists in this module`);
+    }
+
+    const unboundExpression = createNativeExpression(expression);
     this.names.set(name, { type: NameType.VALUE, value: unboundExpression });
 
     // Return a function that will return the bound expression after compilation.

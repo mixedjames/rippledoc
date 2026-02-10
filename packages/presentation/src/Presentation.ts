@@ -3,8 +3,18 @@ import type { Section } from "./Section";
 import type { PresentationView } from "./view/PresentationView";
 import type { ViewFactory } from "./view/ViewFactory";
 
+export class PresentationGeometry {
+    basis: { width: number; height: number } = {width: 640, height: 480};
+    viewport: { width: number; height: number } = {width: 0, height: 0};
+    scale: number = 1;
+}
+
 /**
- * Represents an immutable presentation containing sections and slide dimensions.
+ * Represents an immutable presentation containing sections and slide geometry.
+ *
+ * Slide size and scaling are stored in a {@link PresentationGeometry} instance,
+ * which is owned by the Presentation and typically configured via
+ * {@link PresentationBuilder}.
  *
  * **DO NOT construct directly.** Use PresentationBuilder or presentationFromXML() instead:
  * - {@link PresentationBuilder} for programmatic construction
@@ -13,8 +23,8 @@ import type { ViewFactory } from "./view/ViewFactory";
  * @example
  * // Correct usage with PresentationBuilder
  * const builder = new PresentationBuilder({ viewFactory });
- * builder.setSlideWidth("800");
- * builder.setSlideHeight("600");
+ * builder.setSlideWidth(800);
+ * builder.setSlideHeight(600);
  * const section = builder.createSection();
  * const presentation = builder.build();
  *
@@ -25,29 +35,30 @@ import type { ViewFactory } from "./view/ViewFactory";
 export class Presentation {
 
 	private sectionsInternal: Section[];
-	private readonly slideWidthExpr: Expression;
-	private readonly slideHeightExpr: Expression;
 	private readonly viewInternal: PresentationView;
+
+  private geometry: PresentationGeometry;
 
 	/**
 	 * @param options.sections Array of sections.
-	 * @param options.slideWidth Width expression.
-	 * @param options.slideHeight Height expression.
+	 * @param options.geometry Shared geometry state for this presentation.
 	 * @param options.viewFactory Factory for creating views.
 	 * @internal Use PresentationBuilder or presentationFromXML() instead.
 	 */
 	constructor(options: {
 		sections?: Section[];
-		slideWidth: Expression;
-		slideHeight: Expression;
 		viewFactory: ViewFactory;
+    geometry: PresentationGeometry;
 	}) {
-		const { sections = [], slideWidth, slideHeight, viewFactory } = options;
+		const { sections = [], viewFactory, geometry } = options;
+
+    if (!geometry) {
+      throw new Error("Presentation constructor: geometry is required");
+    }
 
 		this.sectionsInternal = sections;
-		this.slideWidthExpr = slideWidth;
-		this.slideHeightExpr = slideHeight;
 		this.viewInternal = viewFactory.createPresentationView(this);
+    this.geometry = geometry;
 	}
 
 	realiseView(): void {
@@ -89,7 +100,7 @@ export class Presentation {
 	 * @returns The slide width in pixels.
 	 */
 	get slideWidth(): number {
-		return this.slideWidthExpr.evaluate();
+		return this.geometry.basis.width;
 	}
 
 	/**
@@ -97,7 +108,7 @@ export class Presentation {
 	 * @returns The slide height in pixels.
 	 */
 	get slideHeight(): number {
-		return this.slideHeightExpr.evaluate();
+		return this.geometry.basis.height;
 	}
 
 	/**

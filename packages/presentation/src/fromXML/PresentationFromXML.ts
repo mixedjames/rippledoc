@@ -1,5 +1,3 @@
-import { resolveExpressions } from "@expressions";
-
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Presentation } from "../Presentation";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
@@ -117,10 +115,6 @@ export async function presentationFromXML(
 			}
 		});
 	});
-
-	// Bind and resolve expressions
-	const deps = builder.bindExpressions();
-	resolveExpressions(deps);
 
 	// Build and return final Presentation
 	return builder.build();

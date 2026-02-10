@@ -1,249 +1,232 @@
-import {
-	DefaultBindingContext,
-	NameType,
-	parseExpression,
-} from "@expressions";
-import type { DependentExpression, UnboundExpression } from "@expressions";
+import { Module } from "@expressions";
+import type { Expression } from "@expressions";
 
 import type { ViewFactory } from "../view/ViewFactory";
-import { Section } from "../Section";
 import type { Presentation } from "../Presentation";
+import { Section } from "../Section";
 import { ElementBuilder } from "./ElementBuilder";
-import { Phase, type PhaseType, PresentationBuilder } from "./PresentationBuilder";
-
-interface SectionLayoutSlot {
-	unbound: UnboundExpression | null;
-	dependent: DependentExpression | null;
-}
-
-interface SectionLayout {
-	sectionTop: SectionLayoutSlot;
-	sectionHeight: SectionLayoutSlot;
-	sectionBottom: SectionLayoutSlot;
-}
-
-interface SectionBuilderOptions {
-	parent: PresentationBuilder;
-	bindingContext: DefaultBindingContext;
-	viewFactory: ViewFactory;
-}
 
 /**
  * Builder for a Section within a Presentation.
+ * 
+ * Responsibilities:
+ * - Collect section layout intent as expressions (strings)
+ * - Collect ElementBuilder children
+ * - Validate constraints and derive missing expressions
+ * - Register expressions with its own Module
  */
 export class SectionBuilder {
-
-	private readonly parent: PresentationBuilder;
-	private readonly bindingContextInternal: DefaultBindingContext;
-	private readonly elements: ElementBuilder[] = [];
+	private readonly module: Module;
 	private readonly viewFactory: ViewFactory;
+	private readonly elements: ElementBuilder[] = [];
 
 	private prevSectionBuilder: SectionBuilder | null = null;
 	private nextSectionBuilder: SectionBuilder | null = null;
 
-	private readonly layout: SectionLayout;
+	private readonly expressions = new Map<
+		"sectionTop" | "sectionHeight" | "sectionBottom",
+		string
+	>();
 
-	constructor(options: SectionBuilderOptions) {
-		const { parent, bindingContext, viewFactory } = options;
-		this.parent = parent;
-		this.bindingContextInternal = bindingContext;
+	private getters = new Map<"sectionTop" | "sectionHeight" | "sectionBottom", () => Expression>();
+
+	private built = false;
+
+	constructor(options: { parentModule: Module; viewFactory: ViewFactory }) {
+		const { parentModule, viewFactory } = options;
+		this.module = parentModule.addSubModule();
 		this.viewFactory = viewFactory;
-		this.layout = {
-			sectionTop: { unbound: null, dependent: null },
-			sectionHeight: { unbound: null, dependent: null },
-			sectionBottom: { unbound: null, dependent: null },
-		};
 	}
 
-	get bindingContext(): DefaultBindingContext {
-		return this.bindingContextInternal;
-	}
-
-	get phase(): PhaseType {
-		return this.parent.currentPhase;
-	}
-
-	private checkPhase(required: PhaseType, methodName: string): void {
-		if (this.parent.currentPhase !== required) {
-			throw new Error(
-				`SectionBuilder.${methodName}: Cannot be called in current phase`,
-			);
-		}
-	}
-
-	// --------------------------------------------------
-	// Section adjacency
-	// --------------------------------------------------
+	// ─────────────────────────────────────────────────────────────
+	// Construction-phase API
+	// ─────────────────────────────────────────────────────────────
 
 	setPrevious(prev: SectionBuilder): void {
-		this.checkPhase(Phase.UNBOUND, "setPrevious");
-		this.prevSectionBuilder = prev;
-		this.bindingContextInternal.addSubcontext(
-			"prevSection",
-			prev.bindingContext,
-		);
+		this.assertNotBuilt("setPrevious");
+		if (this.prevSectionBuilder) {
+			throw new Error(
+				"SectionBuilder.setPrevious: previous section already set"
+			);
+		}
+
+		// Expose the previous section's module as a mapped module so
+		// expressions like "prevSection.sectionBottom" can be resolved
+		// by the expressions module system.
+
+    this.prevSectionBuilder = prev;
+		this.module.mapModule("prevSection", prev.moduleInstance);
 	}
 
 	setNext(next: SectionBuilder): void {
-		this.checkPhase(Phase.UNBOUND, "setNext");
-		this.nextSectionBuilder = next;
-		this.bindingContextInternal.addSubcontext(
-			"nextSection",
-			next.bindingContext,
-		);
-	}
+		this.assertNotBuilt("setNext");
 
-	// --------------------------------------------------
-	// User API
-	// --------------------------------------------------
-
-	setHeight(exprString: string): void {
-		this.checkPhase(Phase.UNBOUND, "setHeight");
-
-		if (this.layout.sectionBottom.unbound !== null) {
-			throw new Error("SectionBuilder: Cannot set both height and bottom");
+    if (this.nextSectionBuilder) {
+			throw new Error(
+				"SectionBuilder.setNext: next section already set"
+			);
 		}
 
-		this.layout.sectionHeight.unbound = parseExpression(exprString);
+    // Expose the next section's module as a mapped module so
+		// expressions like "nextSection.sectionTop" can be resolved
+		// by the expressions module system.
+
+    this.nextSectionBuilder = next;
+		this.module.mapModule("nextSection", next.moduleInstance);
 	}
 
-	setBottom(exprString: string): void {
-		this.checkPhase(Phase.UNBOUND, "setBottom");
-
-		if (this.layout.sectionHeight.unbound !== null) {
-			throw new Error("SectionBuilder: Cannot set both height and bottom");
+	setHeight(expr: string): void {
+		this.assertNotBuilt("setHeight");
+		if (this.expressions.has("sectionBottom")) {
+			throw new Error("Cannot set both height and bottom");
 		}
-
-		this.layout.sectionBottom.unbound = parseExpression(exprString);
+		this.expressions.set("sectionHeight", expr);
 	}
 
-	// --------------------------------------------------
-	// Element creation
-	// --------------------------------------------------
+	setBottom(expr: string): void {
+		this.assertNotBuilt("setBottom");
+		if (this.expressions.has("sectionHeight")) {
+			throw new Error("Cannot set both height and bottom");
+		}
+		this.expressions.set("sectionBottom", expr);
+	}
 
 	createElement(): ElementBuilder {
-		this.checkPhase(Phase.UNBOUND, "createElement");
-
+		this.assertNotBuilt("createElement");
 		const element = new ElementBuilder({
-			parent: this,
-			bindingContext: new DefaultBindingContext(this.bindingContextInternal),
+			parentModule: this.module,
 			viewFactory: this.viewFactory,
 		});
-
 		this.elements.push(element);
 		return element;
 	}
 
-	// --------------------------------------------------
-	// Pre-bind hook
-	// --------------------------------------------------
+  public get moduleInstance(): Module {
+    return this.module;
+  }
 
-	beforeBinding(): void {
-		this.checkPhase(Phase.UNBOUND, "beforeBinding");
+	/**
+	 * Finalizes section layout intent:
+	 * - Derives missing expressions (top / height / bottom)
+	 * - Registers all expressions with the module
+	 */
+	finalize(): void {
+		this.assertNotBuilt("finalize");
 
-		// Validate user intent
-		if (
-			!this.layout.sectionHeight.unbound &&
-			!this.layout.sectionBottom.unbound
-		) {
-			throw new Error(
-				"SectionBuilder: Must specify either height or bottom",
-			);
-		}
+		this.validateAndDeriveLayout();
+		this.registerExpressions();
 
-		// ----- TOP -----
-		if (this.prevSectionBuilder) {
-			this.layout.sectionTop.unbound = parseExpression(
-				"prevSection.sectionBottom",
-			);
-		} else {
-			this.layout.sectionTop.unbound = parseExpression("0");
-		}
-
-		// ----- DERIVED -----
-		if (this.layout.sectionHeight.unbound !== null) {
-			this.layout.sectionBottom.unbound = parseExpression(
-				"sectionTop + sectionHeight",
-			);
-		} else {
-			this.layout.sectionHeight.unbound = parseExpression(
-				"sectionBottom - sectionTop",
-			);
-		}
-
-		// ----- Publish names -----
-
-		this.bindingContextInternal.addExpression(
-			"sectionTop",
-			NameType.VALUE,
-			this.layout.sectionTop.unbound!,
-		);
-
-		this.bindingContextInternal.addExpression(
-			"sectionHeight",
-			NameType.VALUE,
-			this.layout.sectionHeight.unbound!,
-		);
-
-		this.bindingContextInternal.addExpression(
-			"sectionBottom",
-			NameType.VALUE,
-			this.layout.sectionBottom.unbound!,
-		);
-
-		// ----- Recurse -----
-		this.elements.forEach((el) => el.beforeBinding());
+		// Recursively finalize children
+		this.elements.forEach((el) => el.finalize());
 	}
 
-	// --------------------------------------------------
-	// Binding
-	// --------------------------------------------------
-
-	bindExpressions(): DependentExpression[] {
-		this.checkPhase(Phase.BINDING, "bindExpressions");
-
-		const depExprs: DependentExpression[] = [];
-
-		for (const key of [
-			"sectionTop",
-			"sectionHeight",
-			"sectionBottom",
-		] as const) {
-			const slot = this.layout[key];
-			slot.dependent = slot.unbound!.bind(this.bindingContextInternal);
-			depExprs.push(slot.dependent);
-		}
-
-		for (const el of this.elements) {
-			depExprs.push(...el.bindExpressions());
-		}
-
-		return depExprs;
-	}
-
-	// --------------------------------------------------
-	// Build
-	// --------------------------------------------------
+	// ─────────────────────────────────────────────────────────────
+	// Build phase
+	// ─────────────────────────────────────────────────────────────
 
 	build(options: { parent: Presentation }): Section {
-		this.checkPhase(Phase.BOUND, "build");
+		this.assertNotBuilt("build");
+		this.built = true;
 
 		const { parent } = options;
 
 		const section = new Section({
 			parent,
-			sectionTop: this.layout.sectionTop.dependent!.expression,
-			sectionHeight: this.layout.sectionHeight.dependent!.expression,
-			sectionBottom: this.layout.sectionBottom.dependent!.expression,
+			sectionTop: this.get("sectionTop"),
+			sectionHeight: this.get("sectionHeight"),
+			sectionBottom: this.get("sectionBottom"),
 			elements: [],
 			viewFactory: this.viewFactory,
 		});
 
 		const builtElements = this.elements.map((el) =>
-			el.build({ parent: section }),
+			el.build({ parent: section })
 		);
 
 		section._setElements(builtElements);
+
 		return section;
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// Internal helpers
+	// ─────────────────────────────────────────────────────────────
+
+	private get(
+		key: "sectionTop" | "sectionHeight" | "sectionBottom"
+	): Expression {
+		const getter = this.getters.get(key);
+		if (!getter) {
+			throw new Error(`SectionBuilder: Expression '${key}' not registered`);
+		}
+		return getter();
+	}
+
+	private validateAndDeriveLayout(): void {
+		const hasHeight = this.expressions.has("sectionHeight");
+		const hasBottom = this.expressions.has("sectionBottom");
+
+		if (!hasHeight && !hasBottom) {
+			throw new Error("Must specify either height or bottom");
+		}
+
+		// top is derived from previous section or zero
+		if (this.prevSectionBuilder) {
+			this.expressions.set("sectionTop", "prevSection.sectionBottom");
+		} else {
+			this.expressions.set("sectionTop", "0");
+		}
+
+		// derive missing property
+		if (!hasBottom) {
+			this.expressions.set(
+				"sectionBottom",
+				"sectionTop + sectionHeight"
+			);
+		} else if (!hasHeight) {
+			this.expressions.set(
+				"sectionHeight",
+				"sectionBottom - sectionTop"
+			);
+		}
+
+    // Wire element adjacency
+    // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.
+		for (let i = 0; i < this.elements.length; i++) {
+			if (i > 0) {
+        this.elements[i]!.setPrevious(this.elements[i - 1]!);
+      }
+      
+			if (i < this.elements.length - 1) {
+        this.elements[i]!.setNext(this.elements[i + 1]!);
+      }
+		}
+
+	}
+
+	private registerExpressions(): void {
+		const keys: Array<"sectionTop" | "sectionHeight" | "sectionBottom"> = [
+			"sectionTop",
+			"sectionHeight",
+			"sectionBottom",
+		];
+
+		for (const key of keys) {
+			const expr = this.expressions.get(key);
+			if (!expr) {
+				throw new Error(`Missing section expression: ${key}`);
+			}
+
+      const getter = this.module.addExpression(key, expr);
+			this.getters.set(key, getter);
+		}
+	}
+
+	private assertNotBuilt(method: string): void {
+		if (this.built) {
+			throw new Error(
+				`SectionBuilder.${method}: Builder is no longer usable after build()`
+			);
+		}
 	}
 }

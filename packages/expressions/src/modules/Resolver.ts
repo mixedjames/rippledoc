@@ -51,17 +51,12 @@ export function resolveExpressions(
 		if (!madeProgress) {
 			// Remaining expressions have unresolved dependencies that
 			// cannot be satisfied without a cycle.
-			// eslint-disable-next-line no-console
-			console.log(
-				"Remaining expressions with unresolved dependencies:",
-				dependentExpressions,
-			);
 			throw new Error("Circular dependency detected among expressions.");
 		}
 	}
 
 	// eslint-disable-next-line no-console
-	console.log(`Resolved in ${passes} passes.`);
+	//console.log(`Resolved in ${passes} passes.`);
 
 	return resolvedExpressions;
 }

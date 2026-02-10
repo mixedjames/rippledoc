@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Expression } from "@expressions";
 
-import { Presentation } from "./Presentation";
+import { Presentation, PresentationGeometry } from "./Presentation";
 import { Section } from "./Section";
 import { Element } from "./Element";
 import { nullViewFactory } from "./view/NullViewFactory";
@@ -17,16 +17,17 @@ function makeConstExpression(value: number): Expression {
 	} as any);
 }
 
+
 describe("Presentation", () => {
-	it("exposes slide dimensions via evaluated expressions", () => {
-		const slideWidthExpr = makeConstExpression(800);
-		const slideHeightExpr = makeConstExpression(600);
+	it("exposes slide dimensions from geometry", () => {
+		const geometry = new PresentationGeometry();
+		geometry.basis.width = 800;
+		geometry.basis.height = 600;
 
 		const presentation = new Presentation({
 			sections: [],
-			slideWidth: slideWidthExpr,
-			slideHeight: slideHeightExpr,
 			viewFactory: nullViewFactory,
+			geometry,
 		});
 
 		expect(presentation.slideWidth).toBe(800);
@@ -34,9 +35,6 @@ describe("Presentation", () => {
 	});
 
 	it("returns sections array and view instance", () => {
-		const slideWidthExpr = makeConstExpression(1024);
-		const slideHeightExpr = makeConstExpression(768);
-
 		const section = new Section({
 			parent: null,
 			sectionTop: makeConstExpression(0),
@@ -46,11 +44,14 @@ describe("Presentation", () => {
 			viewFactory: nullViewFactory,
 		});
 
+		const geometry = new PresentationGeometry();
+		geometry.basis.width = 1024;
+		geometry.basis.height = 768;
+
 		const presentation = new Presentation({
 			sections: [section],
-			slideWidth: slideWidthExpr,
-			slideHeight: slideHeightExpr,
 			viewFactory: nullViewFactory,
+			geometry,
 		});
 
 		expect(presentation.sections).toHaveLength(1);
@@ -59,9 +60,6 @@ describe("Presentation", () => {
 	});
 
 	it("delegates realiseView and layoutView to sections and views", () => {
-		const slideWidthExpr = makeConstExpression(640);
-		const slideHeightExpr = makeConstExpression(480);
-
 		const element = new Element({
 			parent: null,
 			left: makeConstExpression(10),
@@ -81,12 +79,14 @@ describe("Presentation", () => {
 			elements: [element],
 			viewFactory: nullViewFactory,
 		});
+		const geometry = new PresentationGeometry();
+		geometry.basis.width = 640;
+		geometry.basis.height = 480;
 
 		const presentation = new Presentation({
 			sections: [section],
-			slideWidth: slideWidthExpr,
-			slideHeight: slideHeightExpr,
 			viewFactory: nullViewFactory,
+			geometry,
 		});
 
 		// Should not throw and should traverse the tree.
