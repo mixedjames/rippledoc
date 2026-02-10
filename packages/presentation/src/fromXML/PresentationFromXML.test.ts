@@ -31,10 +31,10 @@ describe("presentationFromXML", () => {
 	});
 
 	it("builds a presentation from XML with correct slide size and structure", async () => {
-		const presentation = await presentationFromXML(
-			"http://example.test/presentation.xml",
-			nullViewFactory,
-		);
+		const presentation = await presentationFromXML({
+			url: "http://example.test/presentation.xml",
+			viewFactory: nullViewFactory,
+		});
 
 		expect(presentation.slideWidth).toBe(800);
 		expect(presentation.slideHeight).toBe(600);
@@ -60,7 +60,10 @@ describe("presentationFromXML", () => {
 		}));
 
 		await expect(
-			presentationFromXML("http://example.test/missing.xml", nullViewFactory),
+			presentationFromXML({
+				url: "http://example.test/missing.xml",
+				viewFactory: nullViewFactory,
+			}),
 		).rejects.toThrow(/Missing required <slideSize> element/);
 	});
 });

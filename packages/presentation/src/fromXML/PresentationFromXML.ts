@@ -2,55 +2,70 @@ import type { ViewFactory } from "../view/ViewFactory";
 import type { Presentation } from "../Presentation";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
 
+export interface PresentationFromXMLConfig {
+	viewFactory: ViewFactory;
+	url?: string | URL;
+	text?: string;
+}
+
 /**
- * Build a Presentation from an XML document fetched from the given URL.
+ * Build a Presentation from XML using either a URL or an in-memory string.
  *
- * XML format:
- * <document>
- *   <slideSize w="800" h="600"/>
- *   <section h="expression" b="expression">
- *     <element l="expr" w="expr" t="expr" h="expr"/>
- *   </section>
- * </document>
- *
- * @param url URL of the XML document to load.
- * @param viewFactory Factory for creating view objects.
+ * Exactly one of `url` or `text` must be provided.
  */
 export async function presentationFromXML(
-	url: string | URL,
-	viewFactory: ViewFactory,
+	config: PresentationFromXMLConfig,
 ): Promise<Presentation> {
-	// Fetch and parse XML
-	const response = await fetch(url);
+	const xmlText = await loadXmlSource(config);
+	const xmlDoc = parseXmlDocument(xmlText);
+	return buildPresentationFromDocument(xmlDoc, config.viewFactory);
+}
 
+async function loadXmlSource(config: PresentationFromXMLConfig): Promise<string> {
+	const { url, text } = config;
+
+	if ((url && text) || (!url && !text)) {
+		throw new Error(
+			"presentationFromXML: exactly one of 'url' or 'text' must be provided",
+		);
+	}
+
+	if (typeof text === "string") {
+		return text;
+	}
+
+	// At this point we know url is defined.
+	const response = await fetch(url!);
 	if (!response.ok) {
 		throw new Error(`Failed to fetch XML: ${response.statusText}`);
 	}
+	return response.text();
+}
 
-	const xmlText = await response.text();
+function parseXmlDocument(xmlText: string): Document {
 	const parser = new DOMParser();
 	const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-	// Check for parser errors
 	const parserError = xmlDoc.querySelector("parsererror");
-
 	if (parserError) {
 		throw new Error(`XML parsing error: ${parserError.textContent ?? ""}`);
 	}
+	return xmlDoc;
+}
 
-	// Create builder
+function buildPresentationFromDocument(
+	xmlDoc: Document,
+	viewFactory: ViewFactory,
+): Presentation {
 	const builder = new PresentationBuilder({ viewFactory });
 
 	// Parse <slideSize>
 	const slideSize = xmlDoc.querySelector("slideSize");
-
 	if (!slideSize) {
 		throw new Error("Missing required <slideSize> element");
 	}
 
 	const width = slideSize.getAttribute("w");
 	const height = slideSize.getAttribute("h");
-
 	if (!width || !height) {
 		throw new Error("<slideSize> must have both w and h attributes");
 	}
@@ -60,7 +75,6 @@ export async function presentationFromXML(
 
 	// Parse <section> elements
 	const sections = xmlDoc.querySelectorAll("section");
-
 	sections.forEach((sectionEl) => {
 		const section = builder.createSection();
 
@@ -78,7 +92,6 @@ export async function presentationFromXML(
 
 		// Parse <element> children
 		const elements = sectionEl.querySelectorAll("element");
-
 		elements.forEach((elementEl) => {
 			const element = section.createElement();
 
@@ -116,6 +129,5 @@ export async function presentationFromXML(
 		});
 	});
 
-	// Build and return final Presentation
 	return builder.build();
 }

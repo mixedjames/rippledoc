@@ -192,6 +192,7 @@ export class SectionBuilder {
 
     // Wire element adjacency
     // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.
+    console.log("***&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 		for (let i = 0; i < this.elements.length; i++) {
 			if (i > 0) {
         this.elements[i]!.setPrevious(this.elements[i - 1]!);

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>XML Presentation Structure Viewer</title>
+  </head>
+  <body>
+    <h1>XML Presentation Structure Viewer</h1>
+
+    <main class="layout">
+      <section class="editor">
+        <p>
+          Paste a presentation XML document below and click
+          <strong>Parse XML</strong>. The demo will use the
+          <code>@presentation</code> package to build a Presentation and show
+          its section/element structure.
+        </p>
+
+        <p class="hint">
+          Expected format:
+          <code>&lt;document&gt;</code> with a
+          <code>&lt;slideSize w="800" h="600" /&gt;</code> element, followed by
+          one or more <code>&lt;section&gt;</code> elements containing
+          <code>&lt;element&gt;</code> children.
+        </p>
+
+        <label for="xml-input" class="editor-label">Presentation XML</label>
+        <textarea
+          id="xml-input"
+          class="editor-input"
+          rows="18"
+          spellcheck="false"
+        ></textarea>
+
+        <div class="editor-actions">
+          <button id="parse-btn" type="button">Parse XML</button>
+          <span id="status" class="status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section class="results">
+        <h2>Parsed Presentation Structure</h2>
+        <div id="error-output" class="error-output" aria-live="polite"></div>
+        <div id="structure-output" class="structure-output"></div>
+      </section>
+    </main>
+  </body>
+</html>

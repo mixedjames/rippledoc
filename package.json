@@ -14,10 +14,16 @@
   },
   "scripts": {
     "tsc-watch": "tsc -b --watch",
+
     "test": "vitest",
+
     "build:test": "webpack --config apps/test/webpack.config.js",
     "watch:test": "webpack --config apps/test/webpack.config.js --watch",
+
     "build:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js",
-    "watch:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js --watch"
+    "watch:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js --watch",
+
+    "build:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js",
+    "watch:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js --watch"
   }
 }

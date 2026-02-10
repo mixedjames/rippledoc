@@ -8,6 +8,8 @@ module.exports = {
     alias: {
       "@core": path.resolve(__dirname, "./packages/core/src"),
       "@expressions": path.resolve(__dirname, "./packages/expressions/src"),
+      "@presentation": path.resolve(__dirname, "./packages/presentation/src"),
+      "@htmlPresentation": path.resolve(__dirname, "./packages/htmlPresentation/src"),
     }
   },
 
