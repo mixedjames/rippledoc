@@ -3,7 +3,7 @@ import type {
 	Presentation,
 	Section,
 	Element,
-} from "@presentation";
+} from "@rippledoc/presentation";
 
 import { HTMLPresentationView } from "./HTMLPresentationView";
 import { HTMLSectionView } from "./HTMLSectionView";

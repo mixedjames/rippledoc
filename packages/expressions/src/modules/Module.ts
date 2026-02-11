@@ -47,6 +47,7 @@ import type { BindingContext } from "../parser/BindingContext";
  * expressions to access arbitary chains of submodules (e.g. module1.module2.expressionName).
  * 
  * # Useage
+ * ```ts
  * The basic use case is as follows:
  * // 1. Create a root module using Module.createRootModule() and add some expressions
  * //    addExpression returns a function that will return the bound expression after compilation.
@@ -60,7 +61,7 @@ import type { BindingContext } from "../parser/BindingContext";
  * // 3. Access the bound expressions using the functions returned by addExpression
  * const a = getA(); // returns the bound expression for "a"
  * const b = getB(); // returns the bound expression for "b"
- * 
+ * ```
  */
 export class Module {
 

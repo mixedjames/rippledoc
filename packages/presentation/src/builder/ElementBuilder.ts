@@ -1,5 +1,5 @@
-import { Module } from "@expressions";
-import type { Expression } from "@expressions";
+import { Module } from "@rippledoc/expressions";
+import type { Expression } from "@rippledoc/expressions";
 
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Section } from "../Section";

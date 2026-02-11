@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Expression } from "@expressions";
+import { Expression } from "@rippledoc/expressions";
 
 import { Presentation, PresentationGeometry } from "./Presentation";
 import { Section } from "./Section";

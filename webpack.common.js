@@ -6,10 +6,10 @@ module.exports = {
     extensions: [".ts", ".js"],
 
     alias: {
-      "@core": path.resolve(__dirname, "./packages/core/src"),
-      "@expressions": path.resolve(__dirname, "./packages/expressions/src"),
-      "@presentation": path.resolve(__dirname, "./packages/presentation/src"),
-      "@htmlPresentationView": path.resolve(__dirname, "./packages/htmlPresentationView/src"),
+      "@rippledoc/core": path.resolve(__dirname, "./packages/core/src"),
+      "@rippledoc/expressions": path.resolve(__dirname, "./packages/expressions/src"),
+      "@rippledoc/presentation": path.resolve(__dirname, "./packages/presentation/src"),
+      "@rippledoc/htmlPresentationView": path.resolve(__dirname, "./packages/htmlPresentationView/src"),
     }
   },
 

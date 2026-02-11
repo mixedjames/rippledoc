@@ -7,6 +7,7 @@
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18",
     "webpack": "^5.105.0",
@@ -14,19 +15,22 @@
   },
   "scripts": {
     "tsc-watch": "tsc -b --watch",
-
     "test": "vitest",
+    "docs": "npm run docs --workspaces --if-present",
 
     "build:test": "webpack --config apps/test/webpack.config.js",
     "watch:test": "webpack --config apps/test/webpack.config.js --watch",
-
     "build:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js",
     "watch:expressions-demo": "webpack --config apps/expressions-demo/webpack.config.js --watch",
-
     "build:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js",
     "watch:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js --watch",
-
     "build:html-presentation-view-demo": "webpack --config apps/html-presentation-view-demo/webpack.config.js",
     "watch:html-presentation-view-demo": "webpack --config apps/html-presentation-view-demo/webpack.config.js --watch"
-  }
+  },
+
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }

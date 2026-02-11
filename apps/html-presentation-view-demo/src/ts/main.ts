@@ -1,7 +1,7 @@
 import "../css/styles.css";
 
-import { presentationFromXML, Presentation } from "@presentation";
-import { HTMLViewFactory } from "@htmlPresentationView";
+import { presentationFromXML, Presentation } from "@rippledoc/presentation";
+import { HTMLViewFactory } from "@rippledoc/htmlPresentationView";
 
 window.addEventListener("DOMContentLoaded", () => {
   const xmlInput = document.getElementById("xml-input") as HTMLTextAreaElement | null;

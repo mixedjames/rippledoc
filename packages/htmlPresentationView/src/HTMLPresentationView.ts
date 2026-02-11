@@ -1,4 +1,4 @@
-import type { PresentationView, Presentation } from "@presentation";
+import type { PresentationView, Presentation } from "@rippledoc/presentation";
 
 /**
  * Skeleton HTML implementation of PresentationView.

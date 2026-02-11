@@ -1,4 +1,4 @@
-import type { ElementView, Element, Presentation } from "@presentation";
+import type { ElementView, Element, Presentation } from "@rippledoc/presentation";
 import { HTMLSectionView } from "./HTMLSectionView";
 
 /**

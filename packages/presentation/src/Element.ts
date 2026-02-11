@@ -1,4 +1,4 @@
-import type { Expression } from "@expressions";
+import type { Expression } from "@rippledoc/expressions";
 
 import type { Section } from "./Section";
 import type { ElementView } from "./view/ElementView";

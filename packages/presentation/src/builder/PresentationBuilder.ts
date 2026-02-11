@@ -1,5 +1,4 @@
-import { Module } from "@expressions";
-import type { Expression } from "@expressions";
+import { Module } from "@rippledoc/expressions";
 
 import type { ViewFactory } from "../view/ViewFactory";
 import { Section } from "../Section";
@@ -68,6 +67,11 @@ export class PresentationBuilder {
     const geometry = this.geometry; // capture 'this' for the closures
 		this.module.addNativeExpression("slideWidth", () => geometry.basis.width);
 		this.module.addNativeExpression("slideHeight", () => geometry.basis.height);
+
+    // Experimental:
+    this.module.addNativeExpression("viewportHeight", () => {
+      return geometry.viewport.height / geometry.scale;
+    });
 
 		// Wire section adjacency
     // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.

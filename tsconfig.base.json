@@ -13,11 +13,11 @@
     "declaration": true,
 
     "paths": {
-      "@core/*": ["packages/core/src/*"],
-      "@expressions": ["packages/expressions"],
-      "@presentation": ["packages/presentation"],
-      "@htmlPresentation": ["packages/htmlPresentation"],
-      "@htmlPresentationView": ["packages/htmlPresentationView"]
+      "@rippledoc/core/*": ["packages/core/src/*"],
+      "@rippledoc/expressions": ["packages/expressions"],
+      "@rippledoc/presentation": ["packages/presentation"],
+      "@rippledoc/htmlPresentation": ["packages/htmlPresentation"],
+      "@rippledoc/htmlPresentationView": ["packages/htmlPresentationView"]
     },
 
     "esModuleInterop": true,

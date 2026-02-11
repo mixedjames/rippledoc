@@ -6,5 +6,9 @@
     "rootDir": "src",
   },
 
+  "scripts": {
+    "docs": "typedoc"
+  },
+
   "include": ["src"]
 }

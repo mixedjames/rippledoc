@@ -1,4 +1,3 @@
-import type { Expression } from "@expressions";
 import type { Section } from "./Section";
 import type { PresentationView } from "./view/PresentationView";
 import type { ViewFactory } from "./view/ViewFactory";

@@ -1,6 +1,6 @@
 import "../css/styles.css";
 
-import { Module } from "@expressions";
+import { Module } from "@rippledoc/expressions";
 
 interface Definition {
 	name: string;
