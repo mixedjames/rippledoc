@@ -46,14 +46,17 @@ class NullElementView implements ElementView {
  * do not touch the DOM or perform any rendering.
  */
 export class NullViewFactory implements ViewFactory {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createPresentationView(_presentation: Presentation): PresentationView {
     return new NullPresentationView();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createSectionView(_section: Section): SectionView {
     return new NullSectionView();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createElementView(_element: Element): ElementView {
     return new NullElementView();
   }

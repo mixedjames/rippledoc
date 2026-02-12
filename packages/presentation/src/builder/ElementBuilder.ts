@@ -22,22 +22,22 @@ type LayoutKey = "left" | "right" | "width" | "top" | "bottom" | "height";
  * This builder has no knowledge of expression phases.
  */
 export class ElementBuilder {
-  private readonly module: Module;
-  private readonly viewFactory: ViewFactory;
-  private name = "";
+  private readonly module_: Module;
+  private readonly viewFactory_: ViewFactory;
+  private name_ = "";
 
-  private prevElementBuilder: ElementBuilder | null = null;
-  private nextElementBuilder: ElementBuilder | null = null;
+  private prevElementBuilder_: ElementBuilder | null = null;
+  private nextElementBuilder_: ElementBuilder | null = null;
 
-  private readonly expressions = new Map<LayoutKey, string>();
-  private readonly getters = new Map<LayoutKey, () => Expression>();
+  private readonly expressions_ = new Map<LayoutKey, string>();
+  private readonly getters_ = new Map<LayoutKey, () => Expression>();
 
-  private built = false;
+  private built_ = false;
 
   constructor(options: { parentModule: Module; viewFactory: ViewFactory }) {
     const { parentModule, viewFactory } = options;
-    this.module = parentModule.addSubModule();
-    this.viewFactory = viewFactory;
+    this.module_ = parentModule.addSubModule();
+    this.viewFactory_ = viewFactory;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -46,11 +46,11 @@ export class ElementBuilder {
 
   setName(name: string): void {
     this.assertNotBuilt("setName");
-    this.name = name;
+    this.name_ = name;
   }
 
   getName(): string {
-    return this.name;
+    return this.name_;
   }
 
   setLeft(expr: string): void {
@@ -84,12 +84,12 @@ export class ElementBuilder {
       throw new Error(`ElementBuilder: Invalid expression for ${key}`);
     }
 
-    this.expressions.set(key, expr);
+    this.expressions_.set(key, expr);
   }
 
   setPrevious(prev: ElementBuilder): void {
     this.assertNotBuilt("setPrevious");
-    if (this.prevElementBuilder) {
+    if (this.prevElementBuilder_) {
       throw new Error(
         "ElementBuilder.setPrevious: previous element already set",
       );
@@ -99,14 +99,14 @@ export class ElementBuilder {
     // expressions like "prevElement.left" can be resolved
     // by the expressions module system.
 
-    this.prevElementBuilder = prev;
-    this.module.mapModule("prevElement", prev.moduleInstance);
+    this.prevElementBuilder_ = prev;
+    this.module_.mapModule("prevElement", prev.moduleInstance);
   }
 
   setNext(next: ElementBuilder): void {
     this.assertNotBuilt("setNext");
 
-    if (this.nextElementBuilder) {
+    if (this.nextElementBuilder_) {
       throw new Error("ElementBuilder.setNext: next element already set");
     }
 
@@ -114,12 +114,12 @@ export class ElementBuilder {
     // expressions like "nextElement.left" can be resolved
     // by the expressions module system.
 
-    this.nextElementBuilder = next;
-    this.module.mapModule("nextElement", next.moduleInstance);
+    this.nextElementBuilder_ = next;
+    this.module_.mapModule("nextElement", next.moduleInstance);
   }
 
   get moduleInstance(): Module {
-    return this.module;
+    return this.module_;
   }
 
   /**
@@ -143,7 +143,7 @@ export class ElementBuilder {
 
   build(options: { parent: Section }): Element {
     this.assertNotBuilt("build");
-    this.built = true;
+    this.built_ = true;
 
     const { parent } = options;
 
@@ -152,7 +152,7 @@ export class ElementBuilder {
 
   protected getBuildOptions(options: { parent: Section }) {
     return {
-      name: this.name,
+      name: this.name_,
       parent: options.parent,
       left: this.get("left"),
       right: this.get("right"),
@@ -160,7 +160,7 @@ export class ElementBuilder {
       top: this.get("top"),
       bottom: this.get("bottom"),
       height: this.get("height"),
-      viewFactory: this.viewFactory,
+      viewFactory: this.viewFactory_,
     };
   }
 
@@ -169,7 +169,7 @@ export class ElementBuilder {
   // ─────────────────────────────────────────────────────────────
 
   private get(key: LayoutKey): Expression {
-    const getter = this.getters.get(key);
+    const getter = this.getters_.get(key);
     if (!getter) {
       throw new Error(`ElementBuilder: Expression '${key}' not registered`);
     }
@@ -187,21 +187,21 @@ export class ElementBuilder {
     ];
 
     for (const key of keys) {
-      const expr = this.expressions.get(key);
+      const expr = this.expressions_.get(key);
       if (!expr) {
         throw new Error(`Missing layout expression: ${key}`);
       }
 
-      const getter = this.module.addExpression(key, expr);
-      this.getters.set(key, getter);
+      const getter = this.module_.addExpression(key, expr);
+      this.getters_.set(key, getter);
     }
   }
 
   private validateAndDeriveLayout(): void {
     // ----- Horizontal -----
-    const hasLeft = this.expressions.has("left");
-    const hasWidth = this.expressions.has("width");
-    const hasRight = this.expressions.has("right");
+    const hasLeft = this.expressions_.has("left");
+    const hasWidth = this.expressions_.has("width");
+    const hasRight = this.expressions_.has("right");
 
     const horizontalCount = [hasLeft, hasWidth, hasRight].filter(
       Boolean,
@@ -214,17 +214,17 @@ export class ElementBuilder {
     }
 
     if (!hasLeft) {
-      this.expressions.set("left", "right - width");
+      this.expressions_.set("left", "right - width");
     } else if (!hasWidth) {
-      this.expressions.set("width", "right - left");
+      this.expressions_.set("width", "right - left");
     } else if (!hasRight) {
-      this.expressions.set("right", "left + width");
+      this.expressions_.set("right", "left + width");
     }
 
     // ----- Vertical -----
-    const hasTop = this.expressions.has("top");
-    const hasHeight = this.expressions.has("height");
-    const hasBottom = this.expressions.has("bottom");
+    const hasTop = this.expressions_.has("top");
+    const hasHeight = this.expressions_.has("height");
+    const hasBottom = this.expressions_.has("bottom");
 
     const verticalCount = [hasTop, hasHeight, hasBottom].filter(Boolean).length;
 
@@ -235,16 +235,16 @@ export class ElementBuilder {
     }
 
     if (!hasTop) {
-      this.expressions.set("top", "bottom - height");
+      this.expressions_.set("top", "bottom - height");
     } else if (!hasHeight) {
-      this.expressions.set("height", "bottom - top");
+      this.expressions_.set("height", "bottom - top");
     } else if (!hasBottom) {
-      this.expressions.set("bottom", "top + height");
+      this.expressions_.set("bottom", "top + height");
     }
   }
 
   protected assertNotBuilt(method: string): void {
-    if (this.built) {
+    if (this.built_) {
       throw new Error(
         `ElementBuilder.${method}: Builder is no longer usable after build()`,
       );

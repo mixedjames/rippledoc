@@ -26,11 +26,11 @@ export function parseExpression(expressionString: string): UnboundExpression {
   return parser.parseExpression();
 }
 
-export class Parser {
+class Parser {
   // ---------- Fields ----------
 
-  private readonly lexer: Lexer;
-  private current: Token;
+  private readonly lexer_: Lexer;
+  private current_: Token;
 
   // ---------- Construction ----------
 
@@ -42,8 +42,8 @@ export class Parser {
       throw new Error("Parser requires lexer");
     }
 
-    this.lexer = lexer;
-    this.current = lexer.nextToken();
+    this.lexer_ = lexer;
+    this.current_ = lexer.nextToken();
   }
 
   // ---------- Public API ----------
@@ -54,8 +54,8 @@ export class Parser {
   parseExpression(): UnboundExpression {
     const root = this.parseAdditive();
 
-    if (this.current.type !== TokenType.EOF) {
-      throw new Error(`Unexpected token at position ${this.current.position}`);
+    if (this.current_.type !== TokenType.EOF) {
+      throw new Error(`Unexpected token at position ${this.current_.position}`);
     }
 
     return new UnboundExpression(root);
@@ -68,10 +68,10 @@ export class Parser {
     let left = this.parseMultiplicative();
 
     while (
-      this.current.type === TokenType.PLUS ||
-      this.current.type === TokenType.MINUS
+      this.current_.type === TokenType.PLUS ||
+      this.current_.type === TokenType.MINUS
     ) {
-      const op = this.current.type;
+      const op = this.current_.type;
       this.advance();
       const right = this.parseMultiplicative();
       left = new BinaryExpression(left, op, right);
@@ -85,11 +85,11 @@ export class Parser {
     let left = this.parseUnary();
 
     while (
-      this.current.type === TokenType.STAR ||
-      this.current.type === TokenType.SLASH ||
-      this.current.type === TokenType.PERCENT
+      this.current_.type === TokenType.STAR ||
+      this.current_.type === TokenType.SLASH ||
+      this.current_.type === TokenType.PERCENT
     ) {
-      const op = this.current.type;
+      const op = this.current_.type;
       this.advance();
       const right = this.parseUnary();
       left = new BinaryExpression(left, op, right);
@@ -100,8 +100,8 @@ export class Parser {
 
   // unary → "-" unary | primary
   private parseUnary(): AstNode {
-    if (this.current.type === TokenType.MINUS) {
-      const op = this.current.type;
+    if (this.current_.type === TokenType.MINUS) {
+      const op = this.current_.type;
       this.advance();
       const operand = this.parseUnary();
       return new UnaryExpression(op, operand);
@@ -115,23 +115,23 @@ export class Parser {
   //         | "(" additive ")"
   private parsePrimary(): AstNode {
     // Number
-    if (this.current.type === TokenType.NUMBER) {
-      const value = this.current.value;
+    if (this.current_.type === TokenType.NUMBER) {
+      const value = this.current_.value;
       this.advance();
       return new NumberLiteral(value);
     }
 
     // Name / member access
-    const token = this.current;
+    const token = this.current_;
     if (token.type === TokenType.IDENTIFIER) {
       const parts: string[] = [];
       parts.push(token.lexeme);
       this.advance();
 
-      while (this.current.type === TokenType.DOT) {
+      while (this.current_.type === TokenType.DOT) {
         this.advance();
         this.expectAndStay(TokenType.IDENTIFIER);
-        parts.push(this.current.lexeme);
+        parts.push(this.current_.lexeme);
         this.advance();
       }
 
@@ -139,7 +139,7 @@ export class Parser {
     }
 
     // Parenthesized
-    if (this.current.type === TokenType.LPAREN) {
+    if (this.current_.type === TokenType.LPAREN) {
       this.advance();
       const expr = this.parseAdditive();
       this.expect(TokenType.RPAREN);
@@ -147,23 +147,23 @@ export class Parser {
     }
 
     throw new Error(
-      `Expected number, identifier, or '(' at position ${this.current.position}`,
+      `Expected number, identifier, or '(' at position ${this.current_.position}`,
     );
   }
 
   // ---------- Helpers ----------
 
   private advance(): void {
-    this.current = this.lexer.nextToken();
+    this.current_ = this.lexer_.nextToken();
   }
 
   /**
    * Checks the current token type and advances.
    */
   private expect(type: TokenType): void {
-    if (this.current.type !== type) {
+    if (this.current_.type !== type) {
       throw new Error(
-        `Expected ${type.toString()} at position ${this.current.position}`,
+        `Expected ${type.toString()} at position ${this.current_.position}`,
       );
     }
     this.advance();
@@ -173,9 +173,9 @@ export class Parser {
    * Checks the current token type without advancing.
    */
   private expectAndStay(type: TokenType): void {
-    if (this.current.type !== type) {
+    if (this.current_.type !== type) {
       throw new Error(
-        `Expected ${type.toString()} at position ${this.current.position}`,
+        `Expected ${type.toString()} at position ${this.current_.position}`,
       );
     }
   }

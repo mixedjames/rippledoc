@@ -16,16 +16,16 @@ type Provider = () => DependentExpression;
  * Names are additionally partitioned by NameType (VALUE, ARRAY, FUNCTION).
  */
 export class DefaultBindingContext implements BindingContext {
-  private readonly parent: DefaultBindingContext | null;
+  private readonly parent_: DefaultBindingContext | null;
 
   // Map<string, Map<NameType, Provider>>
-  private readonly symbols = new Map<string, Map<NameType, Provider>>();
+  private readonly symbols_ = new Map<string, Map<NameType, Provider>>();
 
   // Map<string, DefaultBindingContext>
-  private readonly subcontexts = new Map<string, DefaultBindingContext>();
+  private readonly subcontexts_ = new Map<string, DefaultBindingContext>();
 
   constructor(parent: DefaultBindingContext | null = null) {
-    this.parent = parent;
+    this.parent_ = parent;
   }
 
   addValueExpression(name: string, provider: UnboundExpression): void {
@@ -52,11 +52,11 @@ export class DefaultBindingContext implements BindingContext {
       throw new Error("Provider (UnboundExpression) required");
     }
 
-    let typeMap = this.symbols.get(name);
+    let typeMap = this.symbols_.get(name);
 
     if (!typeMap) {
       typeMap = new Map<NameType, Provider>();
-      this.symbols.set(name, typeMap);
+      this.symbols_.set(name, typeMap);
     }
 
     if (typeMap.has(type)) {
@@ -80,11 +80,11 @@ export class DefaultBindingContext implements BindingContext {
       throw new Error("Context required");
     }
 
-    if (this.subcontexts.has(name)) {
+    if (this.subcontexts_.has(name)) {
       throw new Error(`Duplicate subcontext: ${name}`);
     }
 
-    this.subcontexts.set(name, context);
+    this.subcontexts_.set(name, context);
   }
 
   lookupName(parts: string[], type: NameType): Provider {
@@ -104,7 +104,7 @@ export class DefaultBindingContext implements BindingContext {
     // Final name
     if (parts.length === 1) {
       // Check local symbols
-      const typeMap = this.symbols.get(head);
+      const typeMap = this.symbols_.get(head);
 
       if (typeMap && typeMap.has(type)) {
         // Non-null assertion is safe due to has(type) guard
@@ -112,22 +112,22 @@ export class DefaultBindingContext implements BindingContext {
       }
 
       // Delegate to parent
-      if (this.parent) {
-        return this.parent.lookupName([head], type);
+      if (this.parent_) {
+        return this.parent_.lookupName([head], type);
       }
 
       throw new Error(`Unresolved name: ${head}`);
     }
 
     // Subcontext traversal
-    if (this.subcontexts.has(head)) {
-      const sub = this.subcontexts.get(head)!;
+    if (this.subcontexts_.has(head)) {
+      const sub = this.subcontexts_.get(head)!;
       return sub.lookupName(parts.slice(1), type);
     }
 
     // Delegate to parent
-    if (this.parent) {
-      return this.parent.lookupName(parts, type);
+    if (this.parent_) {
+      return this.parent_.lookupName(parts, type);
     }
 
     throw new Error(`'${head}' is not an object`);

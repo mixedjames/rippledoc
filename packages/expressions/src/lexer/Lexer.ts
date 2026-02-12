@@ -6,18 +6,18 @@ import { Token, TokenType } from "./Token";
  */
 export class Lexer {
   /** Source text to lex */
-  private source: string;
+  private source_: string;
 
   /** Current scanning position */
-  private pos: number;
+  private pos_: number;
 
   /**
    * Creates a new lexer for the given source text.
    * @param source The source string to tokenize.
    */
   constructor(source: string) {
-    this.source = source;
-    this.pos = 0;
+    this.source_ = source;
+    this.pos_ = 0;
   }
 
   /**
@@ -27,16 +27,16 @@ export class Lexer {
   public nextToken(): Token {
     this.skipWhitespace();
 
-    if (this.pos >= this.source.length) {
+    if (this.pos_ >= this.source_.length) {
       return {
         type: TokenType.EOF,
         lexeme: "",
-        position: this.pos,
+        position: this.pos_,
         value: 0,
       };
     }
 
-    const c: string = this.source[this.pos] ?? "\0";
+    const c: string = this.source_[this.pos_] ?? "\0";
 
     if (this.isDigit(c)) {
       return this.number();
@@ -66,8 +66,8 @@ export class Lexer {
     }
 
     // Unknown character
-    const start: number = this.pos;
-    const lexeme: string = this.source[this.pos++] ?? "\0";
+    const start: number = this.pos_;
+    const lexeme: string = this.source_[this.pos_++] ?? "\0";
 
     return {
       type: TokenType.UNKNOWN,
@@ -85,9 +85,9 @@ export class Lexer {
    * @returns A Token object with value 0.
    */
   private single(type: TokenType): Token {
-    const start: number = this.pos;
-    const ch: string = this.source[this.pos] ?? "\0";
-    this.pos++;
+    const start: number = this.pos_;
+    const ch: string = this.source_[this.pos_] ?? "\0";
+    this.pos_++;
 
     return {
       type,
@@ -101,10 +101,10 @@ export class Lexer {
    * Skips over whitespace characters: space, tab, newline, carriage return.
    */
   private skipWhitespace(): void {
-    while (this.pos < this.source.length) {
-      const c: string = this.source[this.pos] ?? "\0";
+    while (this.pos_ < this.source_.length) {
+      const c: string = this.source_[this.pos_] ?? "\0";
       if (c === " " || c === "\t" || c === "\n" || c === "\r") {
-        this.pos++;
+        this.pos_++;
       } else {
         break;
       }
@@ -116,7 +116,7 @@ export class Lexer {
    * @returns Current character or '\0' if at end-of-input.
    */
   private peek(): string {
-    return this.source[this.pos] ?? "\0";
+    return this.source_[this.pos_] ?? "\0";
   }
 
   /**
@@ -124,7 +124,7 @@ export class Lexer {
    * @returns Next character or '\0' if at end-of-input.
    */
   private peekNext(): string {
-    return this.source[this.pos + 1] ?? "\0";
+    return this.source_[this.pos_ + 1] ?? "\0";
   }
 
   /**
@@ -156,22 +156,22 @@ export class Lexer {
    * @returns NUMBER token with parsed value.
    */
   private number(): Token {
-    const start: number = this.pos;
+    const start: number = this.pos_;
 
     // Integer part
     while (this.isDigit(this.peek())) {
-      this.pos++;
+      this.pos_++;
     }
 
     // Optional fractional part
     if (this.peek() === "." && this.isDigit(this.peekNext())) {
-      this.pos++; // consume '.'
+      this.pos_++; // consume '.'
       while (this.isDigit(this.peek())) {
-        this.pos++;
+        this.pos_++;
       }
     }
 
-    const lexeme: string = this.source.slice(start, this.pos);
+    const lexeme: string = this.source_.slice(start, this.pos_);
     const value: number = Number(lexeme);
 
     return {
@@ -187,13 +187,13 @@ export class Lexer {
    * @returns IDENTIFIER token with value 0.
    */
   private identifier(): Token {
-    const start: number = this.pos;
+    const start: number = this.pos_;
 
     while (this.isAlphaNumeric(this.peek())) {
-      this.pos++;
+      this.pos_++;
     }
 
-    const lexeme: string = this.source.slice(start, this.pos);
+    const lexeme: string = this.source_.slice(start, this.pos_);
 
     return {
       type: TokenType.IDENTIFIER,

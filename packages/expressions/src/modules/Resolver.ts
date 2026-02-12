@@ -17,13 +17,10 @@ export function resolveExpressions(
   }
 
   const resolvedExpressions: Expression[] = [];
-  let passes = 0;
 
   for (let j = 0; j < dependentExpressions.length; j++) {
     let madeProgress = false;
     let unresolvedCount = 0;
-
-    passes++;
 
     for (let i = 0; i < dependentExpressions.length; i++) {
       const de = dependentExpressions[i];
@@ -55,9 +52,6 @@ export function resolveExpressions(
       throw new Error("Circular dependency detected among expressions.");
     }
   }
-
-  // eslint-disable-next-line no-console
-  //console.log(`Resolved in ${passes} passes.`);
 
   return resolvedExpressions;
 }

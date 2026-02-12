@@ -1,7 +1,6 @@
 import { Module } from "@rippledoc/expressions";
 
 import type { ViewFactory } from "../view/ViewFactory";
-import { Section } from "../Section";
 import { Presentation, PresentationGeometry } from "../Presentation";
 import { SectionBuilder } from "./SectionBuilder";
 
@@ -15,21 +14,21 @@ import { SectionBuilder } from "./SectionBuilder";
  * - Build final Presentation
  */
 export class PresentationBuilder {
-  private readonly module: Module;
-  private readonly viewFactory: ViewFactory;
-  private readonly sections: SectionBuilder[] = [];
+  private readonly module_: Module;
+  private readonly viewFactory_: ViewFactory;
+  private readonly sections_: SectionBuilder[] = [];
 
-  private geometry: PresentationGeometry = new PresentationGeometry();
+  private geometry_: PresentationGeometry = new PresentationGeometry();
 
-  private built = false;
+  private built_ = false;
 
   constructor(options: { viewFactory: ViewFactory }) {
     const { viewFactory } = options;
     if (!viewFactory)
       throw new Error("PresentationBuilder requires a viewFactory");
 
-    this.viewFactory = viewFactory;
-    this.module = Module.createRootModule();
+    this.viewFactory_ = viewFactory;
+    this.module_ = Module.createRootModule();
   }
 
   // ───────────────────────────────────────────────
@@ -39,21 +38,21 @@ export class PresentationBuilder {
   setSlideWidth(value: number): void {
     this.assertNotBuilt("setSlideWidth");
 
-    this.geometry.setBasisDimensions(value, this.geometry.basis.height);
+    this.geometry_.setBasisDimensions(value, this.geometry_.basis.height);
   }
 
   setSlideHeight(value: number): void {
     this.assertNotBuilt("setSlideHeight");
-    this.geometry.setBasisDimensions(this.geometry.basis.width, value);
+    this.geometry_.setBasisDimensions(this.geometry_.basis.width, value);
   }
 
   createSection(): SectionBuilder {
     this.assertNotBuilt("createSection");
     const section = new SectionBuilder({
-      parentModule: this.module,
-      viewFactory: this.viewFactory,
+      parentModule: this.module_,
+      viewFactory: this.viewFactory_,
     });
-    this.sections.push(section);
+    this.sections_.push(section);
     return section;
   }
 
@@ -65,33 +64,36 @@ export class PresentationBuilder {
     this.assertNotBuilt("finalize");
 
     // Register slideWidth/slideHeight as module expressions
-    const geometry = this.geometry; // capture 'this' for the closures
-    this.module.addNativeExpression("slideWidth", () => geometry.basis.width);
-    this.module.addNativeExpression("slideHeight", () => geometry.basis.height);
+    const geometry = this.geometry_; // capture 'this' for the closures
+    this.module_.addNativeExpression("slideWidth", () => geometry.basis.width);
+    this.module_.addNativeExpression(
+      "slideHeight",
+      () => geometry.basis.height,
+    );
 
     // Experimental:
-    this.module.addNativeExpression("viewportHeight", () => {
+    this.module_.addNativeExpression("viewportHeight", () => {
       return geometry.viewport.height / geometry.scale;
     });
 
     // Wire section adjacency
     // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.
-    for (let i = 0; i < this.sections.length; i++) {
+    for (let i = 0; i < this.sections_.length; i++) {
       if (i > 0) {
-        this.sections[i]!.setPrevious(this.sections[i - 1]!);
+        this.sections_[i]!.setPrevious(this.sections_[i - 1]!);
       }
 
-      if (i < this.sections.length - 1) {
-        this.sections[i]!.setNext(this.sections[i + 1]!);
+      if (i < this.sections_.length - 1) {
+        this.sections_[i]!.setNext(this.sections_[i + 1]!);
       }
     }
 
     // Finalize each section builder
-    this.sections.forEach((s) => s.finalize());
+    this.sections_.forEach((s) => s.finalize());
 
     // Wire named sections under the 'sections' namespace
-    const namedSections = this.module.rootModule.addSubModule();
-    this.sections.forEach((sectionBuilder) => {
+    const namedSections = this.module_.rootModule.addSubModule();
+    this.sections_.forEach((sectionBuilder) => {
       const name = sectionBuilder.getName();
       if (!name || name.length === 0) {
         return;
@@ -99,7 +101,7 @@ export class PresentationBuilder {
 
       namedSections.mapModule(name, sectionBuilder.moduleInstance);
     });
-    this.module.mapModule("sections", namedSections);
+    this.module_.mapModule("sections", namedSections);
   }
 
   // ───────────────────────────────────────────────
@@ -112,16 +114,16 @@ export class PresentationBuilder {
     this.finalize();
 
     // Compile all module expressions
-    this.built = true;
-    this.module.compile();
+    this.built_ = true;
+    this.module_.compile();
 
     const presentation = new Presentation({
-      geometry: this.geometry,
+      geometry: this.geometry_,
       sections: [],
-      viewFactory: this.viewFactory,
+      viewFactory: this.viewFactory_,
     });
 
-    const builtSections = this.sections.map((s) =>
+    const builtSections = this.sections_.map((s) =>
       s.build({ parent: presentation }),
     );
     presentation._setSections(builtSections);
@@ -134,7 +136,7 @@ export class PresentationBuilder {
   // ───────────────────────────────────────────────
 
   private assertNotBuilt(method: string): void {
-    if (this.built)
+    if (this.built_)
       throw new Error(
         `PresentationBuilder.${method}: Builder is no longer usable`,
       );

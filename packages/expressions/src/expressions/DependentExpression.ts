@@ -10,26 +10,26 @@ import { Expression } from "./Expression";
  */
 export class DependentExpression {
   // Bound AST while unresolved. Set to null after resolve().
-  private ast: AstNode | null;
+  private ast_: AstNode | null;
 
   // Cached dependency list, initialized lazily.
-  private dependencies: DependentExpression[] | null = null;
+  private dependencies_: DependentExpression[] | null = null;
 
   // Final resolved Expression (after resolve()).
-  private _expression: Expression | null = null;
+  private expression_: Expression | null = null;
 
   constructor(ast: AstNode) {
     if (!ast) {
       throw new Error("DependentExpression requires AST");
     }
-    this.ast = ast;
+    this.ast_ = ast;
   }
 
   /**
    * Returns true if this expression has been resolved.
    */
   isResolved(): boolean {
-    return this._expression !== null;
+    return this.expression_ !== null;
   }
 
   /**
@@ -38,14 +38,14 @@ export class DependentExpression {
    * Dependencies are discovered lazily and cached on first call.
    */
   hasUnresolvedDependencies(): boolean {
-    if (this.dependencies === null) {
-      if (!this.ast) {
+    if (this.dependencies_ === null) {
+      if (!this.ast_) {
         throw new Error("AST not available for dependency discovery");
       }
-      this.dependencies = this.ast.getDependencies();
+      this.dependencies_ = this.ast_.getDependencies();
     }
 
-    for (const d of this.dependencies) {
+    for (const d of this.dependencies_) {
       if (!d.isResolved()) {
         return true;
       }
@@ -59,7 +59,7 @@ export class DependentExpression {
    * All dependencies must already be resolved.
    */
   resolve(): Expression {
-    if (this._expression !== null) {
+    if (this.expression_ !== null) {
       throw new Error("Already resolved");
     }
 
@@ -67,27 +67,27 @@ export class DependentExpression {
       throw new Error("Unresolved dependencies exist");
     }
 
-    if (!this.ast) {
+    if (!this.ast_) {
       throw new Error("AST not available for resolution");
     }
 
     // Resolve AST nodes (phase 2 -> phase 3)
-    const resolvedAst = this.ast.resolve();
-    this._expression = new Expression(resolvedAst);
+    const resolvedAst = this.ast_.resolve();
+    this.expression_ = new Expression(resolvedAst);
 
     // Jump ship: DependentExpression no longer owns AST
-    this.ast = null;
+    this.ast_ = null;
 
-    return this._expression;
+    return this.expression_;
   }
 
   /**
    * Return the resolved Expression. Only valid after resolve().
    */
   get expression(): Expression {
-    if (this._expression === null) {
+    if (this.expression_ === null) {
       throw new Error("Expression not resolved yet");
     }
-    return this._expression;
+    return this.expression_;
   }
 }

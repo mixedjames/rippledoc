@@ -1,13 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { resolveExpressions } from "./Resolver";
-import { Parser } from "../parser/Parser";
-import { Lexer } from "../lexer/Lexer";
+import { parseExpression } from "../parser/Parser";
 import { DefaultBindingContext } from "../DefaultBindingContext";
 import type { DependentExpression } from "../expressions/DependentExpression";
 
 function makeDependent(expr: string): DependentExpression {
-  const parser = new Parser(new Lexer(expr));
-  const unbound = parser.parseExpression();
+  const unbound = parseExpression(expr);
   const ctx = new DefaultBindingContext();
   return unbound.bind(ctx);
 }

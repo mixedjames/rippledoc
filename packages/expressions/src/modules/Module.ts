@@ -91,22 +91,22 @@ import type { BindingContext } from "../parser/BindingContext";
  * ```
  */
 export class Module {
-  private compiled = false;
+  private compiled_ = false;
 
   /**
    * The parent module, or null if this is the root module.
    */
-  private readonly parent: Module | null;
+  private readonly parent_: Module | null;
 
   /**
    * Submodules.
    */
-  private subModules: Module[] = [];
+  private subModules_: Module[] = [];
 
   /**
    * Expressions defined in this module, mapped by their name.
    */
-  private names: Map<
+  private names_: Map<
     string,
     {
       type: NameType;
@@ -115,11 +115,11 @@ export class Module {
   > = new Map();
 
   private constructor(parent: Module | null = null) {
-    if (parent && parent.compiled) {
+    if (parent && parent.compiled_) {
       throw new Error("Cannot create a submodule of a compiled module");
     }
 
-    this.parent = parent;
+    this.parent_ = parent;
   }
 
   static createRootModule(): Module {
@@ -127,14 +127,17 @@ export class Module {
   }
 
   get parentModule(): Module | null {
-    return this.parent;
+    return this.parent_;
   }
 
   get rootModule(): Module {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let current: Module = this;
-    while (current.parent) {
-      current = current.parent;
+
+    while (current.parent_) {
+      current = current.parent_;
     }
+
     return current;
   }
 
@@ -145,14 +148,14 @@ export class Module {
    * @throws If this module is already compiled.
    */
   addSubModule(): Module {
-    if (this.compiled) {
+    if (this.compiled_) {
       throw new Error(
         "addSubModule: Cannot add a submodule to a compiled module",
       );
     }
 
     const subModule = new Module(this);
-    this.subModules.push(subModule);
+    this.subModules_.push(subModule);
     return subModule;
   }
 
@@ -167,14 +170,14 @@ export class Module {
   addExpression(name: string, expression: string): () => Expression {
     this.assertNotCompiled("addExpression");
 
-    if (this.names.has(name)) {
+    if (this.names_.has(name)) {
       throw new Error(
         `Expression with name "${name}" already exists in this module`,
       );
     }
 
     const unboundExpression = parseExpression(expression);
-    this.names.set(name, { type: NameType.VALUE, value: unboundExpression });
+    this.names_.set(name, { type: NameType.VALUE, value: unboundExpression });
 
     // Return a function that will return the bound expression after compilation.
     return () => {
@@ -204,14 +207,14 @@ export class Module {
   ): () => Expression {
     this.assertNotCompiled("addNativeExpression");
 
-    if (this.names.has(name)) {
+    if (this.names_.has(name)) {
       throw new Error(
         `Expression with name "${name}" already exists in this module`,
       );
     }
 
     const unboundExpression = createNativeExpression(expression);
-    this.names.set(name, { type: NameType.VALUE, value: unboundExpression });
+    this.names_.set(name, { type: NameType.VALUE, value: unboundExpression });
 
     // Return a function that will return the bound expression after compilation.
     return () => {
@@ -241,7 +244,7 @@ export class Module {
   mapModule(name: string, module: Module): void {
     this.assertNotCompiled("mapModule");
 
-    if (this.names.has(name)) {
+    if (this.names_.has(name)) {
       throw new Error(
         `Expression with name "${name}" already exists in this module`,
       );
@@ -253,7 +256,7 @@ export class Module {
       );
     }
 
-    this.names.set(name, { type: NameType.OBJECT, value: module });
+    this.names_.set(name, { type: NameType.OBJECT, value: module });
   }
 
   /**
@@ -264,10 +267,11 @@ export class Module {
   private hasCommonAncestor(other: Module): boolean {
     const ancestors = new Set<Module>();
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let current: Module | null = this;
     while (current) {
       ancestors.add(current);
-      current = current.parent;
+      current = current.parent_;
     }
 
     current = other;
@@ -275,7 +279,7 @@ export class Module {
       if (ancestors.has(current)) {
         return true;
       }
-      current = current.parent;
+      current = current.parent_;
     }
 
     return false;
@@ -293,15 +297,15 @@ export class Module {
    * again. This is a trade-off to avoid the complexity of rolling back changes in case of an error.
    */
   compile(): void {
-    if (this.compiled) {
+    if (this.compiled_) {
       throw new Error("Module is already compiled");
     }
 
-    if (this.parent) {
+    if (this.parent_) {
       throw new Error("Only the root module can be compiled");
     }
 
-    this.compiled = true;
+    this.compiled_ = true;
     resolveExpressions(this.bindExpressions());
   }
 
@@ -322,7 +326,7 @@ export class Module {
     const bound: DependentExpression[] = [];
 
     // Bind all value expressions defined in this module.
-    for (const entry of this.names.values()) {
+    for (const entry of this.names_.values()) {
       if (entry.type === NameType.VALUE) {
         const unbound = entry.value as UnboundExpression;
         bound.push(unbound.bind(context));
@@ -330,7 +334,7 @@ export class Module {
     }
 
     // Recursively bind submodules.
-    for (const sub of this.subModules) {
+    for (const sub of this.subModules_) {
       bound.push(...sub.bindExpressions());
     }
 
@@ -342,7 +346,7 @@ export class Module {
    * Returns having no side-effects otherwise.
    */
   private assertNotCompiled(functionName: string): void {
-    if (this.compiled) {
+    if (this.compiled_) {
       throw new Error(`Cannot modify a compiled module: ${functionName}`);
     }
   }
@@ -366,7 +370,7 @@ export class Module {
       throw new Error("Invalid name part");
     }
 
-    const entry = this.names.get(head);
+    const entry = this.names_.get(head);
 
     // Final name part: expect a value expression.
     if (rest.length === 0) {
@@ -376,8 +380,8 @@ export class Module {
       }
 
       // Delegate to parent module if available.
-      if (this.parent) {
-        return this.parent.lookupName(parts, type);
+      if (this.parent_) {
+        return this.parent_.lookupName(parts, type);
       }
 
       throw new Error(`Unresolved name: ${head}`);
@@ -390,8 +394,8 @@ export class Module {
     }
 
     // Delegate to parent if head is not a local object.
-    if (this.parent) {
-      return this.parent.lookupName(parts, type);
+    if (this.parent_) {
+      return this.parent_.lookupName(parts, type);
     }
 
     throw new Error(`'${head}' is not an object`);

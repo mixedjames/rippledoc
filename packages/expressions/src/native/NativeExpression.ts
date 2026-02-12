@@ -10,7 +10,7 @@ import { UnboundExpression } from "../expressions/UnboundExpression";
  * dependency tracking and symbolic binding.
  */
 class NativeFunctionNode extends AstNode {
-  private readonly nativeFn: () => number;
+  private readonly nativeFn_: () => number;
 
   /**
    * Create a new native function node.
@@ -22,13 +22,14 @@ class NativeFunctionNode extends AstNode {
     if (typeof nativeFn !== "function") {
       throw new Error("NativeFunctionNode requires a function");
     }
-    this.nativeFn = nativeFn;
+    this.nativeFn_ = nativeFn;
   }
 
   /**
    * Bind operation is a no-op for native functions.
    * Returns self since there's nothing to bind.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override bind(_context: BindingContext): AstNode {
     return this;
   }
@@ -52,7 +53,7 @@ class NativeFunctionNode extends AstNode {
    * Evaluate by calling the native function.
    */
   override evaluate(): number {
-    return this.nativeFn();
+    return this.nativeFn_();
   }
 }
 

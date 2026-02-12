@@ -10,23 +10,23 @@ import { DependentExpression } from "./DependentExpression";
  */
 export class UnboundExpression {
   // Root AST node while unbound. Set to null after binding.
-  private root: AstNode | null;
+  private root_: AstNode | null;
 
   // The DependentExpression created by binding.
-  private _dependentExpression: DependentExpression | null = null;
+  private dependentExpression_: DependentExpression | null = null;
 
   constructor(root: AstNode) {
     if (!root) {
       throw new Error("UnboundExpression requires non-null AST root");
     }
-    this.root = root;
+    this.root_ = root;
   }
 
   /**
    * Returns true if this expression has already been bound.
    */
   isBound(): boolean {
-    return this._dependentExpression !== null;
+    return this.dependentExpression_ !== null;
   }
 
   /**
@@ -38,17 +38,17 @@ export class UnboundExpression {
    * expression.
    */
   bind(context: BindingContext): DependentExpression {
-    if (this.root === null) {
+    if (this.root_ === null) {
       throw new Error("Expression already bound");
     }
 
-    const boundAst = this.root.bind(context);
-    this._dependentExpression = new DependentExpression(boundAst);
+    const boundAst = this.root_.bind(context);
+    this.dependentExpression_ = new DependentExpression(boundAst);
 
     // Jump ship: UnboundExpression no longer owns the AST
-    this.root = null;
+    this.root_ = null;
 
-    return this._dependentExpression;
+    return this.dependentExpression_;
   }
 
   /**
@@ -56,9 +56,9 @@ export class UnboundExpression {
    * Only valid after bind() has been called.
    */
   get dependentExpression(): DependentExpression {
-    if (this._dependentExpression === null) {
+    if (this.dependentExpression_ === null) {
       throw new Error("Expression not yet bound");
     }
-    return this._dependentExpression;
+    return this.dependentExpression_;
   }
 }

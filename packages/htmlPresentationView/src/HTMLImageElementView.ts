@@ -94,7 +94,7 @@ export class HTMLImageElementView extends HTMLElementView {
       .catch((error) => {
         // For now, fail silently except for a console diagnostic.
         // Callers still get the label even if the image fails to load.
-        // eslint-disable-next-line no-console
+        // //eslint-disable-next-line no-console
         console.error(error);
       });
   }
