@@ -2,7 +2,6 @@
  * Enumerates all token kinds produced by the lexer.
  */
 export enum TokenType {
-
   /** Numeric literal (e.g. 123, 3.14) */
   NUMBER,
 
@@ -37,14 +36,13 @@ export enum TokenType {
   EOF,
 
   /** Any character not recognized by the lexer */
-  UNKNOWN
+  UNKNOWN,
 }
 
 /**
  * Represents a single lexical token.
  */
 export interface Token {
-
   /** Kind of token */
   type: TokenType;
 

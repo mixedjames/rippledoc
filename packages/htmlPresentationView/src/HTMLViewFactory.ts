@@ -1,8 +1,8 @@
 import type {
-	ViewFactory,
-	Presentation,
-	Section,
-	Element,
+  ViewFactory,
+  Presentation,
+  Section,
+  Element,
 } from "@rippledoc/presentation";
 
 import { HTMLPresentationView } from "./HTMLPresentationView";
@@ -18,22 +18,21 @@ import { HTMLElementView } from "./HTMLElementView";
  * be extended later.
  */
 export class HTMLViewFactory implements ViewFactory {
-	private readonly root_: HTMLElement;
+  private readonly root_: HTMLElement;
 
-	constructor(options: { root: HTMLElement }) {
-		this.root_ = options.root;
-	}
+  constructor(options: { root: HTMLElement }) {
+    this.root_ = options.root;
+  }
 
-	createPresentationView(presentation: Presentation): HTMLPresentationView {
-		return new HTMLPresentationView({ presentation, root: this.root_ });
-	}
+  createPresentationView(presentation: Presentation): HTMLPresentationView {
+    return new HTMLPresentationView({ presentation, root: this.root_ });
+  }
 
-	createSectionView(section: Section): HTMLSectionView {
-		return new HTMLSectionView({ section });
-	}
+  createSectionView(section: Section): HTMLSectionView {
+    return new HTMLSectionView({ section });
+  }
 
-	createElementView(element: Element): HTMLElementView {
-		return new HTMLElementView({ element });
-	}
+  createElementView(element: Element): HTMLElementView {
+    return new HTMLElementView({ element });
+  }
 }
-

@@ -18,12 +18,17 @@ This is key because we support elements that span multiple sections by design.
 ```html
 <div id="root-element" style="position: relative;">
   <div class="backgrounds">
-    <div class="section-name-background" style="...calculated positioning...">  
-    </div>
+    <div
+      class="section-name-background"
+      style="...calculated positioning..."
+    ></div>
   </div>
 
   <div class="elements">
-    <section class="section-name-content" style="position: absolute; left: 0; top: 0;">
+    <section
+      class="section-name-content"
+      style="position: absolute; left: 0; top: 0;"
+    >
       <div class="element-name-content" style="...calculated positioning...">
         <!-- Section content goes here -->
       </div>
@@ -36,6 +41,7 @@ This is key because we support elements that span multiple sections by design.
 parent.
 
 **Note:** the choices of positioning are deliberate:
+
 - `#root-element` must be positioned so that absolutely positioned children are positioned relative
   to it.
 - Children of `.background` stack and have the correct height as per calculations

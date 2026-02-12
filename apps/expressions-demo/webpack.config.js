@@ -21,7 +21,7 @@ module.exports = {
     // Inject HTML template
     new HtmlWebpackPlugin({
       template: "./src/index.html",
-      filename: "index.html"
-    })
-  ]
+      filename: "index.html",
+    }),
+  ],
 };

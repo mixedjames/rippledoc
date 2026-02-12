@@ -5,7 +5,6 @@ import { Token, TokenType } from "./Token";
  * Converts source text into a stream of tokens.
  */
 export class Lexer {
-
   /** Source text to lex */
   private source: string;
 
@@ -33,11 +32,11 @@ export class Lexer {
         type: TokenType.EOF,
         lexeme: "",
         position: this.pos,
-        value: 0
+        value: 0,
       };
     }
 
-    const c: string = this.source[this.pos] ?? '\0';
+    const c: string = this.source[this.pos] ?? "\0";
 
     if (this.isDigit(c)) {
       return this.number();
@@ -48,25 +47,33 @@ export class Lexer {
     }
 
     switch (c) {
-      case '+': return this.single(TokenType.PLUS);
-      case '-': return this.single(TokenType.MINUS);
-      case '*': return this.single(TokenType.STAR);
-      case '/': return this.single(TokenType.SLASH);
-      case '%': return this.single(TokenType.PERCENT);
-      case '.': return this.single(TokenType.DOT);
-      case '(': return this.single(TokenType.LPAREN);
-      case ')': return this.single(TokenType.RPAREN);
+      case "+":
+        return this.single(TokenType.PLUS);
+      case "-":
+        return this.single(TokenType.MINUS);
+      case "*":
+        return this.single(TokenType.STAR);
+      case "/":
+        return this.single(TokenType.SLASH);
+      case "%":
+        return this.single(TokenType.PERCENT);
+      case ".":
+        return this.single(TokenType.DOT);
+      case "(":
+        return this.single(TokenType.LPAREN);
+      case ")":
+        return this.single(TokenType.RPAREN);
     }
 
     // Unknown character
     const start: number = this.pos;
-    const lexeme: string = this.source[this.pos++] ?? '\0';
+    const lexeme: string = this.source[this.pos++] ?? "\0";
 
     return {
       type: TokenType.UNKNOWN,
       lexeme,
       position: start,
-      value: 0
+      value: 0,
     };
   }
 
@@ -79,14 +86,14 @@ export class Lexer {
    */
   private single(type: TokenType): Token {
     const start: number = this.pos;
-    const ch: string = this.source[this.pos] ?? '\0';
+    const ch: string = this.source[this.pos] ?? "\0";
     this.pos++;
 
     return {
       type,
       lexeme: ch,
       position: start,
-      value: 0
+      value: 0,
     };
   }
 
@@ -95,8 +102,8 @@ export class Lexer {
    */
   private skipWhitespace(): void {
     while (this.pos < this.source.length) {
-      const c: string = this.source[this.pos] ?? '\0';
-      if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
+      const c: string = this.source[this.pos] ?? "\0";
+      if (c === " " || c === "\t" || c === "\n" || c === "\r") {
         this.pos++;
       } else {
         break;
@@ -109,7 +116,7 @@ export class Lexer {
    * @returns Current character or '\0' if at end-of-input.
    */
   private peek(): string {
-    return this.source[this.pos] ?? '\0';
+    return this.source[this.pos] ?? "\0";
   }
 
   /**
@@ -117,7 +124,7 @@ export class Lexer {
    * @returns Next character or '\0' if at end-of-input.
    */
   private peekNext(): string {
-    return this.source[this.pos + 1] ?? '\0';
+    return this.source[this.pos + 1] ?? "\0";
   }
 
   /**
@@ -125,7 +132,7 @@ export class Lexer {
    * @param c Character to check.
    */
   private isDigit(c: string): boolean {
-    return c >= '0' && c <= '9';
+    return c >= "0" && c <= "9";
   }
 
   /**
@@ -133,7 +140,7 @@ export class Lexer {
    * @param c Character to check.
    */
   private isAlpha(c: string): boolean {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z");
   }
 
   /**
@@ -141,7 +148,7 @@ export class Lexer {
    * @param c Character to check.
    */
   private isAlphaNumeric(c: string): boolean {
-    return this.isAlpha(c) || this.isDigit(c) || c === '_';
+    return this.isAlpha(c) || this.isDigit(c) || c === "_";
   }
 
   /**
@@ -157,7 +164,7 @@ export class Lexer {
     }
 
     // Optional fractional part
-    if (this.peek() === '.' && this.isDigit(this.peekNext())) {
+    if (this.peek() === "." && this.isDigit(this.peekNext())) {
       this.pos++; // consume '.'
       while (this.isDigit(this.peek())) {
         this.pos++;
@@ -171,7 +178,7 @@ export class Lexer {
       type: TokenType.NUMBER,
       lexeme,
       position: start,
-      value
+      value,
     };
   }
 
@@ -192,8 +199,7 @@ export class Lexer {
       type: TokenType.IDENTIFIER,
       lexeme,
       position: start,
-      value: 0
+      value: 0,
     };
   }
-
 }

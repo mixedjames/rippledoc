@@ -3,7 +3,6 @@ import { Lexer } from "./Lexer";
 import { TokenType } from "./Token";
 
 describe("Lexer", () => {
-
   it("should tokenize numbers, identifiers, operators, and parentheses", () => {
     const source = "x = 42 + y * 3.14 - (z / 2) % 5 @";
     const lexer = new Lexer(source);
@@ -15,11 +14,27 @@ describe("Lexer", () => {
       tokens.push(token);
     } while (token.type !== TokenType.EOF);
 
-    const lexemes = tokens.map(t => t.lexeme);
-    const types = tokens.map(t => t.type);
+    const lexemes = tokens.map((t) => t.lexeme);
+    const types = tokens.map((t) => t.type);
 
     expect(lexemes).toEqual([
-      "x", "=", "42", "+", "y", "*", "3.14", "-", "(", "z", "/", "2", ")", "%", "5", "@", ""
+      "x",
+      "=",
+      "42",
+      "+",
+      "y",
+      "*",
+      "3.14",
+      "-",
+      "(",
+      "z",
+      "/",
+      "2",
+      ")",
+      "%",
+      "5",
+      "@",
+      "",
     ]);
 
     expect(types).toEqual([
@@ -39,13 +54,13 @@ describe("Lexer", () => {
       TokenType.PERCENT,
       TokenType.NUMBER,
       TokenType.UNKNOWN, // '@' is unknown
-      TokenType.EOF
+      TokenType.EOF,
     ]);
 
     // Check numeric values
     const numberValues = tokens
-      .filter(t => t.type === TokenType.NUMBER)
-      .map(t => t.value);
+      .filter((t) => t.type === TokenType.NUMBER)
+      .map((t) => t.value);
 
     expect(numberValues).toEqual([42, 3.14, 2, 5]);
   });
@@ -64,5 +79,4 @@ describe("Lexer", () => {
     expect(token.lexeme).toBe("@");
     expect(token.value).toBe(0);
   });
-
 });

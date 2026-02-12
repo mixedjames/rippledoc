@@ -46,21 +46,24 @@ export class PresentationGeometry {
           "PresentationGeometry: viewportWidth and viewportHeight must be provided together when specifying viewport dimensions.",
         );
       }
-      this.setViewportDimensions(options.viewportWidth!, options.viewportHeight!);
+      this.setViewportDimensions(
+        options.viewportWidth!,
+        options.viewportHeight!,
+      );
     }
   }
 
   clone(): PresentationGeometry {
-		const clone = new PresentationGeometry({
-			basisWidth: this.basis_.width,
-			basisHeight: this.basis_.height,
-		});
+    const clone = new PresentationGeometry({
+      basisWidth: this.basis_.width,
+      basisHeight: this.basis_.height,
+    });
 
-		if (this.viewport_.width > 0 && this.viewport_.height > 0) {
-			clone.setViewportDimensions(this.viewport_.width, this.viewport_.height);
-		}
+    if (this.viewport_.width > 0 && this.viewport_.height > 0) {
+      clone.setViewportDimensions(this.viewport_.width, this.viewport_.height);
+    }
 
-		return clone;
+    return clone;
   }
 
   /**
@@ -89,7 +92,7 @@ export class PresentationGeometry {
 
   /**
    * The scale factor applied to the presentation slides.
-   * 
+   *
    * Scaling presentation basis coordinates by this value yeilds the largest rectangle that fits
    * within the viewport while maintaining the aspect ratio defined by the basis dimensions.
    */
@@ -107,7 +110,9 @@ export class PresentationGeometry {
 
   setBasisDimensions(width: number, height: number): void {
     if (width <= 0 || height <= 0) {
-      throw new Error(`Invalid basis dimensions: width and height must be positive. Received width=${width}, height=${height}`);
+      throw new Error(
+        `Invalid basis dimensions: width and height must be positive. Received width=${width}, height=${height}`,
+      );
     }
     this.basis_.width = width;
     this.basis_.height = height;
@@ -115,7 +120,9 @@ export class PresentationGeometry {
 
   setViewportDimensions(width: number, height: number): void {
     if (width <= 0 || height <= 0) {
-      throw new Error(`Invalid viewport dimensions: width and height must be positive. Received width=${width}, height=${height}`);
+      throw new Error(
+        `Invalid viewport dimensions: width and height must be positive. Received width=${width}, height=${height}`,
+      );
     }
 
     this.viewport_.width = width;
@@ -162,33 +169,32 @@ export class PresentationGeometry {
  * const presentation = await presentationFromXML("./file.xml", viewFactory);
  */
 export class Presentation {
-
-	private sections_: Section[];
-	private readonly view_: PresentationView;
+  private sections_: Section[];
+  private readonly view_: PresentationView;
 
   private geometry_: PresentationGeometry;
 
-	/**
-	 * @param options.sections Array of sections.
-	 * @param options.geometry Shared geometry state for this presentation.
-	 * @param options.viewFactory Factory for creating views.
-	 * @internal Use PresentationBuilder or presentationFromXML() instead.
-	 */
-	constructor(options: {
-		sections?: Section[];
-		viewFactory: ViewFactory;
+  /**
+   * @param options.sections Array of sections.
+   * @param options.geometry Shared geometry state for this presentation.
+   * @param options.viewFactory Factory for creating views.
+   * @internal Use PresentationBuilder or presentationFromXML() instead.
+   */
+  constructor(options: {
+    sections?: Section[];
+    viewFactory: ViewFactory;
     geometry: PresentationGeometry;
-	}) {
-		const { sections = [], viewFactory, geometry } = options;
+  }) {
+    const { sections = [], viewFactory, geometry } = options;
 
     if (!geometry) {
       throw new Error("Presentation constructor: geometry is required");
     }
 
-		this.sections_ = sections;
-		this.view_ = viewFactory.createPresentationView(this);
+    this.sections_ = sections;
+    this.view_ = viewFactory.createPresentationView(this);
     this.geometry_ = geometry;
-	}
+  }
 
   /**
    * Realise the entire view tree for this presentation.
@@ -202,10 +208,10 @@ export class Presentation {
    * {@code SectionView.realise} and {@code ElementView.realise} may assume that their parent
    * views have already been realised by the time they are called.
    */
-	realiseView(): void {
-		this.view_.realise();
-		this.sections_.forEach((section) => section.realiseView());
-	}
+  realiseView(): void {
+    this.view_.realise();
+    this.sections_.forEach((section) => section.realiseView());
+  }
 
   /**
    * Lay out the already-realised view tree using the current geometry.
@@ -214,49 +220,49 @@ export class Presentation {
    * to throw if {@code layout()} is invoked on an unrealised view. Layout propagates from the
    * root presentation view down through all sections and their elements.
    */
-	layoutView(): void {
-		this.view_.layout();
-		this.sections_.forEach((section) => section.layoutView());
-	}
+  layoutView(): void {
+    this.view_.layout();
+    this.sections_.forEach((section) => section.layoutView());
+  }
 
   setViewportDimensions(width: number, height: number): void {
     this.geometry_.setViewportDimensions(width, height);
   }
 
-	/**
-	 * Get all sections in this presentation.
-	 * @returns Array of sections.
-	 */
-	get sections(): readonly Section[] {
-		return this.sections_;
-	}
+  /**
+   * Get all sections in this presentation.
+   * @returns Array of sections.
+   */
+  get sections(): readonly Section[] {
+    return this.sections_;
+  }
 
-	/**
-	 * Get the slide width value (evaluates the width expression).
-	 * @returns The slide width in pixels.
-	 */
-	get slideWidth(): number {
-		return this.geometry_.basis.width;
-	}
+  /**
+   * Get the slide width value (evaluates the width expression).
+   * @returns The slide width in pixels.
+   */
+  get slideWidth(): number {
+    return this.geometry_.basis.width;
+  }
 
-	/**
-	 * Get the slide height value (evaluates the height expression).
-	 * @returns The slide height in pixels.
-	 */
-	get slideHeight(): number {
-		return this.geometry_.basis.height;
-	}
+  /**
+   * Get the slide height value (evaluates the height expression).
+   * @returns The slide height in pixels.
+   */
+  get slideHeight(): number {
+    return this.geometry_.basis.height;
+  }
 
-	/**
-	 * Get the view associated with this presentation.
-	 * @returns The presentation's view object.
-	 */
-	get view(): PresentationView {
-		return this.view_;
-	}
+  /**
+   * Get the view associated with this presentation.
+   * @returns The presentation's view object.
+   */
+  get view(): PresentationView {
+    return this.view_;
+  }
 
   get geometry(): PresentationGeometry {
-		return this.geometry_.clone();
+    return this.geometry_.clone();
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -264,19 +270,18 @@ export class Presentation {
   // -----------------------------------------------------------------------------------------------
 
   /**
-	 * INTERNAL IMPLEMENTATION DETAIL - NOT PART OF PUBLIC API.
-	 *
-	 * This method exists solely to support the PresentationBuilder construction pattern
-	 * where the Presentation must be created before its child Sections. Do not call
-	 * this method directly or rely on its existence.
-	 *
-	 * Bootstrapping systems is hard :(
-	 *
-	 * @internal
-	 * @param sections Built sections to attach to this presentation.
-	 */
-	_setSections(sections: Section[]): void {
-		this.sections_ = sections;
-	}
-
+   * INTERNAL IMPLEMENTATION DETAIL - NOT PART OF PUBLIC API.
+   *
+   * This method exists solely to support the PresentationBuilder construction pattern
+   * where the Presentation must be created before its child Sections. Do not call
+   * this method directly or rely on its existence.
+   *
+   * Bootstrapping systems is hard :(
+   *
+   * @internal
+   * @param sections Built sections to attach to this presentation.
+   */
+  _setSections(sections: Section[]): void {
+    this.sections_ = sections;
+  }
 }

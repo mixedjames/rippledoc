@@ -4,7 +4,6 @@ import { Module } from "./Module";
 // Comprehensive tests for Module behaviour.
 
 describe("Module basic expressions", () => {
-
   it("binds and evaluates simple expressions", () => {
     const root = Module.createRootModule();
     const getA = root.addExpression("a", "1 + 2");
@@ -27,18 +26,20 @@ describe("Module basic expressions", () => {
     const root = Module.createRootModule();
     root.addExpression("a", "1");
 
-    expect(() => root.addExpression("a", "2"))
-      .toThrow(/already exists in this module/);
+    expect(() => root.addExpression("a", "2")).toThrow(
+      /already exists in this module/,
+    );
   });
 });
 
 describe("Module compilation invariants", () => {
-
   it("only allows the root module to be compiled", () => {
     const root = Module.createRootModule();
     const child = root.addSubModule();
 
-    expect(() => child.compile()).toThrow(/Only the root module can be compiled/);
+    expect(() => child.compile()).toThrow(
+      /Only the root module can be compiled/,
+    );
   });
 
   it("cannot be compiled twice", () => {
@@ -55,17 +56,19 @@ describe("Module compilation invariants", () => {
 
     root.compile();
 
-    expect(() => root.addExpression("b", "2"))
-      .toThrow(/Cannot modify a compiled module: addExpression/);
-    expect(() => root.addSubModule())
-      .toThrow(/Cannot add a submodule to a compiled module/);
-    expect(() => root.mapModule("child", child))
-      .toThrow(/Cannot modify a compiled module: mapModule/);
+    expect(() => root.addExpression("b", "2")).toThrow(
+      /Cannot modify a compiled module: addExpression/,
+    );
+    expect(() => root.addSubModule()).toThrow(
+      /Cannot add a submodule to a compiled module/,
+    );
+    expect(() => root.mapModule("child", child)).toThrow(
+      /Cannot modify a compiled module: mapModule/,
+    );
   });
 });
 
 describe("Module submodules and scoping", () => {
-
   it("allows submodules to reference parent expressions", () => {
     const root = Module.createRootModule();
     root.addExpression("a", "1");
@@ -92,7 +95,6 @@ describe("Module submodules and scoping", () => {
 });
 
 describe("Module mapped modules", () => {
-
   it("allows mapping modules that share a common ancestor", () => {
     const root = Module.createRootModule();
     const child = root.addSubModule();

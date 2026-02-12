@@ -4,12 +4,20 @@ import { presentationFromXML, Presentation } from "@rippledoc/presentation";
 import { HTMLViewFactory } from "@rippledoc/htmlPresentationView";
 
 window.addEventListener("DOMContentLoaded", () => {
-  const xmlInput = document.getElementById("xml-input") as HTMLTextAreaElement | null;
-  const renderBtn = document.getElementById("render-btn") as HTMLButtonElement | null;
+  const xmlInput = document.getElementById(
+    "xml-input",
+  ) as HTMLTextAreaElement | null;
+  const renderBtn = document.getElementById(
+    "render-btn",
+  ) as HTMLButtonElement | null;
   const status = document.getElementById("status") as HTMLSpanElement | null;
-  const errorOutput = document.getElementById("error-output") as HTMLDivElement | null;
+  const errorOutput = document.getElementById(
+    "error-output",
+  ) as HTMLDivElement | null;
   const viewport = document.getElementById("viewport") as HTMLDivElement | null;
-  const rootHost = document.getElementById("presentation-root") as HTMLDivElement | null;
+  const rootHost = document.getElementById(
+    "presentation-root",
+  ) as HTMLDivElement | null;
 
   if (!xmlInput || !renderBtn || !errorOutput || !viewport || !rootHost) {
     return;
@@ -56,13 +64,13 @@ window.addEventListener("DOMContentLoaded", () => {
 function getDefaultXmlExample(): string {
   return [
     "<document>",
-    "  <slideSize w=\"800\" h=\"600\" />",
-    "  <section h=\"slideHeight\">",
-    "    <element l=\"40\" w=\"200\" t=\"sectionTop+40\" h=\"120\" />",
-    "    <element l=\"280\" w=\"240\" t=\"sectionTop+80\" h=\"160\" />",
+    '  <slideSize w="800" h="600" />',
+    '  <section h="slideHeight">',
+    '    <element l="40" w="200" t="sectionTop+40" h="120" />',
+    '    <element l="280" w="240" t="sectionTop+80" h="160" />',
     "  </section>",
-    "  <section h=\"slideHeight\">",
-    "    <element l=\"60\" w=\"320\" t=\"sectionTop+60\" h=\"180\" />",
+    '  <section h="slideHeight">',
+    '    <element l="60" w="320" t="sectionTop+60" h="180" />',
     "  </section>",
     "</document>",
   ].join("\n");
@@ -76,14 +84,17 @@ async function handleRenderClick(options: {
   rootHost: HTMLDivElement;
   setPresentation: (presentation: Presentation) => void;
 }): Promise<void> {
-  const { xmlInput, status, errorOutput, viewport, rootHost, setPresentation } = options;
+  const { xmlInput, status, errorOutput, viewport, rootHost, setPresentation } =
+    options;
 
   const source = xmlInput.value.trim();
   errorOutput.textContent = "";
   rootHost.innerHTML = "";
 
   if (status) {
-    status.textContent = source ? "Rendering presentation…" : "Please enter some XML.";
+    status.textContent = source
+      ? "Rendering presentation…"
+      : "Please enter some XML.";
   }
 
   if (!source) {

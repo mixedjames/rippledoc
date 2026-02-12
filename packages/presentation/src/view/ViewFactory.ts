@@ -12,7 +12,7 @@ import type { ElementView } from "./ElementView";
  * canvas, custom renderers) while sharing the same presentation model.
  */
 export interface ViewFactory {
-	createPresentationView(presentation: Presentation): PresentationView;
-	createSectionView(section: Section): SectionView;
-	createElementView(element: Element): ElementView;
+  createPresentationView(presentation: Presentation): PresentationView;
+  createSectionView(section: Section): SectionView;
+  createElementView(element: Element): ElementView;
 }

@@ -10,51 +10,50 @@ import { UnboundExpression } from "../expressions/UnboundExpression";
  * dependency tracking and symbolic binding.
  */
 class NativeFunctionNode extends AstNode {
+  private readonly nativeFn: () => number;
 
-	private readonly nativeFn: () => number;
+  /**
+   * Create a new native function node.
+   *
+   * @param nativeFn The JavaScript function to call during evaluation.
+   */
+  constructor(nativeFn: () => number) {
+    super();
+    if (typeof nativeFn !== "function") {
+      throw new Error("NativeFunctionNode requires a function");
+    }
+    this.nativeFn = nativeFn;
+  }
 
-	/**
-	 * Create a new native function node.
-	 *
-	 * @param nativeFn The JavaScript function to call during evaluation.
-	 */
-	constructor(nativeFn: () => number) {
-		super();
-		if (typeof nativeFn !== "function") {
-			throw new Error("NativeFunctionNode requires a function");
-		}
-		this.nativeFn = nativeFn;
-	}
+  /**
+   * Bind operation is a no-op for native functions.
+   * Returns self since there's nothing to bind.
+   */
+  override bind(_context: BindingContext): AstNode {
+    return this;
+  }
 
-	/**
-	 * Bind operation is a no-op for native functions.
-	 * Returns self since there's nothing to bind.
-	 */
-	override bind(_context: BindingContext): AstNode {
-		return this;
-	}
+  /**
+   * Resolve operation is a no-op for native functions.
+   * Returns self since there's nothing to resolve.
+   */
+  override resolve(): AstNode {
+    return this;
+  }
 
-	/**
-	 * Resolve operation is a no-op for native functions.
-	 * Returns self since there's nothing to resolve.
-	 */
-	override resolve(): AstNode {
-		return this;
-	}
+  /**
+   * Native functions have no dependencies.
+   */
+  override getDependencies(): DependentExpression[] {
+    return [];
+  }
 
-	/**
-	 * Native functions have no dependencies.
-	 */
-	override getDependencies(): DependentExpression[] {
-		return [];
-	}
-
-	/**
-	 * Evaluate by calling the native function.
-	 */
-	override evaluate(): number {
-		return this.nativeFn();
-	}
+  /**
+   * Evaluate by calling the native function.
+   */
+  override evaluate(): number {
+    return this.nativeFn();
+  }
 }
 
 /**
@@ -64,7 +63,9 @@ class NativeFunctionNode extends AstNode {
  * (bind → resolve → evaluate) but delegates evaluation to the provided function.
  * Native expressions have no dependencies on other expressions.
  */
-export function createNativeExpression(nativeFn: () => number): UnboundExpression {
-	const astNode = new NativeFunctionNode(nativeFn);
-	return new UnboundExpression(astNode);
+export function createNativeExpression(
+  nativeFn: () => number,
+): UnboundExpression {
+  const astNode = new NativeFunctionNode(nativeFn);
+  return new UnboundExpression(astNode);
 }

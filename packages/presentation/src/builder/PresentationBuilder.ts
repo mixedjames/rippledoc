@@ -15,122 +15,128 @@ import { SectionBuilder } from "./SectionBuilder";
  * - Build final Presentation
  */
 export class PresentationBuilder {
-	private readonly module: Module;
-	private readonly viewFactory: ViewFactory;
-	private readonly sections: SectionBuilder[] = [];
+  private readonly module: Module;
+  private readonly viewFactory: ViewFactory;
+  private readonly sections: SectionBuilder[] = [];
 
   private geometry: PresentationGeometry = new PresentationGeometry();
 
-	private built = false;
+  private built = false;
 
-	constructor(options: { viewFactory: ViewFactory }) {
-		const { viewFactory } = options;
-		if (!viewFactory) throw new Error("PresentationBuilder requires a viewFactory");
+  constructor(options: { viewFactory: ViewFactory }) {
+    const { viewFactory } = options;
+    if (!viewFactory)
+      throw new Error("PresentationBuilder requires a viewFactory");
 
-		this.viewFactory = viewFactory;
-		this.module = Module.createRootModule();
-	}
+    this.viewFactory = viewFactory;
+    this.module = Module.createRootModule();
+  }
 
-	// ───────────────────────────────────────────────
-	// Construction-phase API
-	// ───────────────────────────────────────────────
+  // ───────────────────────────────────────────────
+  // Construction-phase API
+  // ───────────────────────────────────────────────
 
-	setSlideWidth(value: number): void {
-		this.assertNotBuilt("setSlideWidth");
+  setSlideWidth(value: number): void {
+    this.assertNotBuilt("setSlideWidth");
 
-		this.geometry.setBasisDimensions(value, this.geometry.basis.height);
-	}
+    this.geometry.setBasisDimensions(value, this.geometry.basis.height);
+  }
 
-	setSlideHeight(value: number): void {
-		this.assertNotBuilt("setSlideHeight");
-		this.geometry.setBasisDimensions(this.geometry.basis.width, value);
-	}
+  setSlideHeight(value: number): void {
+    this.assertNotBuilt("setSlideHeight");
+    this.geometry.setBasisDimensions(this.geometry.basis.width, value);
+  }
 
-	createSection(): SectionBuilder {
-		this.assertNotBuilt("createSection");
-		const section = new SectionBuilder({
-			parentModule: this.module,
-			viewFactory: this.viewFactory,
-		});
-		this.sections.push(section);
-		return section;
-	}
+  createSection(): SectionBuilder {
+    this.assertNotBuilt("createSection");
+    const section = new SectionBuilder({
+      parentModule: this.module,
+      viewFactory: this.viewFactory,
+    });
+    this.sections.push(section);
+    return section;
+  }
 
-	/**
-	 * Finalize all slide-level expressions and sections.
-	 * Must be called before build().
-	 */
-	private finalize(): void {
-		this.assertNotBuilt("finalize");
+  /**
+   * Finalize all slide-level expressions and sections.
+   * Must be called before build().
+   */
+  private finalize(): void {
+    this.assertNotBuilt("finalize");
 
-		// Register slideWidth/slideHeight as module expressions
+    // Register slideWidth/slideHeight as module expressions
     const geometry = this.geometry; // capture 'this' for the closures
-		this.module.addNativeExpression("slideWidth", () => geometry.basis.width);
-		this.module.addNativeExpression("slideHeight", () => geometry.basis.height);
+    this.module.addNativeExpression("slideWidth", () => geometry.basis.width);
+    this.module.addNativeExpression("slideHeight", () => geometry.basis.height);
 
     // Experimental:
     this.module.addNativeExpression("viewportHeight", () => {
       return geometry.viewport.height / geometry.scale;
     });
 
-		// Wire section adjacency
+    // Wire section adjacency
     // FIXME: have to use '!' here - we know the sections are defined, but TypeScript doesn't.
-		for (let i = 0; i < this.sections.length; i++) {
-			if (i > 0) {
+    for (let i = 0; i < this.sections.length; i++) {
+      if (i > 0) {
         this.sections[i]!.setPrevious(this.sections[i - 1]!);
       }
-      
-			if (i < this.sections.length - 1) {
+
+      if (i < this.sections.length - 1) {
         this.sections[i]!.setNext(this.sections[i + 1]!);
       }
-		}
+    }
 
-		// Finalize each section builder
-		this.sections.forEach((s) => s.finalize());
+    // Finalize each section builder
+    this.sections.forEach((s) => s.finalize());
 
-		// Wire named sections under the 'sections' namespace
-		const namedSections = this.module.rootModule.addSubModule();
-		this.sections.forEach((sectionBuilder) => {
-			const name = sectionBuilder.getName();
-			if (!name || name.length === 0) {
-				return;
-			}
+    // Wire named sections under the 'sections' namespace
+    const namedSections = this.module.rootModule.addSubModule();
+    this.sections.forEach((sectionBuilder) => {
+      const name = sectionBuilder.getName();
+      if (!name || name.length === 0) {
+        return;
+      }
 
-			namedSections.mapModule(name, sectionBuilder.moduleInstance);
-		});
-		this.module.mapModule("sections", namedSections);
-	}
+      namedSections.mapModule(name, sectionBuilder.moduleInstance);
+    });
+    this.module.mapModule("sections", namedSections);
+  }
 
-	// ───────────────────────────────────────────────
-	// Build phase
-	// ───────────────────────────────────────────────
+  // ───────────────────────────────────────────────
+  // Build phase
+  // ───────────────────────────────────────────────
 
-	build(): Presentation {
-		this.assertNotBuilt("build");
+  build(): Presentation {
+    this.assertNotBuilt("build");
 
     this.finalize();
 
-		// Compile all module expressions
-		this.built = true;
-		this.module.compile();
+    // Compile all module expressions
+    this.built = true;
+    this.module.compile();
 
-		const presentation = new Presentation({
+    const presentation = new Presentation({
       geometry: this.geometry,
-			sections: [],
-			viewFactory: this.viewFactory,
-		});
+      sections: [],
+      viewFactory: this.viewFactory,
+    });
 
-		const builtSections = this.sections.map((s) => s.build({ parent: presentation }));
-		presentation._setSections(builtSections);
+    const builtSections = this.sections.map((s) =>
+      s.build({ parent: presentation }),
+    );
+    presentation._setSections(builtSections);
 
-		return presentation;
-	}
+    return presentation;
+  }
 
-	// ───────────────────────────────────────────────
-	// Internal helpers
-	// ───────────────────────────────────────────────
+  // ───────────────────────────────────────────────
+  // Internal helpers
+  // ───────────────────────────────────────────────
 
-	private assertNotBuilt(method: string): void {
-		if (this.built) throw new Error(`PresentationBuilder.${method}: Builder is no longer usable`);
-	}
+  private assertNotBuilt(method: string): void {
+    if (this.built)
+      throw new Error(
+        `PresentationBuilder.${method}: Builder is no longer usable`,
+      );
+  }
 }

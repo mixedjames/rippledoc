@@ -7,10 +7,19 @@ module.exports = {
 
     alias: {
       "@rippledoc/core": path.resolve(__dirname, "./packages/core/src"),
-      "@rippledoc/expressions": path.resolve(__dirname, "./packages/expressions/src"),
-      "@rippledoc/presentation": path.resolve(__dirname, "./packages/presentation/src"),
-      "@rippledoc/htmlPresentationView": path.resolve(__dirname, "./packages/htmlPresentationView/src"),
-    }
+      "@rippledoc/expressions": path.resolve(
+        __dirname,
+        "./packages/expressions/src",
+      ),
+      "@rippledoc/presentation": path.resolve(
+        __dirname,
+        "./packages/presentation/src",
+      ),
+      "@rippledoc/htmlPresentationView": path.resolve(
+        __dirname,
+        "./packages/htmlPresentationView/src",
+      ),
+    },
   },
 
   module: {
@@ -20,23 +29,23 @@ module.exports = {
         use: {
           loader: "ts-loader",
           options: {
-            transpileOnly: true
-          }
+            transpileOnly: true,
+          },
         },
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/i,
-        use: ["style-loader", "css-loader"]
+        use: ["style-loader", "css-loader"],
       },
       {
         test: /\.(png|jpe?g|gif|svg|woff2?|ttf|eot)$/i,
-        type: "asset/resource"
-      }
-    ]
+        type: "asset/resource",
+      },
+    ],
   },
 
   plugins: [
     // We'll let per-app config pass template path
-  ]
+  ],
 };

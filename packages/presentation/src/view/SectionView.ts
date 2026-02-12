@@ -5,9 +5,9 @@
  * the visual representation of a {@link Section}.
  */
 export interface SectionView {
-	/** Create any underlying DOM or rendering structures. */
-	realise(): void;
+  /** Create any underlying DOM or rendering structures. */
+  realise(): void;
 
-	/** Apply layout calculations and update the view. */
-	layout(): void;
+  /** Apply layout calculations and update the view. */
+  layout(): void;
 }

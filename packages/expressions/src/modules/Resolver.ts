@@ -10,53 +10,54 @@ import type { Expression } from "../expressions/Expression";
  * a circular dependency is assumed and an error is thrown.
  */
 export function resolveExpressions(
-	dependentExpressions: DependentExpression[],
+  dependentExpressions: DependentExpression[],
 ): Expression[] {
+  if (!Array.isArray(dependentExpressions)) {
+    throw new Error("No dependent expressions provided.");
+  }
 
-	if (!Array.isArray(dependentExpressions)) {
-		throw new Error("No dependent expressions provided.");
-	}
+  const resolvedExpressions: Expression[] = [];
+  let passes = 0;
 
-	const resolvedExpressions: Expression[] = [];
-	let passes = 0;
+  for (let j = 0; j < dependentExpressions.length; j++) {
+    let madeProgress = false;
+    let unresolvedCount = 0;
 
-	for (let j = 0; j < dependentExpressions.length; j++) {
-		let madeProgress = false;
-		let unresolvedCount = 0;
+    passes++;
 
-		passes++;
-
-		for (let i = 0; i < dependentExpressions.length; i++) {
-			const de = dependentExpressions[i];
+    for (let i = 0; i < dependentExpressions.length; i++) {
+      const de = dependentExpressions[i];
       if (!de) {
-        throw new Error(`Dependent expression at index ${i} is null or undefined.`);
+        throw new Error(
+          `Dependent expression at index ${i} is null or undefined.`,
+        );
       }
 
-			if (!de.isResolved()) {
-				unresolvedCount++;
+      if (!de.isResolved()) {
+        unresolvedCount++;
 
-				if (!de.hasUnresolvedDependencies()) {
-					unresolvedCount--;
-					resolvedExpressions.push(de.resolve());
-					madeProgress = true;
-				}
-			}
-		}
+        if (!de.hasUnresolvedDependencies()) {
+          unresolvedCount--;
+          resolvedExpressions.push(de.resolve());
+          madeProgress = true;
+        }
+      }
+    }
 
-		if (unresolvedCount === 0) {
-			// No unresolved expressions found so we must be done.
-			break;
-		}
+    if (unresolvedCount === 0) {
+      // No unresolved expressions found so we must be done.
+      break;
+    }
 
-		if (!madeProgress) {
-			// Remaining expressions have unresolved dependencies that
-			// cannot be satisfied without a cycle.
-			throw new Error("Circular dependency detected among expressions.");
-		}
-	}
+    if (!madeProgress) {
+      // Remaining expressions have unresolved dependencies that
+      // cannot be satisfied without a cycle.
+      throw new Error("Circular dependency detected among expressions.");
+    }
+  }
 
-	// eslint-disable-next-line no-console
-	//console.log(`Resolved in ${passes} passes.`);
+  // eslint-disable-next-line no-console
+  //console.log(`Resolved in ${passes} passes.`);
 
-	return resolvedExpressions;
+  return resolvedExpressions;
 }

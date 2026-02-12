@@ -3,7 +3,7 @@ import path from "path";
 
 export default defineConfig({
   test: {
-    globals: true,          // allow describe(), it(), expect() without import
+    globals: true, // allow describe(), it(), expect() without import
     environment: "happy-dom", // browser-like DOM
     //root: path.resolve(__dirname, "apps"), // optional: root for test discovery
     include: ["**/*.test.ts"], // pattern for test files
@@ -14,9 +14,18 @@ export default defineConfig({
   resolve: {
     alias: {
       "@rippledoc/core": path.resolve(__dirname, "packages/core/src"),
-      "@rippledoc/expressions": path.resolve(__dirname, "packages/expressions/src"),
-      "@rippledoc/presentation": path.resolve(__dirname, "packages/presentation/src"),
-      "@rippledoc/htmlPresentationView": path.resolve(__dirname, "packages/htmlPresentationView/src")
+      "@rippledoc/expressions": path.resolve(
+        __dirname,
+        "packages/expressions/src",
+      ),
+      "@rippledoc/presentation": path.resolve(
+        __dirname,
+        "packages/presentation/src",
+      ),
+      "@rippledoc/htmlPresentationView": path.resolve(
+        __dirname,
+        "packages/htmlPresentationView/src",
+      ),
     },
   },
 });

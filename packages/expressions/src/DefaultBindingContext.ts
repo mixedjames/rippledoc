@@ -16,122 +16,120 @@ type Provider = () => DependentExpression;
  * Names are additionally partitioned by NameType (VALUE, ARRAY, FUNCTION).
  */
 export class DefaultBindingContext implements BindingContext {
+  private readonly parent: DefaultBindingContext | null;
 
-	private readonly parent: DefaultBindingContext | null;
+  // Map<string, Map<NameType, Provider>>
+  private readonly symbols = new Map<string, Map<NameType, Provider>>();
 
-	// Map<string, Map<NameType, Provider>>
-	private readonly symbols = new Map<string, Map<NameType, Provider>>();
+  // Map<string, DefaultBindingContext>
+  private readonly subcontexts = new Map<string, DefaultBindingContext>();
 
-	// Map<string, DefaultBindingContext>
-	private readonly subcontexts = new Map<string, DefaultBindingContext>();
+  constructor(parent: DefaultBindingContext | null = null) {
+    this.parent = parent;
+  }
 
-	constructor(parent: DefaultBindingContext | null = null) {
-		this.parent = parent;
-	}
+  addValueExpression(name: string, provider: UnboundExpression): void {
+    this.addExpression(name, NameType.VALUE, provider);
+  }
 
-	addValueExpression(name: string, provider: UnboundExpression): void {
-		this.addExpression(name, NameType.VALUE, provider);
-	}
+  /**
+   * Register an expression under a name and type.
+   */
+  addExpression(
+    name: string,
+    type: NameType,
+    provider: UnboundExpression,
+  ): void {
+    if (!name) {
+      throw new Error("Name required");
+    }
 
-	/**
-	 * Register an expression under a name and type.
-	 */
-	addExpression(name: string, type: NameType, provider: UnboundExpression): void {
+    if (!type) {
+      throw new Error("NameType required");
+    }
 
-		if (!name) {
-			throw new Error("Name required");
-		}
+    if (!provider) {
+      throw new Error("Provider (UnboundExpression) required");
+    }
 
-		if (!type) {
-			throw new Error("NameType required");
-		}
+    let typeMap = this.symbols.get(name);
 
-		if (!provider) {
-			throw new Error("Provider (UnboundExpression) required");
-		}
+    if (!typeMap) {
+      typeMap = new Map<NameType, Provider>();
+      this.symbols.set(name, typeMap);
+    }
 
-		let typeMap = this.symbols.get(name);
+    if (typeMap.has(type)) {
+      throw new Error(`Duplicate symbol: ${name}`);
+    }
 
-		if (!typeMap) {
-			typeMap = new Map<NameType, Provider>();
-			this.symbols.set(name, typeMap);
-		}
+    typeMap.set(type, () => provider.dependentExpression);
+  }
 
-		if (typeMap.has(type)) {
-			throw new Error(`Duplicate symbol: ${name}`);
-		}
+  /**
+   * Register a subcontext under a name.
+   *
+   * Used for member access: a.b
+   */
+  addSubcontext(name: string, context: DefaultBindingContext): void {
+    if (!name) {
+      throw new Error("Name required");
+    }
 
-		typeMap.set(type, () => provider.dependentExpression);
-	}
+    if (!context) {
+      throw new Error("Context required");
+    }
 
-	/**
-	 * Register a subcontext under a name.
-	 *
-	 * Used for member access: a.b
-	 */
-	addSubcontext(name: string, context: DefaultBindingContext): void {
+    if (this.subcontexts.has(name)) {
+      throw new Error(`Duplicate subcontext: ${name}`);
+    }
 
-		if (!name) {
-			throw new Error("Name required");
-		}
+    this.subcontexts.set(name, context);
+  }
 
-		if (!context) {
-			throw new Error("Context required");
-		}
+  lookupName(parts: string[], type: NameType): Provider {
+    if (!Array.isArray(parts) || parts.length === 0) {
+      throw new Error("Name parts required");
+    }
 
-		if (this.subcontexts.has(name)) {
-			throw new Error(`Duplicate subcontext: ${name}`);
-		}
+    return this.lookupRecursive(parts, type);
+  }
 
-		this.subcontexts.set(name, context);
-	}
+  private lookupRecursive(parts: string[], type: NameType): Provider {
+    const head = parts[0];
+    if (!head) {
+      throw new Error("Invalid name part");
+    }
 
-	lookupName(parts: string[], type: NameType): Provider {
+    // Final name
+    if (parts.length === 1) {
+      // Check local symbols
+      const typeMap = this.symbols.get(head);
 
-		if (!Array.isArray(parts) || parts.length === 0) {
-			throw new Error("Name parts required");
-		}
+      if (typeMap && typeMap.has(type)) {
+        // Non-null assertion is safe due to has(type) guard
+        return typeMap.get(type)!;
+      }
 
-		return this.lookupRecursive(parts, type);
-	}
+      // Delegate to parent
+      if (this.parent) {
+        return this.parent.lookupName([head], type);
+      }
 
-	private lookupRecursive(parts: string[], type: NameType): Provider {
+      throw new Error(`Unresolved name: ${head}`);
+    }
 
-		const head = parts[0];
-		if (!head) {
-			throw new Error("Invalid name part");
-		}
+    // Subcontext traversal
+    if (this.subcontexts.has(head)) {
+      const sub = this.subcontexts.get(head)!;
+      return sub.lookupName(parts.slice(1), type);
+    }
 
-		// Final name
-		if (parts.length === 1) {
+    // Delegate to parent
+    if (this.parent) {
+      return this.parent.lookupName(parts, type);
+    }
 
-			// Check local symbols
-			const typeMap = this.symbols.get(head);
-
-			if (typeMap && typeMap.has(type)) {
-				// Non-null assertion is safe due to has(type) guard
-				return typeMap.get(type)!;
-			}
-
-			// Delegate to parent
-			if (this.parent) {
-				return this.parent.lookupName([head], type);
-			}
-
-			throw new Error(`Unresolved name: ${head}`);
-		}
-
-		// Subcontext traversal
-		if (this.subcontexts.has(head)) {
-			const sub = this.subcontexts.get(head)!;
-			return sub.lookupName(parts.slice(1), type);
-		}
-
-		// Delegate to parent
-		if (this.parent) {
-			return this.parent.lookupName(parts, type);
-		}
-
-		throw new Error(`'${head}' is not an object`);
-	}
+    throw new Error(`'${head}' is not an object`);
+  }
 }

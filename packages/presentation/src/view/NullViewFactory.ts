@@ -8,33 +8,33 @@ import type { ElementView } from "./ElementView";
 import type { ViewFactory } from "./ViewFactory";
 
 class NullPresentationView implements PresentationView {
-	realise(): void {
-		// no-op
-	}
+  realise(): void {
+    // no-op
+  }
 
-	layout(): void {
-		// no-op
-	}
+  layout(): void {
+    // no-op
+  }
 }
 
 class NullSectionView implements SectionView {
-	realise(): void {
-		// no-op
-	}
+  realise(): void {
+    // no-op
+  }
 
-	layout(): void {
-		// no-op
-	}
+  layout(): void {
+    // no-op
+  }
 }
 
 class NullElementView implements ElementView {
-	realise(): void {
-		// no-op
-	}
+  realise(): void {
+    // no-op
+  }
 
-	layout(): void {
-		// no-op
-	}
+  layout(): void {
+    // no-op
+  }
 }
 
 /**
@@ -44,17 +44,17 @@ class NullElementView implements ElementView {
  * do not touch the DOM or perform any rendering.
  */
 export class NullViewFactory implements ViewFactory {
-	createPresentationView(_presentation: Presentation): PresentationView {
-		return new NullPresentationView();
-	}
+  createPresentationView(_presentation: Presentation): PresentationView {
+    return new NullPresentationView();
+  }
 
-	createSectionView(_section: Section): SectionView {
-		return new NullSectionView();
-	}
+  createSectionView(_section: Section): SectionView {
+    return new NullSectionView();
+  }
 
-	createElementView(_element: Element): ElementView {
-		return new NullElementView();
-	}
+  createElementView(_element: Element): ElementView {
+    return new NullElementView();
+  }
 }
 
 /**

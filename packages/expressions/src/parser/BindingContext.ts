@@ -8,9 +8,9 @@ import type { DependentExpression } from "../expressions/DependentExpression";
  * does not evaluate, resolve, or inspect dependencies.
  */
 export interface BindingContext {
-	/**
-	 * Resolve a name sequence into a link function that
-	 * produces a dependent expression when invoked.
-	 */
-	lookupName(parts: string[], type: NameType): () => DependentExpression;
+  /**
+   * Resolve a name sequence into a link function that
+   * produces a dependent expression when invoked.
+   */
+  lookupName(parts: string[], type: NameType): () => DependentExpression;
 }

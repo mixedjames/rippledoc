@@ -6,10 +6,10 @@ We want **immutable, simple final objects** (e.g. DOM elements, compiled express
 
 Attempts to model construction as a sequence of "nice" intermediate objects tend to fail:
 
-* Compilation phases leak into places they don’t belong
-* Objects represent multiple temporal states via flags or nulls
-* APIs become defensive and phase-aware
-* Users can observe or misuse partially-valid states
+- Compilation phases leak into places they don’t belong
+- Objects represent multiple temporal states via flags or nulls
+- APIs become defensive and phase-aware
+- Users can observe or misuse partially-valid states
 
 The core insight:
 
@@ -35,33 +35,33 @@ Each role owns a single concern and a single kind of time.
 
 **Why they exist**
 
-* Final products are immutable
-* All construction data must be present at creation time
-* Construction is inherently stateful and contextual
+- Final products are immutable
+- All construction data must be present at creation time
+- Construction is inherently stateful and contextual
 
 **Characteristics**
 
-* Mutable
-* Order-dependent
-* Can observe siblings / parents
-* Can derive or rewrite data
-* May be temporarily inconsistent
+- Mutable
+- Order-dependent
+- Can observe siblings / parents
+- Can derive or rewrite data
+- May be temporarily inconsistent
 
 **What builders do**
 
-* Collect intent (strings, options, relationships)
-* Perform structural validation
-* Derive missing values
-* Coordinate with adjacent builders
+- Collect intent (strings, options, relationships)
+- Perform structural validation
+- Derive missing values
+- Coordinate with adjacent builders
 
 **What builders must NOT do**
 
-* Bind expressions
-* Resolve dependencies
-* Evaluate values
-* Expose partially-built products
+- Bind expressions
+- Resolve dependencies
+- Evaluate values
+- Expose partially-built products
 
-Builders never model compilation phases. They only model *intent*.
+Builders never model compilation phases. They only model _intent_.
 
 ---
 
@@ -71,22 +71,22 @@ The module owns **all compilation phases internally**.
 
 Examples of hidden phases:
 
-* Parsing
-* Name binding
-* Dependency graph construction
-* Cycle detection
-* Finalization
+- Parsing
+- Name binding
+- Dependency graph construction
+- Cycle detection
+- Finalization
 
 **Public surface**
 
-* Definitions are added
-* A single irreversible transition is triggered (e.g. `compile()`)
+- Definitions are added
+- A single irreversible transition is triggered (e.g. `compile()`)
 
 **Key rules**
 
-* Only one public transition
-* No access to intermediate states
-* Failure leaves the module unusable (no rollback)
+- Only one public transition
+- No access to intermediate states
+- Failure leaves the module unusable (no rollback)
 
 This makes illegal states unrepresentable.
 
@@ -96,11 +96,11 @@ This makes illegal states unrepresentable.
 
 **Characteristics**
 
-* Fully valid
-* Fully bound
-* Immutable
-* Simple API
-* No phase awareness
+- Fully valid
+- Fully bound
+- Immutable
+- Simple API
+- No phase awareness
 
 Products never know how they were built.
 
@@ -112,15 +112,15 @@ From an API user’s perspective, there are only two meaningful phases:
 
 ### A. Construction Mode
 
-* Builders are mutable
-* Relationships and intent are assembled
-* Hooks like `elementComplete()` or `sectionComplete()` may run
+- Builders are mutable
+- Relationships and intent are assembled
+- Hooks like `elementComplete()` or `sectionComplete()` may run
 
 ### B. Building
 
-* A single `build()` / `compile()` call
-* Builders become invalid
-* Immutable products are created
+- A single `build()` / `compile()` call
+- Builders become invalid
+- Immutable products are created
 
 Everything else is an implementation detail.
 
@@ -128,11 +128,11 @@ Everything else is an implementation detail.
 
 ## Benefits
 
-* Phase leakage is eliminated
-* APIs become smaller and more obvious
-* Builders are free to be pragmatic and messy
-* Compilation complexity is quarantined
-* Final objects remain clean and immutable
+- Phase leakage is eliminated
+- APIs become smaller and more obvious
+- Builders are free to be pragmatic and messy
+- Compilation complexity is quarantined
+- Final objects remain clean and immutable
 
 ---
 

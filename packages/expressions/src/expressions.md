@@ -11,6 +11,7 @@ any cycles have been created:
 x = 2*y
 y = x/2
 ```
+
 These can't be evaluated by an imperitive system. But, we don't need them. We must detect them - if
 we don't evaluation of an expression could easily spiral into an infinite loop.
 
@@ -23,17 +24,19 @@ I split the problem into phases:
 ### Phase 1: Parsing all the equations (unbound phase)
 
 In this phase we simply parse everything. Each expression is turned into an in-memory representation
-of the equation. Names (e.g. x, y, this) are remembered, but **not** looked up. (*This is key*)
+of the equation. Names (e.g. x, y, this) are remembered, but **not** looked up. (_This is key_)
 
 We also remember the name of every equation we find and parse.
 
 I've created two names for these objects:
-- Unbound expressions: *expressions that have been parsed but whose names have not yet been looked up*
-- Binding context: *a map of names of expressions to the unbound expression they represent*
+
+- Unbound expressions: _expressions that have been parsed but whose names have not yet been looked up_
+- Binding context: _a map of names of expressions to the unbound expression they represent_
 
 ### Phase 2: Looking up names (binding phase)
 
 By the start of this phase we know:
+
 - The names of every available expression in the system
 - The structure of every expression in the system
 
@@ -45,10 +48,12 @@ Every equation must be given an opportunity to bind.
 Bound equations cannot yet be evaluated however - they might still contain cycles.
 
 At the end of phase 2, binding, we have:
+
 - Any dependencies in the equations in the system have been converted from simple names
   to functionds yielding dependent expressions
 
 An important concept at this point is the **dependent expression** - these:
+
 - Cannot yet be executed
 - Know a list of their dependencies
 - Remember whether they have been resolved
@@ -70,6 +75,7 @@ Only after resolving is it **safe to evaluate expressions**.
 
 A key aim was making it impossible (or at least difficult) to build an expression set that was
 unsafe. To that end, each phase is expressed as a type:
+
 - UnboundExpression
 - DependentExpression
 - Expression
@@ -85,16 +91,16 @@ and DependentExpression has .expression.
 ```ts
 // Names are defined via BindingContext
 const ctx = new BindingContext();
-ctx.addExpression('a', NameType.VALUE, unboundExpression1);
-ctx.addExpression('b', NameType.VALUE, unboundExpression2);
+ctx.addExpression("a", NameType.VALUE, unboundExpression1);
+ctx.addExpression("b", NameType.VALUE, unboundExpression2);
 
 // Phase 2
-const dependentExpressions = 
-  [unboundExpression1, unboundExpression2].forEach((e) => e.bind(ctx));
+const dependentExpressions = [unboundExpression1, unboundExpression2].forEach(
+  (e) => e.bind(ctx),
+);
 
 // Phase 3
 const expressions = resolveExpressions(dependentExpressions);
-
 ```
 
 ## Using the Module facade
@@ -102,6 +108,7 @@ const expressions = resolveExpressions(dependentExpressions);
 Most consumers should prefer the higher-level `Module` API over wiring the three phases manually.
 
 `Module` is a facade that:
+
 - Parses all added expressions
 - Binds them with correct name resolution (including parent and mapped modules)
 - Resolves dependency order and detects cycles during `compile()`
