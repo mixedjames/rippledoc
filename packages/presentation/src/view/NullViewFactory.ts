@@ -7,6 +7,8 @@ import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
 import type { ViewFactory } from "./ViewFactory";
 
+import { ImageElement } from "../ImageElement";
+
 class NullPresentationView implements PresentationView {
   realise(): void {
     // no-op
@@ -54,6 +56,10 @@ export class NullViewFactory implements ViewFactory {
 
   createElementView(_element: Element): ElementView {
     return new NullElementView();
+  }
+
+  createImageElementView(element: ImageElement): ElementView {
+    return this.createElementView(element);
   }
 }
 

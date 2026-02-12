@@ -6,6 +6,7 @@
 export { Presentation } from "./Presentation";
 export { Section } from "./Section";
 export { Element } from "./Element";
+export { ImageElement } from "./ImageElement";
 
 // Builder API
 export { PresentationBuilder } from "./builder/PresentationBuilder";

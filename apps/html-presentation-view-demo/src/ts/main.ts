@@ -66,7 +66,7 @@ function getDefaultXmlExample(): string {
     "<document>",
     '  <slideSize w="800" h="600" />',
     '  <section h="slideHeight">',
-    '    <element l="40" w="200" t="sectionTop+40" h="120" />',
+    '    <image source="img/drawing.png" l="40" w="200" t="sectionTop+40" h="120" />',
     '    <element l="280" w="240" t="sectionTop+80" h="160" />',
     "  </section>",
     '  <section h="slideHeight">',

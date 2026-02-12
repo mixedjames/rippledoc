@@ -1,6 +1,7 @@
 const path = require("path");
 const common = require("../../webpack.common.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   ...common,
@@ -23,5 +24,16 @@ module.exports = {
       template: "./src/index.html",
       filename: "index.html",
     }),
+
+    // Copy static resources (currently only images) to the output directory
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src/img"),
+          to: "img",
+        },
+      ],
+    }),
   ],
+  // End of plugins
 };

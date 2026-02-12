@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { presentationFromXML } from "./PresentationFromXML";
 import { nullViewFactory } from "../view/NullViewFactory";
 import { Element } from "../Element";
-import { ImageElement } from "../ImageElement";
+import { ImageElement, ImageFit } from "../ImageElement";
 
 const SAMPLE_XML = `
 <document>
@@ -109,6 +109,94 @@ describe("presentationFromXML", () => {
 
     const image = second as ImageElement;
     expect(image.source).toBe("images/foo.png");
+  });
+
+  it("parses optional alt and fit attributes for <image>", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section name="images" h="slideHeight">
+    <image
+      name="hero"
+      source="images/hero.svg"
+      fit="cover"
+      alt="Hero illustration"
+      l="0" w="slideWidth"
+      t="sectionTop" h="slideHeight"
+    />
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+    expect(section.elements).toHaveLength(1);
+
+    const image = section.elements[0] as ImageElement;
+    expect(image).toBeInstanceOf(ImageElement);
+    expect(image.source).toBe("images/hero.svg");
+    expect(image.fit).toBe(ImageFit.Cover);
+    expect(image.altText).toBe("Hero illustration");
+  });
+
+  it("parses <fill> color and image into section style", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <fill
+      image="url-to-image"
+      color="#00FF00"
+    />
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+
+    // image attribute
+    expect(section.style.fill.imageSource).toBe("url-to-image");
+
+    // color attribute (#00FF00 -> r=0, g=255, b=0, a=255)
+    const color = section.style.fill.color;
+    expect(color.r).toBe(0);
+    expect(color.g).toBe(255);
+    expect(color.b).toBe(0);
+    expect(color.a).toBe(255);
+  });
+
+  it("throws when <image> has an invalid fit value", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <image
+      source="images/foo.png"
+      fit="invalid-fit"
+      l="0" w="100"
+      t="sectionTop" h="50"
+    />
+  </section>
+</document>
+`;
+
+    await expect(
+      presentationFromXML({
+        viewFactory: nullViewFactory,
+        text: xml,
+      }),
+    ).rejects.toThrow(/invalid 'fit' value/);
   });
 
   it("throws when <image> is missing a source attribute", async () => {

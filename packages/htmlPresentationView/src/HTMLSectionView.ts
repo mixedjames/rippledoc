@@ -113,6 +113,22 @@ export class HTMLSectionView implements SectionView {
     bgStyle.width = `${widthPx}px`;
     bgStyle.height = `${heightPx}px`;
 
+    // Apply section fill style as a background.
+    const fill = this.section_.style.fill;
+    const color = fill.color;
+    if (color.a > 0) {
+      const alpha = color.a / 255;
+      bgStyle.backgroundColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+    }
+
+    const imageSource = fill.imageSource;
+    if (imageSource && imageSource.trim() !== "") {
+      bgStyle.backgroundImage = `url(${imageSource})`;
+      bgStyle.backgroundSize = "cover";
+      bgStyle.backgroundRepeat = "no-repeat";
+      bgStyle.backgroundPosition = "center center";
+    }
+
     // Content sections are all positioned at the top-left of the
     // root so that child elements can use global absolute coords.
     const contentStyle = content.style;

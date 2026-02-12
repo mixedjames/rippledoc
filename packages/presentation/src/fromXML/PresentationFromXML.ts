@@ -1,6 +1,7 @@
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Presentation } from "../Presentation";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
+import { ImageFit } from "../ImageElement";
 
 export interface PresentationFromXMLConfig {
   viewFactory: ViewFactory;
@@ -114,9 +115,14 @@ function loadSection(
   }
 
   // Parse child elements in document order, supporting both
-  // <element> and <image> nodes.
+  // <fill>, <element> and <image> nodes.
   Array.from(sectionEl.children).forEach((child) => {
     const tag = child.tagName;
+    if (tag === "fill") {
+      loadFill(child, section);
+      return;
+    }
+
     if (tag === "element") {
       const element = section.createElement();
       loadElement(child, element);
@@ -135,8 +141,79 @@ function loadSection(
       }
 
       image.setSource(source);
+
+      const fitAttr = child.getAttribute("fit");
+      if (fitAttr && fitAttr.trim() !== "") {
+        const fitNormalized = fitAttr.trim().toLowerCase();
+        let fit: ImageFit | null = null;
+
+        switch (fitNormalized) {
+          case ImageFit.Fill:
+            fit = ImageFit.Fill;
+            break;
+          case ImageFit.Contain:
+            fit = ImageFit.Contain;
+            break;
+          case ImageFit.Cover:
+            fit = ImageFit.Cover;
+            break;
+        }
+
+        if (!fit) {
+          throw new Error(
+            `<image> element has invalid 'fit' value "${fitAttr}"`,
+          );
+        }
+
+        image.setFit(fit);
+      }
+
+      const altAttr = child.getAttribute("alt");
+      if (altAttr !== null) {
+        image.setAltText(altAttr);
+      }
     }
   });
+}
+
+function loadFill(
+  fillEl: Element,
+  section: ReturnType<PresentationBuilder["createSection"]>,
+): void {
+  const colorAttr = fillEl.getAttribute("color");
+  const imageAttr = fillEl.getAttribute("image");
+
+  if (colorAttr && colorAttr.trim() !== "") {
+    const color = parseHexColor(colorAttr);
+    section.style.fill.setColor(color);
+  }
+
+  if (imageAttr && imageAttr.trim() !== "") {
+    section.style.fill.setImageSource(imageAttr.trim());
+  }
+}
+
+function parseHexColor(color: string): {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+} {
+  const trimmed = color.trim();
+  const match = /^#([0-9a-fA-F]{6})$/.exec(trimmed);
+
+  if (!match) {
+    throw new Error(
+      `Invalid color format "${color}". Expected "#RRGGBB" (e.g. "#00FF00").`,
+    );
+  }
+
+  const hex = match[1]!;
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  return { r, g, b, a: 255 };
 }
 
 type ElementLikeBuilder = {

@@ -4,6 +4,7 @@ import type { Expression } from "@rippledoc/expressions";
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Presentation } from "../Presentation";
 import { Section } from "../Section";
+import { Style } from "../Styles";
 import { ElementBuilder } from "./ElementBuilder";
 import { ImageElementBuilder } from "./ImageElementBuilder";
 
@@ -21,6 +22,8 @@ export class SectionBuilder {
   private readonly viewFactory: ViewFactory;
   private readonly elements: ElementBuilder[] = [];
   private name = "";
+
+  private readonly style_: Style = new Style();
 
   private prevSectionBuilder: SectionBuilder | null = null;
   private nextSectionBuilder: SectionBuilder | null = null;
@@ -54,6 +57,11 @@ export class SectionBuilder {
 
   getName(): string {
     return this.name;
+  }
+
+  get style(): Style {
+    this.assertNotBuilt("style");
+    return this.style_;
   }
 
   setPrevious(prev: SectionBuilder): void {
@@ -160,6 +168,7 @@ export class SectionBuilder {
       sectionTop: this.get("sectionTop"),
       sectionHeight: this.get("sectionHeight"),
       sectionBottom: this.get("sectionBottom"),
+      style: this.style_,
       elements: [],
       viewFactory: this.viewFactory,
     });

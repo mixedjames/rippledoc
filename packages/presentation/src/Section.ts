@@ -3,6 +3,7 @@ import type { Presentation } from "./Presentation";
 import type { Element } from "./Element";
 import type { SectionView } from "./view/SectionView";
 import type { ViewFactory } from "./view/ViewFactory";
+import { Style } from "./Styles";
 
 /**
  * Represents an immutable section containing elements and layout properties.
@@ -31,6 +32,8 @@ export class Section {
   private readonly parent_: Presentation;
   private readonly view_: SectionView;
 
+  private readonly style_: Style = new Style();
+
   /**
    * @param options.name Section name.
    * @param options.parent Parent presentation.
@@ -47,6 +50,7 @@ export class Section {
     sectionTop: Expression;
     sectionHeight: Expression;
     sectionBottom: Expression;
+    style?: Style;
     elements?: Element[];
     viewFactory: ViewFactory;
   }) {
@@ -57,6 +61,7 @@ export class Section {
       sectionHeight,
       sectionBottom,
       elements = [],
+      style,
       viewFactory,
     } = options;
 
@@ -69,7 +74,15 @@ export class Section {
     this.sectionTop_ = sectionTop;
     this.sectionHeight_ = sectionHeight;
     this.sectionBottom_ = sectionBottom;
-    this.elements_ = elements;
+
+    if (elements) {
+      this.elements_ = elements;
+    }
+
+    if (style) {
+      this.style_ = style;
+    }
+
     this.view_ = viewFactory.createSectionView(this);
   }
 
@@ -134,6 +147,14 @@ export class Section {
   }
 
   // --------------------
+
+  /**
+   * Get the style object for this section.
+   * @returns The section's style object.
+   */
+  get style(): Style {
+    return this.style_;
+  }
 
   /**
    * Get all elements in this section.

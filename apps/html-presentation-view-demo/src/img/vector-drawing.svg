@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="200"
+   height="200"
+   viewBox="0 0 52.916665 52.916666"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   sodipodi:docname="vector-drawing"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="2"
+     inkscape:cx="92.75"
+     inkscape:cy="107"
+     inkscape:window-width="1904"
+     inkscape:window-height="1011"
+     inkscape:window-x="7"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       style="fill:#07ce00;stroke:#000000;stroke-width:0.706001;stroke-opacity:1;fill-opacity:1"
+       id="path1"
+       cy="15.875"
+       cx="15.742708"
+       r="14.552083" />
+    <circle
+       style="fill:#2f1aff;stroke:#000000;stroke-width:0.706001;stroke-opacity:1;fill-opacity:1"
+       id="circle2"
+       cy="36.909374"
+       cx="26.19375"
+       r="14.552083" />
+    <circle
+       style="fill:#d00000;stroke:#000000;stroke-width:0.706001;stroke-opacity:1;fill-opacity:1"
+       id="circle3"
+       cy="17.065624"
+       cx="37.041668"
+       r="14.552083" />
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:22.5778px;font-family:Lato;-inkscape-font-specification:'Lato Bold';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#afafaf;stroke-width:0.52916665;stroke-opacity:1;stroke-dasharray:none"
+       x="-1.418259"
+       y="39.144089"
+       id="text3"
+       transform="rotate(-15.705695)"><tspan
+         sodipodi:role="line"
+         id="tspan3"
+         style="fill:#000000;fill-opacity:1;stroke:#afafaf;stroke-width:0.52916665;stroke-opacity:1;stroke-dasharray:none"
+         x="-1.418259"
+         y="39.144089">SVG</tspan></text>
+  </g>
+</svg>

@@ -3,11 +3,13 @@ import type {
   Presentation,
   Section,
   Element,
+  ImageElement,
 } from "@rippledoc/presentation";
 
 import { HTMLPresentationView } from "./HTMLPresentationView";
 import { HTMLSectionView } from "./HTMLSectionView";
 import { HTMLElementView } from "./HTMLElementView";
+import { HTMLImageElementView } from "./HTMLImageElementView";
 
 /**
  * HTML implementation of the ViewFactory.
@@ -34,5 +36,9 @@ export class HTMLViewFactory implements ViewFactory {
 
   createElementView(element: Element): HTMLElementView {
     return new HTMLElementView({ element });
+  }
+
+  createImageElementView(element: ImageElement): HTMLElementView {
+    return new HTMLImageElementView({ element });
   }
 }

@@ -4,6 +4,7 @@ import type { Element } from "../Element";
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
+import type { ImageElement } from "../ImageElement";
 
 /**
  * Factory for creating view instances for the presentation model.
@@ -14,5 +15,8 @@ import type { ElementView } from "./ElementView";
 export interface ViewFactory {
   createPresentationView(presentation: Presentation): PresentationView;
   createSectionView(section: Section): SectionView;
+
   createElementView(element: Element): ElementView;
+
+  createImageElementView(element: ImageElement): ElementView;
 }
