@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { PresentationBuilder } from "./PresentationBuilder";
 import { nullViewFactory } from "../view/NullViewFactory";
 import { Element } from "../Element";
+import { ImageElement } from "../ImageElement";
 
 describe("PresentationBuilder – happy path", () => {
   it("builds a presentation with a single section", () => {
@@ -123,5 +124,36 @@ describe("PresentationBuilder – happy paths", () => {
     expect(builtSection.sectionTop).toBe(0);
     expect(builtSection.sectionHeight).toBe(200);
     expect(builtSection.sectionBottom).toBe(builtSection.sectionTop + 200);
+  });
+
+  it("can build an ImageElement via createImageElement", () => {
+    const builder = new PresentationBuilder({
+      viewFactory: nullViewFactory,
+    });
+
+    const section = builder.createSection();
+    section.setHeight("100");
+
+    const imageBuilder = section.createImageElement();
+    imageBuilder.setSource("images/foo.png");
+    imageBuilder.setLeft("10");
+    imageBuilder.setWidth("50");
+    imageBuilder.setTop("20");
+    imageBuilder.setHeight("30");
+
+    const presentation = builder.build();
+
+    const builtSection = presentation.sections[0]!;
+    expect(builtSection.elements.length).toBe(1);
+
+    const image = builtSection.elements[0]!;
+    expect(image).toBeInstanceOf(ImageElement);
+    expect((image as ImageElement).source).toBe("images/foo.png");
+
+    // Sanity-check that layout expressions were compiled and evaluated
+    expect(image.left).toBe(10);
+    expect(image.width).toBe(50);
+    expect(image.top).toBe(20);
+    expect(image.height).toBe(30);
   });
 });

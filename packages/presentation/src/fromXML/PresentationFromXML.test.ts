@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { presentationFromXML } from "./PresentationFromXML";
 import { nullViewFactory } from "../view/NullViewFactory";
+import { Element } from "../Element";
+import { ImageElement } from "../ImageElement";
 
 const SAMPLE_XML = `
 <document>
@@ -65,5 +67,70 @@ describe("presentationFromXML", () => {
         viewFactory: nullViewFactory,
       }),
     ).rejects.toThrow(/Missing required <slideSize> element/);
+  });
+
+  it("creates image elements from <image> nodes", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section name="main" h="slideHeight">
+    <element
+      name="text1"
+      l="10" w="100"
+      t="sectionTop" h="50"
+    />
+    <image
+      name="img1"
+      source="images/foo.png"
+      l="20" w="200"
+      t="sectionTop+10" h="100"
+    />
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.slideWidth).toBe(800);
+    expect(presentation.slideHeight).toBe(600);
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+    expect(section.name).toBe("main");
+
+    expect(section.elements).toHaveLength(2);
+    const [first, second] = section.elements;
+
+    expect(first).toBeInstanceOf(Element);
+    expect(second).toBeInstanceOf(ImageElement);
+
+    const image = second as ImageElement;
+    expect(image.source).toBe("images/foo.png");
+  });
+
+  it("throws when <image> is missing a source attribute", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <image
+      l="0" w="100"
+      t="sectionTop" h="50"
+    />
+  </section>
+</document>
+`;
+
+    await expect(
+      presentationFromXML({
+        viewFactory: nullViewFactory,
+        text: xml,
+      }),
+    ).rejects.toThrow(
+      "<image> element must have a non-empty 'source' attribute",
+    );
   });
 });

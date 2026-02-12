@@ -4,6 +4,7 @@ import { Expression } from "@rippledoc/expressions";
 import { Presentation, PresentationGeometry } from "./Presentation";
 import { Section } from "./Section";
 import { Element } from "./Element";
+import { ImageElement } from "./ImageElement";
 import { nullViewFactory } from "./view/NullViewFactory";
 
 function makeConstExpression(value: number): Expression {
@@ -112,5 +113,56 @@ describe("Presentation", () => {
     // Should not throw and should traverse the tree.
     presentation.realiseView();
     presentation.layoutView();
+  });
+
+  it("supports ImageElement instances within sections", () => {
+    const dummyGeometry = new PresentationGeometry();
+    const dummyPresentation = new Presentation({
+      sections: [],
+      viewFactory: nullViewFactory,
+      geometry: dummyGeometry,
+    });
+
+    const section = new Section({
+      name: "Section with image element",
+      parent: dummyPresentation,
+      sectionTop: makeConstExpression(0),
+      sectionHeight: makeConstExpression(100),
+      sectionBottom: makeConstExpression(100),
+      elements: [],
+      viewFactory: nullViewFactory,
+    });
+
+    const image = new ImageElement({
+      source: "images/foo.png",
+      element: {
+        name: "image-element",
+        parent: section,
+        left: makeConstExpression(10),
+        right: makeConstExpression(110),
+        width: makeConstExpression(100),
+        top: makeConstExpression(20),
+        bottom: makeConstExpression(70),
+        height: makeConstExpression(50),
+        viewFactory: nullViewFactory,
+      },
+    });
+
+    section._setElements([image]);
+
+    const geometry = new PresentationGeometry({
+      basisWidth: 640,
+      basisHeight: 480,
+    });
+
+    const presentation = new Presentation({
+      sections: [section],
+      viewFactory: nullViewFactory,
+      geometry,
+    });
+
+    expect(presentation.sections[0]!.elements[0]).toBeInstanceOf(ImageElement);
+    const builtImage = presentation.sections[0]!.elements[0] as ImageElement;
+    expect(builtImage.source).toBe("images/foo.png");
   });
 });
