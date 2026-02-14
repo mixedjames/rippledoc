@@ -1,5 +1,5 @@
 import type { BindingContext } from "../parser/BindingContext";
-import type { DependentExpression } from "../expressions/DependentExpression";
+import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 import { AstNode } from "../parser/AST";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 
@@ -45,7 +45,7 @@ class NativeFunctionNode extends AstNode {
   /**
    * Native functions have no dependencies.
    */
-  override getDependencies(): DependentExpression[] {
+  override getDependencies(): UncheckedExpression[] {
     return [];
   }
 

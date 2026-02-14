@@ -1,5 +1,5 @@
 import { NameType } from "./NameType";
-import type { DependentExpression } from "../expressions/DependentExpression";
+import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 
 /**
  * Represents the context used during the binding phase.
@@ -12,5 +12,5 @@ export interface BindingContext {
    * Resolve a name sequence into a link function that
    * produces a dependent expression when invoked.
    */
-  lookupName(parts: string[], type: NameType): () => DependentExpression;
+  lookupName(parts: string[], type: NameType): () => UncheckedExpression;
 }

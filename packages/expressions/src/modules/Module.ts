@@ -1,4 +1,4 @@
-import { DependentExpression } from "../expressions/DependentExpression";
+import { UncheckedExpression } from "../expressions/UncheckedExpression";
 import { Expression } from "../expressions/Expression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 import { parseExpression } from "../parser/Parser";
@@ -318,12 +318,12 @@ export class Module {
    * delegation) while keeping the binding process internal to
    * the modules package.
    */
-  private bindExpressions(): DependentExpression[] {
+  private bindExpressions(): UncheckedExpression[] {
     const context: BindingContext = {
       lookupName: this.lookupName.bind(this),
     };
 
-    const bound: DependentExpression[] = [];
+    const bound: UncheckedExpression[] = [];
 
     // Bind all value expressions defined in this module.
     for (const entry of this.names_.values()) {
@@ -359,7 +359,7 @@ export class Module {
   private lookupName(
     parts: string[],
     type: NameType,
-  ): () => DependentExpression {
+  ): () => UncheckedExpression {
     if (!Array.isArray(parts) || parts.length === 0) {
       throw new Error("Name parts required");
     }

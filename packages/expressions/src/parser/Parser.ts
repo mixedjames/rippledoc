@@ -12,8 +12,8 @@ import {
   NumberLiteral,
   UnaryExpression,
   BinaryExpression,
-  NameExpression,
 } from "./AST";
+import { NameExpression } from "./AST.NameExpression";
 
 import { UnboundExpression } from "../expressions/UnboundExpression";
 

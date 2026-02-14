@@ -1,9 +1,9 @@
 import { NameType } from "./parser/NameType";
-import type { DependentExpression } from "./expressions/DependentExpression";
+import type { UncheckedExpression } from "./expressions/UncheckedExpression";
 import type { UnboundExpression } from "./expressions/UnboundExpression";
 import type { BindingContext } from "./parser/BindingContext";
 
-type Provider = () => DependentExpression;
+type Provider = () => UncheckedExpression;
 
 /**
  * Default implementation of the binding context.

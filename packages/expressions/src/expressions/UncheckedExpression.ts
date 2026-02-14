@@ -8,19 +8,19 @@ import { Expression } from "./Expression";
  * the AST moves to Expression and this wrapper becomes a
  * lightweight handle to the resolved Expression.
  */
-export class DependentExpression {
+export class UncheckedExpression {
   // Bound AST while unresolved. Set to null after resolve().
   private ast_: AstNode | null;
 
   // Cached dependency list, initialized lazily.
-  private dependencies_: DependentExpression[] | null = null;
+  private dependencies_: UncheckedExpression[] | null = null;
 
   // Final resolved Expression (after resolve()).
   private expression_: Expression | null = null;
 
   constructor(ast: AstNode) {
     if (!ast) {
-      throw new Error("DependentExpression requires AST");
+      throw new Error("UncheckedExpression requires AST");
     }
     this.ast_ = ast;
   }
@@ -75,7 +75,7 @@ export class DependentExpression {
     const resolvedAst = this.ast_.resolve();
     this.expression_ = new Expression(resolvedAst);
 
-    // Jump ship: DependentExpression no longer owns AST
+    // Jump ship: UncheckedExpression no longer owns AST
     this.ast_ = null;
 
     return this.expression_;

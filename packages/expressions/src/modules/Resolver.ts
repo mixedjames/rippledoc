@@ -1,8 +1,8 @@
-import type { DependentExpression } from "../expressions/DependentExpression";
+import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 import type { Expression } from "../expressions/Expression";
 
 /**
- * Resolve a collection of DependentExpressions in dependency order.
+ * Resolve a collection of UncheckedExpressions in dependency order.
  *
  * The algorithm repeatedly scans the list, resolving any expression
  * whose dependencies are already resolved. If in a full pass no
@@ -10,7 +10,7 @@ import type { Expression } from "../expressions/Expression";
  * a circular dependency is assumed and an error is thrown.
  */
 export function resolveExpressions(
-  dependentExpressions: DependentExpression[],
+  dependentExpressions: UncheckedExpression[],
 ): Expression[] {
   if (!Array.isArray(dependentExpressions)) {
     throw new Error("No dependent expressions provided.");

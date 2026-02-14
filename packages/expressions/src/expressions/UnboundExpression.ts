@@ -1,6 +1,6 @@
 import type { AstNode } from "../parser/AST";
 import type { BindingContext } from "../parser/BindingContext";
-import { DependentExpression } from "./DependentExpression";
+import { UncheckedExpression } from "./UncheckedExpression";
 
 /**
  * Wrapper around an unbound (symbolic) AST.
@@ -12,8 +12,8 @@ export class UnboundExpression {
   // Root AST node while unbound. Set to null after binding.
   private root_: AstNode | null;
 
-  // The DependentExpression created by binding.
-  private dependentExpression_: DependentExpression | null = null;
+  // The UncheckedExpression created by binding.
+  private dependentExpression_: UncheckedExpression | null = null;
 
   constructor(root: AstNode) {
     if (!root) {
@@ -37,13 +37,13 @@ export class UnboundExpression {
    * inert, retaining only a reference to that dependent
    * expression.
    */
-  bind(context: BindingContext): DependentExpression {
+  bind(context: BindingContext): UncheckedExpression {
     if (this.root_ === null) {
       throw new Error("Expression already bound");
     }
 
     const boundAst = this.root_.bind(context);
-    this.dependentExpression_ = new DependentExpression(boundAst);
+    this.dependentExpression_ = new UncheckedExpression(boundAst);
 
     // Jump ship: UnboundExpression no longer owns the AST
     this.root_ = null;
@@ -52,10 +52,10 @@ export class UnboundExpression {
   }
 
   /**
-   * Return the DependentExpression produced by binding.
+  * Return the UncheckedExpression produced by binding.
    * Only valid after bind() has been called.
    */
-  get dependentExpression(): DependentExpression {
+  get dependentExpression(): UncheckedExpression {
     if (this.dependentExpression_ === null) {
       throw new Error("Expression not yet bound");
     }

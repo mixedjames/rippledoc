@@ -1,8 +1,6 @@
 import type { BindingContext } from "./BindingContext";
-import type { DependentExpression } from "../expressions/DependentExpression";
-import type { Expression } from "../expressions/Expression";
+import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 import { TokenType } from "../lexer/Token";
-import { NameType } from "./NameType";
 
 /**
  * Base class for all AST nodes.
@@ -15,16 +13,17 @@ import { NameType } from "./NameType";
  * The same node hierarchy is reused across phases; each node
  * implements phase-transition methods that either return itself
  * unchanged or return a new node in the next phase.
+ * 
+ * This model explains the slightly bizarre lookupName interface which returns a link function
+ * instead of a direct reference. We want to bind to an UncheckedExpression but during a call
+ * to bind, not all expressions will have yet run so an UncheckedExpression may not yet exist for a
+ * given name.
+ * 
+ * The link function is then called during the resolve() call when all expressions in a system
+ * are guarenteed to have been converted to an UncheckedExpression and can be safely referenced.
+ * 
  */
 export abstract class AstNode {
-  /**
-   * Bind this node using the provided context.
-   * Default implementation: node is already concrete.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  bind(context: BindingContext): AstNode {
-    return this;
-  }
 
   /**
    * Evaluate this node.
@@ -43,8 +42,17 @@ export abstract class AstNode {
    *
    * By default, nodes have no dependencies.
    */
-  getDependencies(): DependentExpression[] {
+  getDependencies(): UncheckedExpression[] {
     return [];
+  }
+
+  /**
+   * Bind this node using the provided context.
+   * Default implementation: node is already concrete.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  bind(context: BindingContext): AstNode {
+    return this;
   }
 
   /**
@@ -106,7 +114,7 @@ export class UnaryExpression extends AstNode {
     }
   }
 
-  override getDependencies(): DependentExpression[] {
+  override getDependencies(): UncheckedExpression[] {
     return this.operand_.getDependencies();
   }
 }
@@ -158,106 +166,8 @@ export class BinaryExpression extends AstNode {
     }
   }
 
-  override getDependencies(): DependentExpression[] {
+  override getDependencies(): UncheckedExpression[] {
     return [...this.left_.getDependencies(), ...this.right_.getDependencies()];
   }
 }
 
-/**
- * Symbolic name reference.
- *
- * Examples:
- *   x
- *   a.b
- *   a.b.c
- */
-export class NameExpression extends AstNode {
-  // Sequence of name parts, e.g. ["a", "b", "c"] for a.b.c
-  private readonly parts_: string[];
-
-  constructor(parts: string[]) {
-    super();
-    this.parts_ = parts;
-  }
-
-  getParts(): string[] {
-    return this.parts_;
-  }
-
-  /**
-   * Symbolic dependency: the first name determines which
-   * expression we depend on.
-   */
-  override getDependencies(): DependentExpression[] {
-    throw new Error("Unbound NameExpression cannot get dependencies");
-  }
-
-  override bind(context: BindingContext): AstNode {
-    return new LinkedNamedExpression(
-      context.lookupName(this.parts_, NameType.VALUE),
-    );
-  }
-}
-
-class LinkedNamedExpression extends AstNode {
-  // Link function: () => DependentExpression
-  private readonly link_: () => DependentExpression;
-  private dependentExpression_: DependentExpression | null = null;
-
-  constructor(link: () => DependentExpression) {
-    super();
-
-    if (!link) {
-      throw new Error("LinkedNamedExpression requires a valid link");
-    }
-
-    this.link_ = link;
-  }
-
-  override getDependencies(): DependentExpression[] {
-    this.ensureLink();
-    return [this.dependentExpression_!];
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  override bind(_context: BindingContext): AstNode {
-    throw new Error("LinkedNamedExpression cannot be rebound");
-  }
-
-  override resolve(): AstNode {
-    this.ensureLink();
-    return new ResolvedNamedExpression(this.dependentExpression_!.expression);
-  }
-
-  private ensureLink(): void {
-    if (this.dependentExpression_ === null) {
-      this.dependentExpression_ = this.link_();
-    }
-  }
-}
-
-class ResolvedNamedExpression extends AstNode {
-  private readonly expression_: Expression;
-
-  constructor(expression: Expression) {
-    super();
-    this.expression_ = expression;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  override bind(_context: BindingContext): AstNode {
-    throw new Error("ResolvedNamedExpression cannot be rebound");
-  }
-
-  override resolve(): AstNode {
-    throw new Error("ResolvedNamedExpression is already resolved");
-  }
-
-  override getDependencies(): DependentExpression[] {
-    throw new Error(" ResolvedNamedExpression cannot get dependencies");
-  }
-
-  override evaluate(): number {
-    return this.expression_.evaluate();
-  }
-}

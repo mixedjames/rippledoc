@@ -23,7 +23,7 @@ import { Style } from "./Styles";
 export class Section {
   private readonly name_: string;
 
-  private elements_: Element[];
+  private elements_: Element[] = [];
 
   private readonly sectionTop_: Expression;
   private readonly sectionHeight_: Expression;

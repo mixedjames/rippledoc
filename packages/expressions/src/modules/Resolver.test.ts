@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { resolveExpressions } from "./Resolver";
 import { parseExpression } from "../parser/Parser";
 import { DefaultBindingContext } from "../DefaultBindingContext";
-import type { DependentExpression } from "../expressions/DependentExpression";
+import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 
-function makeDependent(expr: string): DependentExpression {
+function makeDependent(expr: string): UncheckedExpression {
   const unbound = parseExpression(expr);
   const ctx = new DefaultBindingContext();
   return unbound.bind(ctx);
