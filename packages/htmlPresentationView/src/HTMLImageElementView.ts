@@ -64,7 +64,11 @@ export class HTMLImageElementView extends HTMLElementView {
         // Fudge: we want to import the SVG into the current document, but TypeScript doesn't know
         // that the result of importNode will be an SVGElement, so we have to assert it as unknown
         // first.
-        const imported = document.importNode(svg, true) as unknown as SVGElement;
+        const imported = document.importNode(
+          svg,
+          true,
+        ) as unknown as SVGElement;
+
         imported.setAttribute("data-image-source", source);
         imported.setAttribute("width", "100%");
         imported.setAttribute("height", "100%");

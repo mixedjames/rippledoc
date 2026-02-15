@@ -120,6 +120,53 @@ describe("HTMLPresentationView integration", () => {
     expect(backgroundDiv.style.backgroundColor).toBe("rgba(0, 255, 0, 1)");
   });
 
+  it("applies element fill style as background color and image", async () => {
+    const root = document.createElement("div");
+    document.body.appendChild(root);
+
+    const viewFactory = new HTMLViewFactory({ root });
+
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <element l="10" w="slideWidth-20" t="sectionTop+10" h="slideHeight-20">
+      <fill image="url-to-image" color="#00FF00" />
+    </element>
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      text: xml,
+      viewFactory,
+    });
+
+    presentation.realiseView();
+    presentation.layoutView();
+
+    const container = root.querySelector(
+      ".presentation-root",
+    ) as HTMLElement | null;
+    expect(container).not.toBeNull();
+
+    const elements = container!.querySelector(
+      ".elements",
+    ) as HTMLElement | null;
+    expect(elements).not.toBeNull();
+    expect(elements!.children.length).toBe(1);
+
+    const sectionEl = elements!.children[0] as HTMLElement;
+    const elementDiv = sectionEl.querySelector("div") as HTMLDivElement | null;
+    expect(elementDiv).not.toBeNull();
+
+    // Background image should be derived from the <fill> image attribute.
+    expect(elementDiv!.style.backgroundImage).toContain("url-to-image");
+
+    // Background color should reflect #00FF00 -> rgba(0, 255, 0, 1).
+    expect(elementDiv!.style.backgroundColor).toBe("rgba(0, 255, 0, 1)");
+  });
+
   it("throws if layoutView is called before realiseView for HTML views", async () => {
     const root = document.createElement("div");
     document.body.appendChild(root);

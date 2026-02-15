@@ -52,7 +52,7 @@ export class UnboundExpression {
   }
 
   /**
-  * Return the UncheckedExpression produced by binding.
+   * Return the UncheckedExpression produced by binding.
    * Only valid after bind() has been called.
    */
   get dependentExpression(): UncheckedExpression {

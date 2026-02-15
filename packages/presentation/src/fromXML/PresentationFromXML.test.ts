@@ -176,6 +176,43 @@ describe("presentationFromXML", () => {
     expect(color.a).toBe(255);
   });
 
+  it("parses <fill> color and image into element style", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <element l="10" w="slideWidth-20" t="sectionTop+10" h="slideHeight-20">
+      <fill
+        image="url-to-image"
+        color="#00FF00"
+      />
+    </element>
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+    expect(section.elements).toHaveLength(1);
+
+    const element = section.elements[0] as Element;
+
+    // image attribute
+    expect(element.style.fill.imageSource).toBe("url-to-image");
+
+    // color attribute (#00FF00 -> r=0, g=255, b=0, a=255)
+    const color = element.style.fill.color;
+    expect(color.r).toBe(0);
+    expect(color.g).toBe(255);
+    expect(color.b).toBe(0);
+    expect(color.a).toBe(255);
+  });
+
   it("throws when <image> has an invalid fit value", async () => {
     const xml = `
 <document>

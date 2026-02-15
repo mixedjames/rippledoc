@@ -13,18 +13,17 @@ import { TokenType } from "../lexer/Token";
  * The same node hierarchy is reused across phases; each node
  * implements phase-transition methods that either return itself
  * unchanged or return a new node in the next phase.
- * 
+ *
  * This model explains the slightly bizarre lookupName interface which returns a link function
  * instead of a direct reference. We want to bind to an UncheckedExpression but during a call
  * to bind, not all expressions will have yet run so an UncheckedExpression may not yet exist for a
  * given name.
- * 
+ *
  * The link function is then called during the resolve() call when all expressions in a system
  * are guarenteed to have been converted to an UncheckedExpression and can be safely referenced.
- * 
+ *
  */
 export abstract class AstNode {
-
   /**
    * Evaluate this node.
    * Only valid after binding and resolution.
@@ -170,4 +169,3 @@ export class BinaryExpression extends AstNode {
     return [...this.left_.getDependencies(), ...this.right_.getDependencies()];
   }
 }
-

@@ -11,9 +11,9 @@ import { NameType } from "./NameType";
  *   x
  *   a.b
  *   a.b.c
- * 
+ *
  * Represents phase 1 - binding.
- * 
+ *
  * Because of this, the only valid thing to do with a NameExpression is to bind it exactly once.
  * This will cause it to be replaced with a LinkedNameExpression.
  */

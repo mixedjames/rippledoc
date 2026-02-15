@@ -2,6 +2,7 @@ import type { ViewFactory } from "../view/ViewFactory";
 import type { Presentation } from "../Presentation";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
 import { ImageFit } from "../ImageElement";
+import type { Style } from "../Styles";
 
 export interface PresentationFromXMLConfig {
   viewFactory: ViewFactory;
@@ -176,20 +177,17 @@ function loadSection(
   });
 }
 
-function loadFill(
-  fillEl: Element,
-  section: ReturnType<PresentationBuilder["createSection"]>,
-): void {
+function loadFill(fillEl: Element, target: { style: Style }): void {
   const colorAttr = fillEl.getAttribute("color");
   const imageAttr = fillEl.getAttribute("image");
 
   if (colorAttr && colorAttr.trim() !== "") {
     const color = parseHexColor(colorAttr);
-    section.style.fill.setColor(color);
+    target.style.fill.setColor(color);
   }
 
   if (imageAttr && imageAttr.trim() !== "") {
-    section.style.fill.setImageSource(imageAttr.trim());
+    target.style.fill.setImageSource(imageAttr.trim());
   }
 }
 
@@ -224,6 +222,7 @@ type ElementLikeBuilder = {
   setTop(expr: string): void;
   setBottom(expr: string): void;
   setHeight(expr: string): void;
+  style: Style;
 };
 
 function loadElement(elementEl: Element, element: ElementLikeBuilder): void {
@@ -263,4 +262,11 @@ function loadElement(elementEl: Element, element: ElementLikeBuilder): void {
   if (hEl && hEl.trim() !== "") {
     element.setHeight(hEl);
   }
+
+  // Parse optional <fill> child to apply style to the element.
+  Array.from(elementEl.children).forEach((child) => {
+    if (child.tagName === "fill") {
+      loadFill(child, element);
+    }
+  });
 }

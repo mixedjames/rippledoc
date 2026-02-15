@@ -94,6 +94,22 @@ export class HTMLElementView implements ElementView {
     style.top = `${topPx}px`;
     style.width = `${widthPx}px`;
     style.height = `${heightPx}px`;
+
+    // Apply element fill style as a background, mirroring HTMLSectionView.
+    const fill = this.element_.style.fill;
+    const color = fill.color;
+    if (color.a > 0) {
+      const alpha = color.a / 255;
+      style.backgroundColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+    }
+
+    const imageSource = fill.imageSource;
+    if (imageSource && imageSource.trim() !== "") {
+      style.backgroundImage = `url(${imageSource})`;
+      style.backgroundSize = "cover";
+      style.backgroundRepeat = "no-repeat";
+      style.backgroundPosition = "center center";
+    }
   }
 
   private computeSlug(): string {

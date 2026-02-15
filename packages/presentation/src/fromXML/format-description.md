@@ -9,7 +9,12 @@ A document looks like this:
       color="#00FF00"
       />
 
-    <element l="10" w="slideWidth-20" t="sectionTop+10" h="slideHeight-20"/>
+    <element l="10" w="slideWidth-20" t="sectionTop+10" h="slideHeight-20">
+      <fill
+        image="url-to-image"
+        color="#00FF00"
+        />
+    </element>
 
     <image
       source=""

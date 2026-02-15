@@ -3,6 +3,7 @@ import type { Expression } from "@rippledoc/expressions";
 import type { Section } from "./Section";
 import type { ElementView } from "./view/ElementView";
 import type { ViewFactory } from "./view/ViewFactory";
+import { Style } from "./Styles";
 
 /**
  * Represents an immutable element with layout properties.
@@ -31,6 +32,8 @@ export class Element {
   private readonly bottom_: Expression;
   private readonly height_: Expression;
 
+  private readonly style_: Style = new Style();
+
   private readonly parent_: Section;
   private readonly view_: ElementView;
 
@@ -54,6 +57,7 @@ export class Element {
     top: Expression;
     bottom: Expression;
     height: Expression;
+    style?: Style;
     parent: Section;
     viewFactory: ViewFactory;
   }) {
@@ -67,6 +71,7 @@ export class Element {
       height,
       parent,
       viewFactory,
+      style,
     } = options;
 
     if (typeof name !== "string") {
@@ -92,6 +97,10 @@ export class Element {
     this.top_ = top;
     this.bottom_ = bottom;
     this.height_ = height;
+
+    if (style) {
+      this.style_ = style;
+    }
 
     this.parent_ = parent;
     this.view_ = this.createView(viewFactory);
@@ -163,6 +172,14 @@ export class Element {
    */
   get height(): number {
     return this.height_.evaluate();
+  }
+
+  /**
+   * Get the style properties of this element.
+   * @returns The element's style object.
+   */
+  get style(): Style {
+    return this.style_;
   }
 
   /**

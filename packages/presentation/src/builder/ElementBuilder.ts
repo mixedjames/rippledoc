@@ -4,6 +4,7 @@ import type { Expression } from "@rippledoc/expressions";
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Section } from "../Section";
 import { Element } from "../Element";
+import { Style } from "../Styles";
 
 /**
  * Layout properties supported by an Element.
@@ -31,6 +32,7 @@ export class ElementBuilder {
 
   private readonly expressions_ = new Map<LayoutKey, string>();
   private readonly getters_ = new Map<LayoutKey, () => Expression>();
+  private style_: Style = new Style();
 
   private built_ = false;
 
@@ -85,6 +87,11 @@ export class ElementBuilder {
     }
 
     this.expressions_.set(key, expr);
+  }
+
+  get style(): Style {
+    this.assertNotBuilt("style");
+    return this.style_;
   }
 
   setPrevious(prev: ElementBuilder): void {
@@ -160,6 +167,7 @@ export class ElementBuilder {
       top: this.get("top"),
       bottom: this.get("bottom"),
       height: this.get("height"),
+      style: this.style_,
       viewFactory: this.viewFactory_,
     };
   }
