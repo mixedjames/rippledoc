@@ -95,7 +95,8 @@ export class HTMLElementView implements ElementView {
     const fill = this.element_.style.fill;
     const color = fill.color;
     if (color.a > 0) {
-      const alpha = color.a / 255;
+      const MAX_COLOR_VALUE = 255;
+      const alpha = color.a / MAX_COLOR_VALUE;
       style.backgroundColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
     }
 
