@@ -13,7 +13,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@rippledoc/core": path.resolve(__dirname, "packages/core/src"),
       "@rippledoc/expressions": path.resolve(
         __dirname,
         "packages/expressions/src",

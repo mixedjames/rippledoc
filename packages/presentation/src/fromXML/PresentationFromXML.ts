@@ -145,7 +145,9 @@ function loadSection(
 
       const fitAttr = child.getAttribute("fit");
       if (fitAttr && fitAttr.trim() !== "") {
-        const fitNormalized = fitAttr.trim().toLowerCase();
+        const fitNormalized: ImageFit = fitAttr
+          .trim()
+          .toLowerCase() as ImageFit;
         let fit: ImageFit | null = null;
 
         switch (fitNormalized) {

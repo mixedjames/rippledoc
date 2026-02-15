@@ -210,7 +210,9 @@ export class Presentation {
    */
   realiseView(): void {
     this.view_.realise();
-    this.sections_.forEach((section) => section.realiseView());
+    this.sections_.forEach((section) => {
+      section.realiseView();
+    });
   }
 
   /**
@@ -222,7 +224,9 @@ export class Presentation {
    */
   layoutView(): void {
     this.view_.layout();
-    this.sections_.forEach((section) => section.layoutView());
+    this.sections_.forEach((section) => {
+      section.layoutView();
+    });
   }
 
   setViewportDimensions(width: number, height: number): void {

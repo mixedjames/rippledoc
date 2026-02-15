@@ -1,8 +1,4 @@
-import type {
-  ElementView,
-  Element,
-  Presentation,
-} from "@rippledoc/presentation";
+import type { ElementView, Element } from "@rippledoc/presentation";
 import { HTMLSectionView } from "./HTMLSectionView";
 
 /**
@@ -75,9 +71,9 @@ export class HTMLElementView implements ElementView {
       throw new Error("HTMLElementView.layout() called before realise()");
     }
 
-    const elementNode = this.rootElement_!;
+    const elementNode = this.rootElement_;
     const section = this.element_.parent;
-    const presentation = section.parent as Presentation;
+    const presentation = section.parent;
     const geometry = presentation.geometry;
 
     const scale = geometry.scale;

@@ -89,7 +89,9 @@ export class PresentationBuilder {
     }
 
     // Finalize each section builder
-    this.sections_.forEach((s) => s.finalize());
+    this.sections_.forEach((s) => {
+      s.finalize();
+    });
 
     // Wire named sections under the 'sections' namespace
     const namedSections = this.module_.rootModule.addSubModule();

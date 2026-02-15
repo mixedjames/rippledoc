@@ -1,8 +1,4 @@
-import type {
-  SectionView,
-  Section,
-  Presentation,
-} from "@rippledoc/presentation";
+import type { SectionView, Section } from "@rippledoc/presentation";
 import { HTMLPresentationView } from "./HTMLPresentationView";
 
 /**
@@ -62,7 +58,7 @@ export class HTMLSectionView implements SectionView {
     // Attach this section's DOM nodes into the presentation's root containers.
     // Presentation.realiseView() guarantees that the PresentationView has already
     // been realised by the time Section.realiseView() is invoked.
-    const presentation = this.section_.parent as Presentation;
+    const presentation = this.section_.parent;
     const presentationView = presentation.view;
     if (!(presentationView instanceof HTMLPresentationView)) {
       throw new Error(
@@ -87,10 +83,10 @@ export class HTMLSectionView implements SectionView {
       throw new Error("HTMLSectionView.layout() called before realise()");
     }
 
-    const background = this.backgroundElement_!;
-    const content = this.contentElement_!;
+    const background = this.backgroundElement_;
+    const content = this.contentElement_;
 
-    const presentation = this.section_.parent as Presentation;
+    const presentation = this.section_.parent;
     const geometry = presentation.geometry;
     const scale = geometry.scale;
     const tx = geometry.tx;
@@ -143,7 +139,7 @@ export class HTMLSectionView implements SectionView {
       return HTMLSectionView.slugify(explicitName);
     }
 
-    const presentation = this.section_.parent as Presentation;
+    const presentation = this.section_.parent;
     const sections = presentation.sections;
     const index = sections.indexOf(this.section_);
     const ordinal = index >= 0 ? index + 1 : 1;

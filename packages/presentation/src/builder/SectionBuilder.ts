@@ -149,7 +149,9 @@ export class SectionBuilder {
     this.registerExpressions();
 
     // Recursively finalize children
-    this.elements_.forEach((el) => el.finalize());
+    this.elements_.forEach((el) => {
+      el.finalize();
+    });
   }
 
   // ─────────────────────────────────────────────────────────────

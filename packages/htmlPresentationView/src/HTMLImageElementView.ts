@@ -1,5 +1,5 @@
 import { HTMLElementView } from "./HTMLElementView";
-import { ImageElement } from "@rippledoc/presentation";
+import { ImageElement, ImageFit } from "@rippledoc/presentation";
 
 export class HTMLImageElementView extends HTMLElementView {
   private readonly imageElement_: ImageElement;
@@ -39,7 +39,7 @@ export class HTMLImageElementView extends HTMLElementView {
   private realiseSvgImage(
     root: HTMLElement,
     source: string,
-    fit: ImageElement["fit"],
+    fit: ImageFit,
     altText: string,
   ): void {
     // Fetch the SVG and inline it into the DOM.
@@ -79,13 +79,13 @@ export class HTMLImageElementView extends HTMLElementView {
 
         // Approximate fit behaviour for inline SVG.
         switch (fit) {
-          case "cover":
+          case ImageFit.Cover:
             imported.style.objectFit = "cover" as unknown as string;
             break;
-          case "fill":
+          case ImageFit.Fill:
             imported.style.objectFit = "fill" as unknown as string;
             break;
-          case "contain":
+          case ImageFit.Contain:
           default:
             imported.style.objectFit = "contain" as unknown as string;
             break;
@@ -109,7 +109,7 @@ export class HTMLImageElementView extends HTMLElementView {
   private realiseBitmapImage(
     root: HTMLElement,
     source: string,
-    fit: ImageElement["fit"],
+    fit: ImageFit,
     altText: string,
   ): void {
     // Bitmap path: create an <img> element and use source as src.
@@ -124,13 +124,13 @@ export class HTMLImageElementView extends HTMLElementView {
     img.style.height = "100%";
 
     switch (fit) {
-      case "cover":
+      case ImageFit.Cover:
         img.style.objectFit = "cover";
         break;
-      case "fill":
+      case ImageFit.Fill:
         img.style.objectFit = "fill";
         break;
-      case "contain":
+      case ImageFit.Contain:
       default:
         img.style.objectFit = "contain";
         break;

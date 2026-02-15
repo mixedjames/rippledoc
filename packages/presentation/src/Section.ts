@@ -88,12 +88,16 @@ export class Section {
 
   realiseView(): void {
     this.view_.realise();
-    this.elements_.forEach((element) => element.realiseView());
+    this.elements_.forEach((element) => {
+      element.realiseView();
+    });
   }
 
   layoutView(): void {
     this.view_.layout();
-    this.elements_.forEach((element) => element.layoutView());
+    this.elements_.forEach((element) => {
+      element.layoutView();
+    });
   }
 
   /**

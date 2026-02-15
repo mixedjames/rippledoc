@@ -3,7 +3,7 @@ import { Expression } from "../expressions/Expression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 import { parseExpression } from "../parser/Parser";
 import { createNativeExpression } from "../native/NativeExpression";
-import { resolveExpressions } from "./Resolver";
+import { hasCyclicalDependencies } from "./HasCyclicalDependencies";
 import { NameType } from "../parser/NameType";
 import type { BindingContext } from "../parser/BindingContext";
 
@@ -306,7 +306,10 @@ export class Module {
     }
 
     this.compiled_ = true;
-    resolveExpressions(this.bindExpressions());
+    const expressions = this.bindExpressions();
+    if (hasCyclicalDependencies(expressions)) {
+      throw new Error("Circular dependency detected among expressions.");
+    }
   }
 
   /**

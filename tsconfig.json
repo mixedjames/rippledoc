@@ -1,14 +1,23 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/expressions" },
-    { "path": "./packages/presentation" },
-    { "path": "./packages/htmlPresentationView" },
-
-    { "path": "./apps/test" },
-    { "path": "./apps/expressions-demo" },
-    { "path": "./apps/xml-presentation-structure-viewer" },
-    { "path": "./apps/html-presentation-view-demo" }
+    {
+      "path": "./packages/expressions"
+    },
+    {
+      "path": "./packages/presentation"
+    },
+    {
+      "path": "./packages/htmlPresentationView"
+    },
+    {
+      "path": "./apps/expressions-demo"
+    },
+    {
+      "path": "./apps/xml-presentation-structure-viewer"
+    },
+    {
+      "path": "./apps/html-presentation-view-demo"
+    }
   ]
 }
