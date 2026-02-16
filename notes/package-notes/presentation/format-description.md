@@ -9,6 +9,12 @@ A document looks like this:
       color="#00FF00"
       />
 
+    <scroll-trigger
+      name="t1"
+      start="sectionTop" start-hits="top|middle|bottom|x%"
+      end="sectionBottom" end-hits="top|middle|bottom|x%"
+      />
+
     <element l="10" w="slideWidth-20" t="sectionTop+10" h="slideHeight-20">
       <fill
         image="url-to-image"

@@ -72,14 +72,13 @@ export default [
 
   {
     rules: {
-
       /**
        * Enforce a maximum cyclomatic complexity of 20.
-       * 
+       *
        * 20 is the default. It might be a bit high. However, I'm not totally sure how much benefit
        * we get from this rule. I've turned it on to ward about the most egregious offenders.
        */
-      "complexity": ["warn", 20],
+      complexity: ["warn", 20],
 
       /**
        * Enforce a maximum nesting depth of 3.
@@ -93,16 +92,16 @@ export default [
 
       /**
        * Magic numbers are errors.
-       * 
+       *
        * I'm not totally averse to adding more here, but by default we should bomb to prompt us to
        * think. A single-line disable instruction check is probably better in general.
-       * 
+       *
        * Exceptions:
        *   0 and 1
        *   2 (division by 2 is common for centering things)
        * 255 (because of RGBA color parsing)
        */
-      "no-magic-numbers": ["error", { ignore: [0, 1, 2, 255] }]
+      "no-magic-numbers": ["error", { ignore: [0, 1, 2, 255] }],
     },
   },
 

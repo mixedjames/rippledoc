@@ -11,6 +11,9 @@
       "path": "./packages/htmlPresentationView"
     },
     {
+      "path": "./packages/scrollTrigger"
+    },
+    {
       "path": "./apps/expressions-demo"
     },
     {
