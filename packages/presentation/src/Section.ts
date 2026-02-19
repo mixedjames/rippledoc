@@ -8,38 +8,52 @@ import { Style } from "./Styles";
 import { SectionTransform } from "./SectionTransform";
 
 /**
- * Represents an immutable section containing elements and layout properties.
+ * Immutable section node in a Presentation.
  *
- * **DO NOT construct directly.** Use SectionBuilder instead:
- * - {@link SectionBuilder} for programmatic construction
+ * A Section represents a fixed portion of the document:
+ * - Structure: parent Presentation and child Elements
+ * - Layout intent: top/height/bottom expressed as Expressions
+ * - Base style: an immutable Style snapshot captured at build time
+ * - Runtime animation: optional SectionTransform, managed via the animated flag
  *
- * Sections are created through DocumentBuilder:
- * @example
- * // Correct usage
- * const documentBuilder = new DocumentBuilder({ viewFactory });
- * const section = documentBuilder.createSection();
- * section.setHeight("200");
- * const element = section.createElement();
- * // ... then build the document
+ * The public API never mutates the section graph or its base style. Any
+ * animation or visual adjustment should be expressed via {@link SectionTransform}
+ * or in the view layer.
+ *
+ * **DO NOT construct directly.** Use SectionBuilder instead.
  */
 export class Section {
+
+  // --------------------
+  // (1) Base properties of a Section:
+  //     Name, parent presentation, view instance
+
   private readonly name_: string;
 
+  private readonly parent_: Presentation;
   private elements_: Element[] = [];
+
+  private readonly view_: SectionView;
+
+  // --------------------
+  // (2) Layout properties of a Section:
+  //     sectionTop, sectionHeight, sectionBottom
 
   private readonly sectionTop_: Expression;
   private readonly sectionHeight_: Expression;
   private readonly sectionBottom_: Expression;
 
-  private readonly parent_: Presentation;
-  private readonly view_: SectionView;
+  // --------------------
+  // (3) Style properties of a Section
 
   private readonly style_: Style = new Style();
 
-  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
-
-  private transform_: SectionTransform | null = null;
+  // --------------------
+  // (4) Animation properties of a Section:
+  //     animated flag, transform state, scroll triggers
   private animated_ = false;
+  private transform_: SectionTransform | null = null;
+  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
 
   /**
    * @param options.name Section name.
@@ -151,8 +165,11 @@ export class Section {
   // --------------------
 
   /**
-   * Get the style object for this section.
-   * @returns The section's style object.
+   * Get the base style for this section.
+   *
+   * Returns a cloned snapshot. Mutating the returned Style does **not**
+   * affect the underlying Section; use runtime transforms or view-specific
+   * mechanisms for animation or visual changes.
    */
   get style(): Style {
     return this.style_.clone();

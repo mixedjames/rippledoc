@@ -8,21 +8,19 @@ import { Style } from "./Styles";
 import { ElementTransform } from "./ElementTransform";
 
 /**
- * Represents an immutable element with layout properties.
+ * Immutable element node in a Section.
  *
- * **DO NOT construct directly.** Use ElementBuilder instead:
- * - {@link ElementBuilder} for programmatic construction
+ * An Element captures:
+ * - Layout intent via Expressions (left/right/width, top/bottom/height)
+ * - Base visual design via an immutable Style snapshot
+ * - Optional runtime transform state via ElementTransform
  *
- * Elements are created through SectionBuilder:
- * @example
- * // Correct usage
- * const section = presentationBuilder.createSection();
- * const element = section.createElement();
- * element.setLeft("10");
- * element.setWidth("100");
- * element.setTop("20");
- * element.setHeight("50");
- * // ... then build the document
+ * The core layout and base style do not change after construction. Any
+ * animation or interactive behaviour should be modelled through
+ * {@link ElementTransform} or view-specific state, not by mutating the
+ * Element instance itself.
+ *
+ * **DO NOT construct directly.** Use ElementBuilder instead.
  */
 export class Element {
   private readonly name_: string;
@@ -179,8 +177,11 @@ export class Element {
   }
 
   /**
-   * Get the style properties of this element.
-   * @returns The element's style object.
+   * Get the base style for this element.
+   *
+   * Returns a cloned snapshot. Mutating the returned Style does **not**
+   * affect the underlying Element; use ElementTransform or view-level
+   * mechanisms for runtime visual changes.
    */
   get style(): Style {
     return this.style_.clone();
