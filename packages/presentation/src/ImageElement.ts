@@ -60,12 +60,4 @@ export class ImageElement extends Element {
   protected override createView(viewFactory: ViewFactory): ElementView {
     return viewFactory.createImageElementView(this);
   }
-
-  realiseView(): void {
-    super.realiseView();
-  }
-
-  layoutView(): void {
-    super.layoutView();
-  }
 }

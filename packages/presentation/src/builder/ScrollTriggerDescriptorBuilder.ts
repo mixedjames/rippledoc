@@ -2,7 +2,9 @@ import { Module } from "@rippledoc/expressions";
 import type { Expression } from "@rippledoc/expressions";
 
 import type { Presentation } from "../Presentation";
-import { ScrollTrigger } from "../ScrollTrigger";
+import { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+
+type TriggerKey = "start" | "end";
 
 /**
  * Builder for a ScrollTrigger associated with a Presentation, Section, or Element.
@@ -11,13 +13,13 @@ import { ScrollTrigger } from "../ScrollTrigger";
  * - Collect start/end expressions as strings
  * - Keep expressions scoped to the owning object's module via a private submodule
  * - Register expressions with the module and expose bound Expression getters
- * - Build an immutable ScrollTrigger instance
+ * - Build an immutable ScrollTriggerDescriptor instance
  */
-export class ScrollTriggerBuilder {
+export class ScrollTriggerDescriptorBuilder {
   private readonly module_: Module;
 
-  private readonly expressions_ = new Map<"start" | "end", string>();
-  private readonly getters_ = new Map<"start" | "end", () => Expression>();
+  private readonly expressions_ = new Map<TriggerKey, string>();
+  private readonly getters_ = new Map<TriggerKey, () => Expression>();
 
   private startViewOffset_ = 0;
   private endViewOffset_ = 0;
@@ -87,13 +89,13 @@ export class ScrollTriggerBuilder {
   // Build phase
   // ─────────────────────────────────────────────────────────────
 
-  build(options: { presentation: Presentation }): ScrollTrigger {
+  build(options: { presentation: Presentation }): ScrollTriggerDescriptor {
     this.assertNotBuilt("build");
     this.built_ = true;
 
     const { presentation } = options;
 
-    return new ScrollTrigger({
+    return new ScrollTriggerDescriptor({
       presentation,
       start: this.get("start"),
       startViewOffset: this.startViewOffset_,
@@ -106,44 +108,68 @@ export class ScrollTriggerBuilder {
   // Internal helpers
   // ─────────────────────────────────────────────────────────────
 
-  private setExpression(key: "start" | "end", expr: string): void {
+  private setExpression(key: TriggerKey, expr: string): void {
     this.assertNotBuilt("setExpression");
 
     if (!expr || typeof expr !== "string") {
-      throw new Error(`ScrollTriggerBuilder: Invalid expression for ${key}`);
+      throw new Error(
+        `ScrollTriggerDescriptorBuilder: Invalid expression for ${key}`,
+      );
     }
 
     this.expressions_.set(key, expr);
   }
 
-  private get(key: "start" | "end"): Expression {
+  private get(key: TriggerKey): Expression {
     const getter = this.getters_.get(key);
     if (!getter) {
       throw new Error(
-        `ScrollTriggerBuilder: Expression '${key}' not registered`,
+        `ScrollTriggerDescriptorBuilder: Expression '${key}' not registered`,
       );
     }
     return getter();
   }
 
   private registerExpressions(): void {
-    const keys: Array<"start" | "end"> = ["start", "end"];
+    const keys: TriggerKey[] = ["start", "end"];
 
     for (const key of keys) {
       const expr = this.expressions_.get(key);
       if (!expr) {
-        throw new Error(`Missing scroll trigger expression: ${key}`);
+        throw new Error(
+          `ScrollTriggerDescriptorBuilder: Missing expression '${key}'`,
+        );
       }
 
-      const getter = this.module_.addExpression(key, expr);
+      const offset =
+        key === "start" ? this.startViewOffset_ : this.endViewOffset_;
+      const finalExpr = this.buildOffsetExpression(expr, offset);
+
+      const getter = this.module_.addExpression(key, finalExpr);
       this.getters_.set(key, getter);
     }
+  }
+
+  /**
+   * Build the expression that encodes any viewport-height-based offset.
+   *
+   * When offset is zero, the original expression is used as-is. Otherwise
+   * we generate an expression of the form:
+   *   (expr) - offset * viewportHeight
+   * which relies on the root module providing a `viewportHeight` expression.
+   */
+  private buildOffsetExpression(expr: string, offset: number): string {
+    if (!offset) {
+      return expr;
+    }
+
+    return `(${expr}) - ${offset} * viewportHeight`;
   }
 
   private assertNotBuilt(method: string): void {
     if (this.built_) {
       throw new Error(
-        `ScrollTriggerBuilder.${method}: Builder is no longer usable after build()`,
+        `ScrollTriggerDescriptorBuilder.${method}: Builder is no longer usable after build()`,
       );
     }
   }

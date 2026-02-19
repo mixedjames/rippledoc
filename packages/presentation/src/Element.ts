@@ -3,7 +3,9 @@ import type { Expression } from "@rippledoc/expressions";
 import type { Section } from "./Section";
 import type { ElementView } from "./view/ElementView";
 import type { ViewFactory } from "./view/ViewFactory";
+import type { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
 import { Style } from "./Styles";
+import { ElementTransform } from "./ElementTransform";
 
 /**
  * Represents an immutable element with layout properties.
@@ -34,8 +36,13 @@ export class Element {
 
   private readonly style_: Style = new Style();
 
+  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
+
   private readonly parent_: Section;
   private readonly view_: ElementView;
+
+  private transform_: ElementTransform | null = null;
+  private animated_ = false;
 
   /**
    * @param options.name Element name.
@@ -45,6 +52,7 @@ export class Element {
    * @param options.top Top position expression.
    * @param options.bottom Bottom position expression.
    * @param options.height Height expression.
+   * @param options.scrollTriggers Scroll triggers associated with this element.
    * @param options.parent Parent section.
    * @param options.viewFactory Factory for creating views.
    * @internal Use ElementBuilder instead.
@@ -58,6 +66,7 @@ export class Element {
     bottom: Expression;
     height: Expression;
     style?: Style;
+    scrollTriggers?: ScrollTriggerDescriptor[];
     parent: Section;
     viewFactory: ViewFactory;
   }) {
@@ -72,6 +81,7 @@ export class Element {
       parent,
       viewFactory,
       style,
+      scrollTriggers = [],
     } = options;
 
     if (typeof name !== "string") {
@@ -98,20 +108,14 @@ export class Element {
     this.bottom_ = bottom;
     this.height_ = height;
 
+    this.scrollTriggers_ = scrollTriggers;
+
     if (style) {
-      this.style_ = style;
+      this.style_ = style.clone();
     }
 
     this.parent_ = parent;
     this.view_ = this.createView(viewFactory);
-  }
-
-  realiseView(): void {
-    this.view_.realise();
-  }
-
-  layoutView(): void {
-    this.view_.layout();
   }
 
   protected createView(viewFactory: ViewFactory): ElementView {
@@ -179,7 +183,42 @@ export class Element {
    * @returns The element's style object.
    */
   get style(): Style {
-    return this.style_;
+    return this.style_.clone();
+  }
+
+  /**
+   * Indicates whether this element has runtime transform state attached.
+   *
+   * When set to true, a lazily-initialised ElementTransform instance is
+   * created and can be accessed via the transform getter.
+   */
+  get animated(): boolean {
+    return this.animated_;
+  }
+
+  set animated(value: boolean) {
+    if (value && !this.animated_) {
+      if (!this.transform_) {
+        this.transform_ = new ElementTransform();
+      }
+    }
+    this.animated_ = value;
+  }
+
+  /**
+   * Runtime transform state for this element, if animation has been
+   * explicitly enabled via the animated flag.
+   */
+  get transform(): ElementTransform | null {
+    return this.transform_;
+  }
+
+  /**
+   * Get the scroll triggers associated with this element.
+   * @returns A copy of the scroll trigger descriptors array.
+   */
+  get scrollTriggers(): readonly ScrollTriggerDescriptor[] {
+    return this.scrollTriggers_.slice();
   }
 
   /**

@@ -40,6 +40,13 @@ export class FillStyle {
   clearImageSource(): void {
     this.imageSource_ = "";
   }
+
+  clone(): FillStyle {
+    return new FillStyle({
+      color: this.color,
+      imageSource: this.imageSource,
+    });
+  }
 }
 
 export class BorderStyle {}
@@ -54,5 +61,15 @@ export class Style {
 
   get border(): BorderStyle {
     return this.border_;
+  }
+
+  clone(): Style {
+    const style = new Style();
+    style.fill.setColor(this.fill.color);
+    const imageSource = this.fill.imageSource;
+    if (imageSource) {
+      style.fill.setImageSource(imageSource);
+    }
+    return style;
   }
 }

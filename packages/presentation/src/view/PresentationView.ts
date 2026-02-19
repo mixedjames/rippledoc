@@ -10,4 +10,11 @@ export interface PresentationView {
 
   /** Apply layout calculations and update the view. */
   layout(): void;
+
+  /**
+   * Set the visibility of trigger markers in the view.
+   *
+   * @param visible - Whether trigger markers should be visible.
+   */
+  setTriggerMarkerVisibility(visible: boolean): void;
 }

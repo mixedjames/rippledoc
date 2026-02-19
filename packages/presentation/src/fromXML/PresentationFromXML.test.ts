@@ -4,6 +4,7 @@ import { presentationFromXML } from "./PresentationFromXML";
 import { nullViewFactory } from "../view/NullViewFactory";
 import { Element } from "../Element";
 import { ImageElement, ImageFit } from "../ImageElement";
+import type { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
 
 const SAMPLE_XML = `
 <document>
@@ -257,5 +258,83 @@ describe("presentationFromXML", () => {
     ).rejects.toThrow(
       "<image> element must have a non-empty 'source' attribute",
     );
+  });
+
+  it("parses section-level <scroll-trigger> elements", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <scroll-trigger
+      name="t1"
+      start="sectionTop"
+      start-hits="top"
+      end="sectionBottom"
+      end-hits="bottom"
+    />
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+
+    const triggers = section.scrollTriggers as ScrollTriggerDescriptor[];
+    expect(triggers.length).toBe(1);
+
+    const trigger = triggers[0]!;
+
+    // slideHeight expression evaluates to 600, but the default
+    // viewport height is 480 and scale is 1, so:
+    // viewportHeight = 480
+    // sectionTop = 0
+    // sectionBottom = 600
+    // start = sectionTop - 0 * 480 = 0
+    // end   = sectionBottom - 1 * 480 = 120
+    expect(trigger.start).toBe(0);
+    expect(trigger.end).toBe(120);
+  });
+
+  it("parses element-level <scroll-trigger> children when supported", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <element l="0" w="100" t="sectionTop" h="50">
+      <scroll-trigger
+        start="0"
+        start-hits="50%"
+        end="1000"
+        end-hits="bottom"
+      />
+    </element>
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    const section = presentation.sections[0]!;
+    const element = section.elements[0] as Element;
+
+    const triggers = element.scrollTriggers as ScrollTriggerDescriptor[];
+    expect(triggers.length).toBe(1);
+
+    const trigger = triggers[0]!;
+
+    // With default viewport height 480 and scale 1:
+    // viewportHeight = 480
+    // start = 0 - 0.5 * 480 = -240
+    // end   = 1000 - 1 * 480 = 520
+    expect(trigger.start).toBe(-240);
+    expect(trigger.end).toBe(520);
   });
 });

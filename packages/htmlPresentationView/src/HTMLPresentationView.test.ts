@@ -30,8 +30,8 @@ describe("HTMLPresentationView integration", () => {
     });
 
     // Realise and lay out the full view tree.
-    presentation.realiseView();
-    presentation.layoutView();
+    presentation.display.realise();
+    presentation.display.layout();
 
     // Root structure
     const container = root.querySelector(
@@ -97,8 +97,8 @@ describe("HTMLPresentationView integration", () => {
       viewFactory,
     });
 
-    presentation.realiseView();
-    presentation.layoutView();
+    presentation.display.realise();
+    presentation.display.layout();
 
     const container = root.querySelector(
       ".presentation-root",
@@ -142,8 +142,8 @@ describe("HTMLPresentationView integration", () => {
       viewFactory,
     });
 
-    presentation.realiseView();
-    presentation.layoutView();
+    presentation.display.realise();
+    presentation.display.layout();
 
     const container = root.querySelector(
       ".presentation-root",
@@ -178,10 +178,10 @@ describe("HTMLPresentationView integration", () => {
       viewFactory,
     });
 
-    // Presentation.layoutView() ultimately calls HTMLPresentationView.layout(), which
+    // presentation.display.layout() ultimately calls HTMLPresentationView.layout(), which
     // now enforces that realise() has already been called.
     expect(() => {
-      presentation.layoutView();
+      presentation.display.layout();
     }).toThrow(/layout\(\) called before realise\(\)/i);
   });
 });

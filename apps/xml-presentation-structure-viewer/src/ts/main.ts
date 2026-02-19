@@ -38,12 +38,17 @@ function getDefaultXmlExample(): string {
   return [
     "<document>",
     '  <slideSize w="800" h="600" />',
-    '  <section h="100">',
-    '    <element l="10" w="50" t="10" h="20" />',
-    '    <element l="70" w="120" t="40" h="30" />',
+    '  <section name="Intro" h="100">',
+    '    <fill color="#111827" />',
+    '    <scroll-trigger start="0" end="200" start-hits="top" end-hits="bottom" />',
+    '    <element name="Title" l="10" w="50" t="10" h="20">',
+    '      <fill color="#38bdf8" />',
+    '      <scroll-trigger start="0" end="100" start-hits="top" end-hits="middle" />',
+    "    </element>",
+    '    <element name="Subtitle" l="70" w="120" t="40" h="30" />',
     "  </section>",
-    '  <section h="200">',
-    '    <element l="20" w="60" t="30" h="40" />',
+    '  <section name="Content" h="200">',
+    '    <element name="Body" l="20" w="60" t="30" h="40" />',
     "  </section>",
     "</document>",
   ].join("\n");
@@ -120,6 +125,33 @@ function renderPresentationStructure(
     title.textContent = `Section ${index + 1}:${sectionNameSuffix} top=${section.sectionTop}, height=${section.sectionHeight}, bottom=${section.sectionBottom}`;
     sectionItem.appendChild(title);
 
+    const sectionStyleSummary = formatStyle(section.style);
+    if (sectionStyleSummary) {
+      const styleNode = document.createElement("div");
+      styleNode.className = "tree-meta style-meta";
+      styleNode.textContent = `Style: ${sectionStyleSummary}`;
+      sectionItem.appendChild(styleNode);
+    }
+
+    if (section.scrollTriggers.length > 0) {
+      const triggersList = document.createElement("ul");
+      triggersList.className = "tree-list scroll-trigger-list";
+
+      section.scrollTriggers.forEach((trigger, triggerIndex) => {
+        const triggerItem = document.createElement("li");
+        triggerItem.className = "tree-node scroll-trigger-node";
+
+        const triggerLabel = document.createElement("div");
+        triggerLabel.className = "tree-label";
+        triggerLabel.textContent = `ScrollTrigger ${triggerIndex + 1}: start=${trigger.start}, end=${trigger.end}`;
+
+        triggerItem.appendChild(triggerLabel);
+        triggersList.appendChild(triggerItem);
+      });
+
+      sectionItem.appendChild(triggersList);
+    }
+
     if (section.elements.length > 0) {
       const elementsList = document.createElement("ul");
       elementsList.className = "tree-list elements-list";
@@ -137,6 +169,33 @@ function renderPresentationStructure(
         elLabel.textContent = `Element ${elIndex + 1}:${nameSuffix} left=${element.left}, top=${element.top}, width=${element.width}, height=${element.height}, right=${element.right}, bottom=${element.bottom}`;
 
         elementItem.appendChild(elLabel);
+
+        const elementStyleSummary = formatStyle(element.style);
+        if (elementStyleSummary) {
+          const styleNode = document.createElement("div");
+          styleNode.className = "tree-meta style-meta";
+          styleNode.textContent = `Style: ${elementStyleSummary}`;
+          elementItem.appendChild(styleNode);
+        }
+
+        if (element.scrollTriggers.length > 0) {
+          const triggersList = document.createElement("ul");
+          triggersList.className = "tree-list scroll-trigger-list";
+
+          element.scrollTriggers.forEach((trigger, triggerIndex) => {
+            const triggerItem = document.createElement("li");
+            triggerItem.className = "tree-node scroll-trigger-node";
+
+            const triggerLabel = document.createElement("div");
+            triggerLabel.className = "tree-label";
+            triggerLabel.textContent = `ScrollTrigger ${triggerIndex + 1}: start=${trigger.start}, end=${trigger.end}`;
+
+            triggerItem.appendChild(triggerLabel);
+            triggersList.appendChild(triggerItem);
+          });
+
+          elementItem.appendChild(triggersList);
+        }
         elementsList.appendChild(elementItem);
       });
 
@@ -148,4 +207,41 @@ function renderPresentationStructure(
 
   root.appendChild(sectionsList);
   container.appendChild(root);
+}
+
+function formatStyle(style: {
+  fill: {
+    color: { r: number; g: number; b: number; a: number };
+    imageSource: string;
+  };
+}): string | null {
+  const { color, imageSource } = style.fill;
+
+  const pieces: string[] = [];
+
+  // Consider a non-zero alpha as an explicitly set color.
+  if (color.a > 0) {
+    const hex = rgbToHex(color.r, color.g, color.b);
+    const alpha = (color.a / 255).toFixed(2);
+    pieces.push(`fill=${hex} (alpha=${alpha})`);
+  }
+
+  if (imageSource && imageSource.trim() !== "") {
+    pieces.push(`image='${imageSource}'`);
+  }
+
+  if (pieces.length === 0) {
+    return null;
+  }
+
+  return pieces.join(", ");
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (value: number): string => {
+    const clamped = Math.max(0, Math.min(255, Math.round(value)));
+    return clamped.toString(16).padStart(2, "0");
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }

@@ -139,6 +139,12 @@ section.results h2 {
   display: inline-block;
 }
 
+.tree-meta {
+  margin-left: 0.9rem;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
 .presentation-node {
   font-weight: 600;
   margin-bottom: 0.3rem;
@@ -157,6 +163,14 @@ ul.tree-list {
 
 .element-node > .tree-label {
   color: #bbf7d0;
+}
+
+.scroll-trigger-node > .tree-label {
+  color: #fde68a;
+}
+
+.style-meta {
+  color: #a5b4fc;
 }
 
 @media (max-width: 900px) {

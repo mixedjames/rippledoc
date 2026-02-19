@@ -3,8 +3,11 @@ import type { Expression } from "@rippledoc/expressions";
 
 import type { ViewFactory } from "../view/ViewFactory";
 import type { Section } from "../Section";
+import type { Presentation } from "../Presentation";
 import { Element } from "../Element";
 import { Style } from "../Styles";
+import type { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+import { ScrollTriggerDescriptorBuilder } from "./ScrollTriggerDescriptorBuilder";
 
 /**
  * Layout properties supported by an Element.
@@ -33,6 +36,9 @@ export class ElementBuilder {
   private readonly expressions_ = new Map<LayoutKey, string>();
   private readonly getters_ = new Map<LayoutKey, () => Expression>();
   private style_: Style = new Style();
+
+  private readonly scrollTriggerBuilders_: ScrollTriggerDescriptorBuilder[] =
+    [];
 
   private built_ = false;
 
@@ -134,6 +140,7 @@ export class ElementBuilder {
    * - Validates constraints
    * - Derives missing expressions
    * - Registers expressions with the module
+   * - Finalizes any associated scroll triggers
    *
    * Must be called before module compilation.
    */
@@ -142,6 +149,12 @@ export class ElementBuilder {
 
     this.validateAndDeriveLayout();
     this.registerExpressions();
+
+    // Finalize any scroll trigger builders so their expressions are
+    // registered with their private submodules before compilation.
+    this.scrollTriggerBuilders_.forEach((builder) => {
+      builder.finalize();
+    });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -158,6 +171,9 @@ export class ElementBuilder {
   }
 
   protected getBuildOptions(options: { parent: Section }) {
+    const presentation: Presentation = options.parent.parent;
+    const scrollTriggers = this.buildScrollTriggers(presentation);
+
     return {
       name: this.name_,
       parent: options.parent,
@@ -169,6 +185,7 @@ export class ElementBuilder {
       height: this.get("height"),
       style: this.style_,
       viewFactory: this.viewFactory_,
+      scrollTriggers,
     };
   }
 
@@ -203,6 +220,31 @@ export class ElementBuilder {
       const getter = this.module_.addExpression(key, expr);
       this.getters_.set(key, getter);
     }
+  }
+
+  /**
+   * Create a new scroll trigger associated with this element.
+   *
+   * The trigger's expressions are stored in a private submodule so they
+   * do not leak into the element's public expression namespace.
+   */
+  createScrollTrigger(): ScrollTriggerDescriptorBuilder {
+    this.assertNotBuilt("createScrollTrigger");
+
+    const builder = new ScrollTriggerDescriptorBuilder({
+      parentModule: this.module_,
+    });
+
+    this.scrollTriggerBuilders_.push(builder);
+    return builder;
+  }
+
+  private buildScrollTriggers(
+    presentation: Presentation,
+  ): ScrollTriggerDescriptor[] {
+    return this.scrollTriggerBuilders_.map((builder) =>
+      builder.build({ presentation }),
+    );
   }
 
   private validateAndDeriveLayout(): void {

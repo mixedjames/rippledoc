@@ -56,8 +56,8 @@ export class HTMLSectionView implements SectionView {
     this.contentElement_ = sectionEl;
 
     // Attach this section's DOM nodes into the presentation's root containers.
-    // Presentation.realiseView() guarantees that the PresentationView has already
-    // been realised by the time Section.realiseView() is invoked.
+    // Presentation.display.realise() guarantees that the PresentationView has already
+    // been realised by the time this section view is realised.
     const presentation = this.section_.parent;
     const presentationView = presentation.view;
     if (!(presentationView instanceof HTMLPresentationView)) {

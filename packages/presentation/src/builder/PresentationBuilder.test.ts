@@ -3,6 +3,7 @@ import { PresentationBuilder } from "./PresentationBuilder";
 import { nullViewFactory } from "../view/NullViewFactory";
 import { Element } from "../Element";
 import { ImageElement } from "../ImageElement";
+import { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
 
 describe("PresentationBuilder – happy path", () => {
   it("builds a presentation with a single section", () => {
@@ -155,5 +156,42 @@ describe("PresentationBuilder – happy paths", () => {
     expect(image.width).toBe(50);
     expect(image.top).toBe(20);
     expect(image.height).toBe(30);
+  });
+
+  it("builds element scroll triggers with viewport offsets", () => {
+    const builder = new PresentationBuilder({
+      viewFactory: nullViewFactory,
+    });
+
+    const section = builder.createSection();
+    section.setHeight("100");
+
+    const el = section.createElement();
+    el.setLeft("0");
+    el.setWidth("100");
+    el.setTop("0");
+    el.setHeight("50");
+
+    const triggerBuilder = el.createScrollTrigger();
+    triggerBuilder.setStart("0");
+    triggerBuilder.setEnd("1000");
+    triggerBuilder.setStartViewOffset(0.5);
+    triggerBuilder.setEndViewOffset(1);
+
+    const presentation = builder.build();
+
+    const builtSection = presentation.sections[0]!;
+    const builtElement = builtSection.elements[0] as Element;
+
+    const triggers = builtElement.scrollTriggers as ScrollTriggerDescriptor[];
+    expect(triggers.length).toBe(1);
+
+    const trigger = triggers[0]!;
+
+    // Default geometry is 640x480 basis and viewport, so viewportHeight = 480
+    // start = 0 - 0.5 * 480 = -240
+    // end   = 1000 - 1 * 480 = 520
+    expect(trigger.start).toBe(-240);
+    expect(trigger.end).toBe(520);
   });
 });

@@ -17,6 +17,11 @@ class NullPresentationView implements PresentationView {
   layout(): void {
     // no-op
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setTriggerMarkerVisibility(visible: boolean): void {
+    // no-op
+  }
 }
 
 class NullSectionView implements SectionView {

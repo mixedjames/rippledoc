@@ -26,7 +26,6 @@ window.addEventListener("DOMContentLoaded", () => {
   if (!xmlInput.value) {
     xmlInput.value = getDefaultXmlExample();
   }
-
   let currentPresentation: Presentation | null = null;
 
   const relayout = () => {
@@ -39,7 +38,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const height = rect.height || 600;
 
     currentPresentation.setViewportDimensions(width, height);
-    currentPresentation.layoutView();
+    const display = currentPresentation.display;
+    display.layout();
+    display.setTriggerMarkerVisibility(true);
   };
 
   renderBtn.addEventListener("click", () => {
@@ -109,17 +110,31 @@ async function handleRenderClick(options: {
       viewFactory,
     });
 
+    console.log("[html-presentation-view-demo] Presentation built", {
+      sections: presentation.sections.length,
+      scrollTriggerCount: presentation.scrollTriggers.length,
+    });
+
     // Set viewport dimensions based on the visible container.
     const rect = viewport.getBoundingClientRect();
     const width = rect.width || 800;
     const height = rect.height || 600;
     presentation.setViewportDimensions(width, height);
 
-    presentation.realiseView();
+    console.log("[html-presentation-view-demo] Initial viewport", {
+      width,
+      height,
+    });
+
+    presentation.display.realise();
     setPresentation(presentation);
 
     if (status) {
-      status.textContent = "Rendered successfully.";
+      const triggerCount = presentation.scrollTriggers.length;
+      status.textContent =
+        triggerCount > 0
+          ? `Rendered successfully. Scroll triggers: ${triggerCount}.`
+          : "Rendered successfully. No scroll triggers found.";
     }
   } catch (err) {
     console.error(err);

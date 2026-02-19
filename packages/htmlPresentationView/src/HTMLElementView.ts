@@ -45,9 +45,8 @@ export class HTMLElementView implements ElementView {
     this.rootElement_ = div;
 
     // Attach this element's root to its parent section's content container.
-    // By the time an Element's view is realised, Presentation.realiseView() and
-    // Section.realiseView() guarantee that the parent Section's view has already
-    // been realised.
+    // By the time an Element's view is realised, Presentation.display.realise()
+    // guarantees that the parent Section's view has already been realised.
     const section = this.element_.parent;
     const sectionView = section.view;
     if (!(sectionView instanceof HTMLSectionView)) {

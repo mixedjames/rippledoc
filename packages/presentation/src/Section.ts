@@ -3,7 +3,9 @@ import type { Presentation } from "./Presentation";
 import type { Element } from "./Element";
 import type { SectionView } from "./view/SectionView";
 import type { ViewFactory } from "./view/ViewFactory";
+import type { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
 import { Style } from "./Styles";
+import { SectionTransform } from "./SectionTransform";
 
 /**
  * Represents an immutable section containing elements and layout properties.
@@ -34,12 +36,18 @@ export class Section {
 
   private readonly style_: Style = new Style();
 
+  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
+
+  private transform_: SectionTransform | null = null;
+  private animated_ = false;
+
   /**
    * @param options.name Section name.
    * @param options.parent Parent presentation.
    * @param options.sectionTop Top position expression.
    * @param options.sectionHeight Height expression.
    * @param options.sectionBottom Bottom position expression.
+   * @param options.scrollTriggers Scroll triggers associated with this section.
    * @param options.elements Array of elements.
    * @param options.viewFactory Factory for creating views.
    * @internal Use SectionBuilder instead.
@@ -50,6 +58,7 @@ export class Section {
     sectionTop: Expression;
     sectionHeight: Expression;
     sectionBottom: Expression;
+    scrollTriggers?: ScrollTriggerDescriptor[];
     style?: Style;
     elements?: Element[];
     viewFactory: ViewFactory;
@@ -60,6 +69,7 @@ export class Section {
       sectionTop,
       sectionHeight,
       sectionBottom,
+      scrollTriggers = [],
       elements = [],
       style,
       viewFactory,
@@ -75,29 +85,17 @@ export class Section {
     this.sectionHeight_ = sectionHeight;
     this.sectionBottom_ = sectionBottom;
 
+    this.scrollTriggers_ = scrollTriggers;
+
     if (elements) {
       this.elements_ = elements;
     }
 
     if (style) {
-      this.style_ = style;
+      this.style_ = style.clone();
     }
 
     this.view_ = viewFactory.createSectionView(this);
-  }
-
-  realiseView(): void {
-    this.view_.realise();
-    this.elements_.forEach((element) => {
-      element.realiseView();
-    });
-  }
-
-  layoutView(): void {
-    this.view_.layout();
-    this.elements_.forEach((element) => {
-      element.layoutView();
-    });
   }
 
   /**
@@ -157,7 +155,34 @@ export class Section {
    * @returns The section's style object.
    */
   get style(): Style {
-    return this.style_;
+    return this.style_.clone();
+  }
+
+  /**
+   * Indicates whether this section has runtime transform state attached.
+   *
+   * When set to true, a lazily-initialised SectionTransform instance is
+   * created and can be accessed via the transform getter.
+   */
+  get animated(): boolean {
+    return this.animated_;
+  }
+
+  set animated(value: boolean) {
+    if (value && !this.animated_) {
+      if (!this.transform_) {
+        this.transform_ = new SectionTransform();
+      }
+    }
+    this.animated_ = value;
+  }
+
+  /**
+   * Runtime transform state for this section, if animation has been
+   * explicitly enabled via the animated flag.
+   */
+  get transform(): SectionTransform | null {
+    return this.transform_;
   }
 
   /**
@@ -166,6 +191,14 @@ export class Section {
    */
   get elements(): readonly Element[] {
     return this.elements_.slice();
+  }
+
+  /**
+   * Get the scroll triggers associated with this section.
+   * @returns A copy of the scroll trigger descriptors array.
+   */
+  get scrollTriggers(): readonly ScrollTriggerDescriptor[] {
+    return this.scrollTriggers_.slice();
   }
 
   /**

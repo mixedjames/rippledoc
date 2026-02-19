@@ -1,4 +1,5 @@
 import type { PresentationView, Presentation } from "@rippledoc/presentation";
+import { HTMLTriggerMarkers } from "./HTMLTriggerMarkers";
 
 /**
  * Skeleton HTML implementation of PresentationView.
@@ -13,6 +14,7 @@ export class HTMLPresentationView implements PresentationView {
   private container_: HTMLElement | null = null;
   private backgroundsContainer_: HTMLElement | null = null;
   private elementsContainer_: HTMLElement | null = null;
+  private triggerMarkers_: HTMLTriggerMarkers | null = null;
 
   constructor(options: { presentation: Presentation; root: HTMLElement }) {
     this.presentation_ = options.presentation;
@@ -47,6 +49,38 @@ export class HTMLPresentationView implements PresentationView {
     if (!this.container_) {
       throw new Error("HTMLPresentationView.layout() called before realise()");
     }
+
+    if (this.triggerMarkers_) {
+      this.triggerMarkers_.relayout();
+    }
+  }
+
+  setTriggerMarkerVisibility(visible: boolean): void {
+    if (!visible) {
+      if (this.triggerMarkers_) {
+        this.triggerMarkers_.setVisible(false);
+      }
+      return;
+    }
+
+    if (!this.container_) {
+      this.realise();
+    }
+
+    if (!this.container_) {
+      throw new Error(
+        "HTMLPresentationView.setTriggerMarkerVisibility() called before container was created",
+      );
+    }
+
+    if (!this.triggerMarkers_) {
+      this.triggerMarkers_ = new HTMLTriggerMarkers({
+        presentation: this.presentation_,
+        container: this.container_,
+      });
+    }
+
+    this.triggerMarkers_.setVisible(true);
   }
 
   /** Root container element for this presentation, created during realise(). */

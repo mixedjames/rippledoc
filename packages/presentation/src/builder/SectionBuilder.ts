@@ -7,6 +7,8 @@ import { Section } from "../Section";
 import { Style } from "../Styles";
 import { ElementBuilder } from "./ElementBuilder";
 import { ImageElementBuilder } from "./ImageElementBuilder";
+import type { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+import { ScrollTriggerDescriptorBuilder } from "./ScrollTriggerDescriptorBuilder";
 
 /**
  * Builder for a Section within a Presentation.
@@ -37,6 +39,9 @@ export class SectionBuilder {
     "sectionTop" | "sectionHeight" | "sectionBottom",
     () => Expression
   >();
+
+  private readonly scrollTriggerBuilders_: ScrollTriggerDescriptorBuilder[] =
+    [];
 
   private built_ = false;
 
@@ -141,6 +146,7 @@ export class SectionBuilder {
    * Finalizes section layout intent:
    * - Derives missing expressions (top / height / bottom)
    * - Registers all expressions with the module
+   * - Finalizes any associated scroll triggers
    */
   finalize(): void {
     this.assertNotBuilt("finalize");
@@ -151,6 +157,12 @@ export class SectionBuilder {
     // Recursively finalize children
     this.elements_.forEach((el) => {
       el.finalize();
+    });
+
+    // Finalize scroll trigger builders so their expressions are
+    // registered with their private submodules before compilation.
+    this.scrollTriggerBuilders_.forEach((builder) => {
+      builder.finalize();
     });
   }
 
@@ -164,12 +176,15 @@ export class SectionBuilder {
 
     const { parent } = options;
 
+    const scrollTriggers = this.buildScrollTriggers(parent);
+
     const section = new Section({
       name: this.name_,
       parent,
       sectionTop: this.get("sectionTop"),
       sectionHeight: this.get("sectionHeight"),
       sectionBottom: this.get("sectionBottom"),
+      scrollTriggers,
       style: this.style_,
       elements: [],
       viewFactory: this.viewFactory_,
@@ -260,6 +275,31 @@ export class SectionBuilder {
       const getter = this.module_.addExpression(key, expr);
       this.getters_.set(key, getter);
     }
+  }
+
+  /**
+   * Create a new scroll trigger associated with this section.
+   *
+   * The trigger's expressions are stored in a private submodule so they
+   * do not leak into the section's public expression namespace.
+   */
+  createScrollTrigger(): ScrollTriggerDescriptorBuilder {
+    this.assertNotBuilt("createScrollTrigger");
+
+    const builder = new ScrollTriggerDescriptorBuilder({
+      parentModule: this.module_,
+    });
+
+    this.scrollTriggerBuilders_.push(builder);
+    return builder;
+  }
+
+  private buildScrollTriggers(
+    presentation: Presentation,
+  ): ScrollTriggerDescriptor[] {
+    return this.scrollTriggerBuilders_.map((builder) =>
+      builder.build({ presentation }),
+    );
   }
 
   private assertNotBuilt(method: string): void {
