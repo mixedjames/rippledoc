@@ -1,8 +1,6 @@
-import type { ViewFactory } from "../view/ViewFactory";
-import type { Presentation } from "../Presentation";
+import type { ViewFactory, Presentation, Style } from "@rippledoc/presentation";
+import { ImageFit } from "@rippledoc/presentation";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
-import { ImageFit } from "../ImageElement";
-import type { Style } from "../Styles";
 
 export interface PresentationFromXMLConfig {
   viewFactory: ViewFactory;

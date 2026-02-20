@@ -1,55 +1,36 @@
-# Presentation package review – 2026-02-19
+# Presentation package review – 2026-02-20
 
 This document captures a snapshot code/design review of the `presentation` package so we can revisit and refine later.
 
 ## 1. Immutability vs. reality
 
-- **"Immutable" Section/Element vs mutable Style**
-  - `Section` and `Element` are documented as immutable, but both expose a live, mutable `Style` via `.style`, and `FillStyle` has mutating setters.
-  - In practice, model instances can be mutated after construction through style APIs.
 - **Backdoor mutation via `_setElements` / `_setSections`**
-  - `Section._setElements` and `Presentation._setSections` mutate internal arrays post-construction to support the builder pattern.
-  - This is marked as internal but is still a public escape hatch; immutability is by convention after build.
+  - `Section._setElements` and `Presentation._setSections` still mutate internal arrays post-construction to support the builder pattern, now living in the `@rippledoc/presentationBuilder` package.
+  - These methods are marked as internal but remain callable; immutability of the graph is enforced by convention and usage discipline rather than by the type system.
 - **Geometry is mutable but cloned on read**
   - `Presentation` owns a mutable `PresentationGeometry` and exposes `geometry` as a clone.
-  - Callers cannot mutate geometry directly, but expressions and triggers observe the original mutable geometry via the module system. Correct, but subtle.
+  - Callers cannot mutate geometry directly, but expressions and triggers observe the original mutable geometry. Correct, but subtle.
 
 ## 2. Mutability model and change propagation
 
-- **Style changes vs. view updates are implicit**
-  - Style is mutated freely (e.g. from XML via `loadFill`), but there is no explicit contract like “if you mutate style after build, call `presentation.display.layout()`”.
-  - Today, the relationship between model mutation and view refresh is implicit rather than part of an explicit model.
-- **Scroll trigger behaviour depends on geometry via expressions**
-  - `ScrollTriggerDescriptorBuilder` encodes viewport offsets into expressions using `viewportHeight`.
-  - `PresentationBuilder` wires a `viewportHeight` native expression based on `PresentationGeometry`.
-  - This gives nice “live” behaviour when viewport changes, but the coupling between triggers and geometry is non-local and a bit magical unless you read both pieces together.
+- **Geometry/transform changes vs. view updates are implicit**
+  - Runtime mutability in this package is now concentrated in `PresentationGeometry` and the transform types (`SectionTransform`, `ElementTransform`).
+  - There is still no explicit contract like “after changing geometry or transforms, call `presentation.display.layout()`”; the relationship between runtime state changes and view refresh remains implicit rather than part of an explicit model.
 
 ## 3. Responsibilities & coupling
 
 - **Presentation = domain root + display orchestrator**
   - `Presentation` (via `createDisplay`) knows how to traverse sections/elements and call `realise`/`layout` on their views.
   - That makes it both the domain root and the top-level display controller, which is more than a pure data model.
-- **ScrollTriggerDescriptor carries unused Presentation dependency**
-  - `ScrollTriggerDescriptor`'s constructor accepts a `presentation` but never uses it.
-  - The type appears coupled to `Presentation` but is effectively just an `Expression` wrapper.
-- **ScrollTriggerDescriptorBuilder assumes root-module wiring**
-  - The builder is "for a Presentation, Section, or Element" but hardcodes use of `viewportHeight`, relying on `PresentationBuilder` to define that on the root module.
-  - Triggers for sections/elements still depend on that global wiring being correct.
 
 ## 4. Inspectable correctness / invariants
 
-- **Builders rely on `finalize` discipline**
-  - `PresentationBuilder`, `SectionBuilder`, `ElementBuilder`, and `ScrollTriggerDescriptorBuilder` assume `finalize()` is called before compile/build.
-  - Correctness is enforced by runtime checks (`built_` flags) and tests, not by the type system. Misordering is possible in principle.
-- **Expression-based layout is constrained but opaque**
-  - Layout constraints are clearly enforced in builders (e.g. exactly 2 of `(left, width, right)` and `(top, height, bottom)`), which is good.
-  - However, expressions are just strings; some invariants are only inspectable via tests, not types.
+- **Layout invariants live in the builder package**
+  - Expression-based layout constraints and builder lifecycle rules (`finalize`/`build` discipline) now reside in `@rippledoc/presentationBuilder`.
+  - The `presentation` package mostly holds already-validated `Expression` instances and `PresentationGeometry`; few correctness invariants are enforced here beyond basic constructor checks.
 
 ## 5. Type-level clarity and runtime type mashing
 
-- **FromXML uses runtime probing for scroll-trigger support**
-  - `loadElement` casts the element builder to an `anyBuilder` and checks for `createScrollTrigger` at runtime.
-  - This works and is guarded, but it is a dynamic, reflective escape hatch rather than a compositional type for “supports scroll triggers”.
 - **Inconsistent use of `import type` vs value imports**
   - Most files use `import type` for view interfaces and `ViewFactory`.
   - `ImageElement` imports `ViewFactory` and `ElementView` as value imports even though they are interfaces. Minor, but slightly blurs the pure model↔view boundary.
@@ -61,16 +42,11 @@ This document captures a snapshot code/design review of the `presentation` packa
   - They effectively act as small aggregates, not just pure value objects.
 - **Styles concept is under-specified**
   - `Style` groups `FillStyle` and `BorderStyle`, but `BorderStyle` is currently empty.
-  - It is not clear whether `Style` is meant to be an immutable value object (copied on change) or a mutable configuration bag (current behaviour).
+  - `Style` is now used as a cloned value snapshot on `Section`/`Element`, but the long-term intent (immutable value object vs richer configuration bag) is still not fully spelled out.
 
 ## 7. Minor correctness / documentation nits
 
-- **Stale terminology in Section docs**
-  - `Section` docs still reference `DocumentBuilder`, which no longer exists.
-  - This erodes trust in docs as the canonical description of the system.
-- **"Experimental" viewportHeight behaviour**
-  - The `viewportHeight` native expression in `PresentationBuilder` is marked experimental, yet scroll triggers already depend on it.
-  - This suggests an uncertainty around behaviour that is effectively part of the public semantics of scroll triggers.
+- Previous nits around `DocumentBuilder` references and "experimental" `viewportHeight` wiring now live entirely in `@rippledoc/presentationBuilder` and are no longer concerns of this package's source.
 
 ---
 
@@ -146,3 +122,10 @@ This section sketches the desired end-state for the `presentation` package, base
     - Affine transform from `ElementTransform`.
 
 This target architecture should make the "immutable document + runtime transform" story explicit, keep the core model inspectable, and give a clean home for animation and other dynamic behaviour.
+
+## 2026-02-19 session summary (high level)
+
+- Clarified the mutability story: `Presentation`, `Section`, and `Element` are treated as immutable snapshots once built; runtime change lives in `PresentationGeometry` and the transform layer.
+- Tightened the conceptual divide between base, immutable `Style` as a value object and runtime visual changes expressed via overlays/transforms instead of in-place mutation.
+- Agreed that animation and other dynamic behaviour should hang off `ElementTransform` (and related runtime state), leaving layout expressions and base style as stable intent.
+- Identified follow-ups: align docs with this model (clean up “immutable” vs actual behaviour), and evolve APIs so enabling animation/transform access is an explicit, opt-in step.

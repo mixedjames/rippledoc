@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { PresentationBuilder } from "./PresentationBuilder";
-import { nullViewFactory } from "../view/NullViewFactory";
+import { nullViewFactory } from "@rippledoc/presentation";
 
 describe("PresentationBuilder – cyclic dependency detection", () => {
   it("throws when element layout expressions form a cycle", () => {

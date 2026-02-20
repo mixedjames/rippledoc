@@ -1,11 +1,14 @@
 import type { Expression } from "@rippledoc/expressions";
+
 import type { Presentation } from "./Presentation";
 import type { Element } from "./Element";
-import type { SectionView } from "./view/SectionView";
-import type { ViewFactory } from "./view/ViewFactory";
-import type { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
+import type { ScrollTrigger } from "./ScrollTrigger";
 import { Style } from "./Styles";
-import { SectionTransform } from "./SectionTransform";
+
+import type { SectionView } from "../view/SectionView";
+import type { ViewFactory } from "../view/ViewFactory";
+
+import { SectionTransform } from "../animation/SectionTransform";
 
 /**
  * Immutable section node in a Presentation.
@@ -23,7 +26,6 @@ import { SectionTransform } from "./SectionTransform";
  * **DO NOT construct directly.** Use SectionBuilder instead.
  */
 export class Section {
-
   // --------------------
   // (1) Base properties of a Section:
   //     Name, parent presentation, view instance
@@ -53,7 +55,7 @@ export class Section {
   //     animated flag, transform state, scroll triggers
   private animated_ = false;
   private transform_: SectionTransform | null = null;
-  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
+  private readonly scrollTriggers_: ScrollTrigger[];
 
   /**
    * @param options.name Section name.
@@ -72,7 +74,7 @@ export class Section {
     sectionTop: Expression;
     sectionHeight: Expression;
     sectionBottom: Expression;
-    scrollTriggers?: ScrollTriggerDescriptor[];
+    scrollTriggers?: ScrollTrigger[];
     style?: Style;
     elements?: Element[];
     viewFactory: ViewFactory;
@@ -214,7 +216,7 @@ export class Section {
    * Get the scroll triggers associated with this section.
    * @returns A copy of the scroll trigger descriptors array.
    */
-  get scrollTriggers(): readonly ScrollTriggerDescriptor[] {
+  get scrollTriggers(): readonly ScrollTrigger[] {
     return this.scrollTriggers_.slice();
   }
 

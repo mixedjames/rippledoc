@@ -1,23 +1,26 @@
 import type { Section } from "./Section";
-import type { PresentationView } from "./view/PresentationView";
-import type { ViewFactory } from "./view/ViewFactory";
 import type { PresentationDisplay } from "./PresentationDisplay";
-import type { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
+import type { ScrollTrigger } from "./ScrollTrigger";
 import { PresentationGeometry } from "./PresentationGeometry";
+
+import type { PresentationView } from "../view/PresentationView";
+import type { ViewFactory } from "../view/ViewFactory";
 
 /**
  * Represents an immutable presentation containing sections and slide geometry.
  *
  * Slide size and scaling are stored in a {@link PresentationGeometry} instance,
- * which is owned by the Presentation and typically configured via
- * {@link PresentationBuilder}.
+ * which is owned by the Presentation and typically configured via the
+ * {@link PresentationBuilder} in the `@rippledoc/presentationBuilder` package.
  *
- * **DO NOT construct directly.** Use PresentationBuilder or presentationFromXML() instead:
- * - {@link PresentationBuilder} for programmatic construction
- * - {@link presentationFromXML} for loading from XML files
+ * **DO NOT construct directly.** Use the builder/XML helpers instead:
+ * - {@link PresentationBuilder} (in `@rippledoc/presentationBuilder`) for
+ *   programmatic construction
+ * - {@link presentationFromXML} (in `@rippledoc/presentationBuilder`) for
+ *   loading from XML files
  *
  * @example
- * // Correct usage with PresentationBuilder
+ * // Correct usage with PresentationBuilder (from @rippledoc/presentationBuilder)
  * const builder = new PresentationBuilder({ viewFactory });
  * builder.setSlideWidth(800);
  * builder.setSlideHeight(600);
@@ -25,11 +28,11 @@ import { PresentationGeometry } from "./PresentationGeometry";
  * const presentation = builder.build();
  *
  * @example
- * // Correct usage with XML
+ * // Correct usage with XML (from @rippledoc/presentationBuilder)
  * const presentation = await presentationFromXML("./file.xml", viewFactory);
  */
 export class Presentation {
-  private sections_: Section[];
+  private sections_: Section[] = [];
   private readonly view_: PresentationView;
 
   private readonly display_: PresentationDisplay;
@@ -37,23 +40,20 @@ export class Presentation {
   private geometry_: PresentationGeometry;
 
   /**
-   * @param options.sections Array of sections.
    * @param options.geometry Shared geometry state for this presentation.
    * @param options.viewFactory Factory for creating views.
-   * @internal Use PresentationBuilder or presentationFromXML() instead.
+   * @internal Use the PresentationBuilder / presentationFromXML helpers instead.
    */
   constructor(options: {
-    sections?: Section[];
     viewFactory: ViewFactory;
     geometry: PresentationGeometry;
   }) {
-    const { sections = [], viewFactory, geometry } = options;
+    const { viewFactory, geometry } = options;
 
     if (!geometry) {
       throw new Error("Presentation constructor: geometry is required");
     }
 
-    this.sections_ = sections;
     this.view_ = viewFactory.createPresentationView(this);
     this.geometry_ = geometry;
     this.display_ = this.createDisplay();
@@ -121,9 +121,9 @@ export class Presentation {
 
   /**
    * Get all scroll triggers defined on this presentation's sections and elements.
-   * @returns A flat array of ScrollTriggerDescriptor instances.
+   * @returns A flat array of ScrollTrigger instances.
    */
-  get scrollTriggers(): readonly ScrollTriggerDescriptor[] {
+  get scrollTriggers(): readonly ScrollTrigger[] {
     return this.sections_.flatMap((section) => [
       ...section.scrollTriggers,
       ...section.elements.flatMap((element) => [...element.scrollTriggers]),

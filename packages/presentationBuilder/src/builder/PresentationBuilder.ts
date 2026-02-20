@@ -1,8 +1,7 @@
 import { Module } from "@rippledoc/expressions";
 
-import type { ViewFactory } from "../view/ViewFactory";
-import { Presentation } from "../Presentation";
-import { PresentationGeometry } from "../PresentationGeometry";
+import type { ViewFactory } from "@rippledoc/presentation";
+import { Presentation, PresentationGeometry } from "@rippledoc/presentation";
 import { SectionBuilder } from "./SectionBuilder";
 
 /**

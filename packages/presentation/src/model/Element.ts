@@ -1,11 +1,13 @@
 import type { Expression } from "@rippledoc/expressions";
 
 import type { Section } from "./Section";
-import type { ElementView } from "./view/ElementView";
-import type { ViewFactory } from "./view/ViewFactory";
-import type { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
+import type { ScrollTrigger } from "./ScrollTrigger";
 import { Style } from "./Styles";
-import { ElementTransform } from "./ElementTransform";
+
+import type { ElementView } from "../view/ElementView";
+import type { ViewFactory } from "../view/ViewFactory";
+
+import { ElementTransform } from "../animation/ElementTransform";
 
 /**
  * Immutable element node in a Section.
@@ -34,7 +36,7 @@ export class Element {
 
   private readonly style_: Style = new Style();
 
-  private readonly scrollTriggers_: ScrollTriggerDescriptor[];
+  private readonly scrollTriggers_: ScrollTrigger[];
 
   private readonly parent_: Section;
   private readonly view_: ElementView;
@@ -64,7 +66,7 @@ export class Element {
     bottom: Expression;
     height: Expression;
     style?: Style;
-    scrollTriggers?: ScrollTriggerDescriptor[];
+    scrollTriggers?: ScrollTrigger[];
     parent: Section;
     viewFactory: ViewFactory;
   }) {
@@ -218,7 +220,7 @@ export class Element {
    * Get the scroll triggers associated with this element.
    * @returns A copy of the scroll trigger descriptors array.
    */
-  get scrollTriggers(): readonly ScrollTriggerDescriptor[] {
+  get scrollTriggers(): readonly ScrollTrigger[] {
     return this.scrollTriggers_.slice();
   }
 

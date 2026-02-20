@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { Expression } from "@rippledoc/expressions";
 
-import { Presentation } from "./Presentation";
-import { PresentationGeometry } from "./PresentationGeometry";
-import { Section } from "./Section";
-import { Element } from "./Element";
-import { ImageElement } from "./ImageElement";
-import { ScrollTriggerDescriptor } from "./ScrollTriggerDescriptor";
-import { ElementTransform } from "./ElementTransform";
-import { SectionTransform } from "./SectionTransform";
-import { nullViewFactory } from "./view/NullViewFactory";
+import { Presentation } from "../model/Presentation";
+import { PresentationGeometry } from "../model/PresentationGeometry";
+import { Section } from "../model/Section";
+import { Element } from "../model/Element";
+import { ImageElement } from "../model/ImageElement";
+import { ScrollTrigger } from "../model/ScrollTrigger";
+import { ElementTransform } from "../animation/ElementTransform";
+import { SectionTransform } from "../animation/SectionTransform";
+import { nullViewFactory } from "../view/NullViewFactory";
 
 function makeConstExpression(value: number): Expression {
   // A tiny helper to create an Expression that always
@@ -30,7 +30,6 @@ describe("Presentation", () => {
     });
 
     const presentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry,
     });
@@ -42,7 +41,6 @@ describe("Presentation", () => {
   it("returns sections array and view instance", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });
@@ -63,10 +61,11 @@ describe("Presentation", () => {
     });
 
     const presentation = new Presentation({
-      sections: [section],
       viewFactory: nullViewFactory,
       geometry,
     });
+
+    presentation._setSections([section]);
 
     expect(presentation.sections).toHaveLength(1);
     expect(presentation.sections[0]).toBe(section);
@@ -76,7 +75,6 @@ describe("Presentation", () => {
   it("delegates display.realise and display.layout to sections and views", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });
@@ -109,10 +107,11 @@ describe("Presentation", () => {
     });
 
     const presentation = new Presentation({
-      sections: [section],
       viewFactory: nullViewFactory,
       geometry,
     });
+
+    presentation._setSections([section]);
 
     // Should not throw and should traverse the tree.
     presentation.display.realise();
@@ -122,7 +121,6 @@ describe("Presentation", () => {
   it("supports ImageElement instances within sections", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });
@@ -160,29 +158,29 @@ describe("Presentation", () => {
     });
 
     const presentation = new Presentation({
-      sections: [section],
       viewFactory: nullViewFactory,
       geometry,
     });
+
+    presentation._setSections([section]);
 
     expect(presentation.sections[0]!.elements[0]).toBeInstanceOf(ImageElement);
     const builtImage = presentation.sections[0]!.elements[0] as ImageElement;
     expect(builtImage.source).toBe("images/foo.png");
   });
 
-  it("evaluates ScrollTriggerDescriptor start and end via expressions", () => {
+  it("evaluates ScrollTrigger start and end via expressions", () => {
     const geometry = new PresentationGeometry({
       basisWidth: 640,
       basisHeight: 480,
     });
 
     const presentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry,
     });
 
-    const trigger = new ScrollTriggerDescriptor({
+    const trigger = new ScrollTrigger({
       presentation,
       start: makeConstExpression(100),
       end: makeConstExpression(300),
@@ -195,7 +193,6 @@ describe("Presentation", () => {
   it("attaches scroll triggers to elements", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });
@@ -210,7 +207,7 @@ describe("Presentation", () => {
       viewFactory: nullViewFactory,
     });
 
-    const trigger = new ScrollTriggerDescriptor({
+    const trigger = new ScrollTrigger({
       presentation: dummyPresentation,
       start: makeConstExpression(10),
       end: makeConstExpression(20),
@@ -237,14 +234,15 @@ describe("Presentation", () => {
     section._setElements([element]);
 
     const geometry = new PresentationGeometry();
+
     const presentation = new Presentation({
-      sections: [section],
       viewFactory: nullViewFactory,
       geometry,
     });
 
-    const allTriggers =
-      presentation.scrollTriggers as ScrollTriggerDescriptor[];
+    presentation._setSections([section]);
+
+    const allTriggers = presentation.scrollTriggers as ScrollTrigger[];
     expect(allTriggers.length).toBe(1);
     expect(allTriggers[0]).toBe(trigger);
   });
@@ -252,7 +250,6 @@ describe("Presentation", () => {
   it("lazily creates ElementTransform when animated is enabled", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });
@@ -296,7 +293,6 @@ describe("Presentation", () => {
   it("lazily creates SectionTransform when animated is enabled", () => {
     const dummyGeometry = new PresentationGeometry();
     const dummyPresentation = new Presentation({
-      sections: [],
       viewFactory: nullViewFactory,
       geometry: dummyGeometry,
     });

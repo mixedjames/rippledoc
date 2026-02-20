@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { presentationFromXML } from "./PresentationFromXML";
-import { nullViewFactory } from "../view/NullViewFactory";
-import { Element } from "../Element";
-import { ImageElement, ImageFit } from "../ImageElement";
-import type { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+import {
+  nullViewFactory,
+  Element,
+  ImageElement,
+  ImageFit,
+  ScrollTrigger,
+} from "@rippledoc/presentation";
 
 const SAMPLE_XML = `
 <document>
@@ -284,7 +287,7 @@ describe("presentationFromXML", () => {
     expect(presentation.sections).toHaveLength(1);
     const section = presentation.sections[0]!;
 
-    const triggers = section.scrollTriggers as ScrollTriggerDescriptor[];
+    const triggers = section.scrollTriggers as ScrollTrigger[];
     expect(triggers.length).toBe(1);
 
     const trigger = triggers[0]!;
@@ -325,7 +328,7 @@ describe("presentationFromXML", () => {
     const section = presentation.sections[0]!;
     const element = section.elements[0] as Element;
 
-    const triggers = element.scrollTriggers as ScrollTriggerDescriptor[];
+    const triggers = element.scrollTriggers as ScrollTrigger[];
     expect(triggers.length).toBe(1);
 
     const trigger = triggers[0]!;

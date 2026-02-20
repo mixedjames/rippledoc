@@ -1,8 +1,8 @@
 import { Element } from "./Element";
 import { Section } from "./Section";
 
-import { ViewFactory } from "./view/ViewFactory";
-import { ElementView } from "./view/ElementView";
+import { ViewFactory } from "../view/ViewFactory";
+import { ElementView } from "../view/ElementView";
 
 import { Expression } from "@rippledoc/expressions";
 

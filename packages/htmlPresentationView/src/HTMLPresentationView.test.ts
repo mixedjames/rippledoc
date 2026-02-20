@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 
-import { presentationFromXML } from "@rippledoc/presentation";
+import { presentationFromXML } from "@rippledoc/presentationBuilder";
 import { HTMLViewFactory } from "./HTMLViewFactory";
 
 const SAMPLE_XML = `

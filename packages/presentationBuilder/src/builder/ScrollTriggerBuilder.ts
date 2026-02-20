@@ -1,8 +1,8 @@
 import { Module } from "@rippledoc/expressions";
 import type { Expression } from "@rippledoc/expressions";
 
-import type { Presentation } from "../Presentation";
-import { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+import type { Presentation } from "@rippledoc/presentation";
+import { ScrollTrigger } from "@rippledoc/presentation";
 
 type TriggerKey = "start" | "end";
 
@@ -13,9 +13,9 @@ type TriggerKey = "start" | "end";
  * - Collect start/end expressions as strings
  * - Keep expressions scoped to the owning object's module via a private submodule
  * - Register expressions with the module and expose bound Expression getters
- * - Build an immutable ScrollTriggerDescriptor instance
+ * - Build an immutable ScrollTrigger instance
  */
-export class ScrollTriggerDescriptorBuilder {
+export class ScrollTriggerBuilder {
   private readonly module_: Module;
 
   private readonly expressions_ = new Map<TriggerKey, string>();
@@ -89,13 +89,13 @@ export class ScrollTriggerDescriptorBuilder {
   // Build phase
   // ─────────────────────────────────────────────────────────────
 
-  build(options: { presentation: Presentation }): ScrollTriggerDescriptor {
+  build(options: { presentation: Presentation }): ScrollTrigger {
     this.assertNotBuilt("build");
     this.built_ = true;
 
     const { presentation } = options;
 
-    return new ScrollTriggerDescriptor({
+    return new ScrollTrigger({
       presentation,
       start: this.get("start"),
       startViewOffset: this.startViewOffset_,
@@ -112,9 +112,7 @@ export class ScrollTriggerDescriptorBuilder {
     this.assertNotBuilt("setExpression");
 
     if (!expr || typeof expr !== "string") {
-      throw new Error(
-        `ScrollTriggerDescriptorBuilder: Invalid expression for ${key}`,
-      );
+      throw new Error(`ScrollTriggerBuilder: Invalid expression for ${key}`);
     }
 
     this.expressions_.set(key, expr);
@@ -124,7 +122,7 @@ export class ScrollTriggerDescriptorBuilder {
     const getter = this.getters_.get(key);
     if (!getter) {
       throw new Error(
-        `ScrollTriggerDescriptorBuilder: Expression '${key}' not registered`,
+        `ScrollTriggerBuilder: Expression '${key}' not registered`,
       );
     }
     return getter();
@@ -136,9 +134,7 @@ export class ScrollTriggerDescriptorBuilder {
     for (const key of keys) {
       const expr = this.expressions_.get(key);
       if (!expr) {
-        throw new Error(
-          `ScrollTriggerDescriptorBuilder: Missing expression '${key}'`,
-        );
+        throw new Error(`ScrollTriggerBuilder: Missing expression '${key}'`);
       }
 
       const offset =
@@ -169,7 +165,7 @@ export class ScrollTriggerDescriptorBuilder {
   private assertNotBuilt(method: string): void {
     if (this.built_) {
       throw new Error(
-        `ScrollTriggerDescriptorBuilder.${method}: Builder is no longer usable after build()`,
+        `ScrollTriggerBuilder.${method}: Builder is no longer usable after build()`,
       );
     }
   }

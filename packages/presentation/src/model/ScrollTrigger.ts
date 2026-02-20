@@ -8,9 +8,9 @@ import { Presentation } from "./Presentation";
  * scroll positions into concrete values in presentation coordinates,
  * taking viewport size and scale into account.
  *
- * Do not construct directly – use ScrollTriggerDescriptorBuilder instead.
+ * Do not construct directly – use ScrollTriggerBuilder instead.
  */
-export class ScrollTriggerDescriptor {
+export class ScrollTrigger {
   private start_: Expression;
   private end_: Expression;
 
@@ -31,7 +31,7 @@ export class ScrollTriggerDescriptor {
    * Evaluate the configured start expression.
    *
    * Any viewport-related offsets should already be encoded in the
-   * underlying expression by the ScrollTriggerDescriptorBuilder.
+   * underlying expression by the ScrollTriggerBuilder.
    */
   get start(): number {
     return this.start_.evaluate();
@@ -41,7 +41,7 @@ export class ScrollTriggerDescriptor {
    * Evaluate the configured end expression.
    *
    * Any viewport-related offsets should already be encoded in the
-   * underlying expression by the ScrollTriggerDescriptorBuilder.
+   * underlying expression by the ScrollTriggerBuilder.
    */
   get end(): number {
     return this.end_.evaluate();

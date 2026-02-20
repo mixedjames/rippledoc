@@ -8,6 +8,9 @@
       "path": "./packages/presentation"
     },
     {
+      "path": "./packages/presentationBuilder"
+    },
+    {
       "path": "./packages/htmlPresentationView"
     },
     {

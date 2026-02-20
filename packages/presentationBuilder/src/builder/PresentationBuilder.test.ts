@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { PresentationBuilder } from "./PresentationBuilder";
-import { nullViewFactory } from "../view/NullViewFactory";
-import { Element } from "../Element";
-import { ImageElement } from "../ImageElement";
-import { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
+import {
+  nullViewFactory,
+  Element,
+  ImageElement,
+  ScrollTrigger,
+} from "@rippledoc/presentation";
 
 describe("PresentationBuilder – happy path", () => {
   it("builds a presentation with a single section", () => {
@@ -183,7 +185,7 @@ describe("PresentationBuilder – happy paths", () => {
     const builtSection = presentation.sections[0]!;
     const builtElement = builtSection.elements[0] as Element;
 
-    const triggers = builtElement.scrollTriggers as ScrollTriggerDescriptor[];
+    const triggers = builtElement.scrollTriggers as ScrollTrigger[];
     expect(triggers.length).toBe(1);
 
     const trigger = triggers[0]!;

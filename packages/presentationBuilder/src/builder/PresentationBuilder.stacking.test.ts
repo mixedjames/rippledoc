@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { PresentationBuilder } from "./PresentationBuilder";
-import { nullViewFactory } from "../view/NullViewFactory";
+import { nullViewFactory } from "@rippledoc/presentation";
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;

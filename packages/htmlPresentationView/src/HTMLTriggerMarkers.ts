@@ -62,7 +62,7 @@ export class HTMLTriggerMarkers {
 
       // Basic debug logging so demo users can confirm mapping.
       // Intentionally kept lightweight.
-       
+
       console.log("[HTMLTriggerMarkers] trigger", index, {
         start,
         end,

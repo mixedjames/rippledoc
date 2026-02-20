@@ -29,14 +29,16 @@
  * ## Builders
  *
  * Builder types (PresentationBuilder, SectionBuilder, ElementBuilder,
- * ScrollTriggerDescriptorBuilder) capture construction-time intent and
- * enforce layout invariants before producing immutable model instances.
+ * ScrollTriggerBuilder) live in the `@rippledoc/presentationBuilder`
+ * package. They capture construction-time intent and enforce layout
+ * invariants before producing immutable model instances.
  *
  * ## XML construction (fromXML)
  *
- * The `presentationFromXML` helper builds a Presentation from an XML
- * description, using the same builders under the hood to ensure the
- * same invariants and layout rules apply.
+ * The `presentationFromXML` helper (from the
+ * `@rippledoc/presentationBuilder` package) builds a Presentation
+ * from an XML description, using the same builders under the hood to
+ * ensure the same invariants and layout rules apply.
  *
  * ## Views
  *
@@ -47,29 +49,23 @@
  */
 
 // Presentation DOM
-export { Presentation } from "./Presentation";
-export { PresentationGeometry } from "./PresentationGeometry";
-export { Section } from "./Section";
-export { Element } from "./Element";
-export { ImageElement, ImageFit } from "./ImageElement";
-export { SectionTransform } from "./SectionTransform";
-export { ElementTransform } from "./ElementTransform";
+export { Presentation } from "./model/Presentation";
+export { PresentationGeometry } from "./model/PresentationGeometry";
+export { Section } from "./model/Section";
+export { Element } from "./model/Element";
+export { ImageElement, ImageFit } from "./model/ImageElement";
 
-export { Style } from "./Styles";
+export { ScrollTrigger } from "./model/ScrollTrigger";
+export { Style } from "./model/Styles";
 
-// Builder API
-export { PresentationBuilder } from "./builder/PresentationBuilder";
-export { SectionBuilder } from "./builder/SectionBuilder";
-export { ElementBuilder } from "./builder/ElementBuilder";
-export { ScrollTriggerDescriptorBuilder } from "./builder/ScrollTriggerDescriptorBuilder";
-
-// XML reader
-export { presentationFromXML } from "./fromXML/PresentationFromXML";
+// Animation API
+export { SectionTransform } from "./animation/SectionTransform";
+export { ElementTransform } from "./animation/ElementTransform";
 
 // View API
 export type { PresentationView } from "./view/PresentationView";
 export type { SectionView } from "./view/SectionView";
 export type { ElementView } from "./view/ElementView";
 export type { ViewFactory } from "./view/ViewFactory";
-export type { PresentationDisplay } from "./PresentationDisplay";
+export type { PresentationDisplay } from "./model/PresentationDisplay";
 export { NullViewFactory, nullViewFactory } from "./view/NullViewFactory";

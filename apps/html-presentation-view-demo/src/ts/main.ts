@@ -1,6 +1,7 @@
 import "../css/styles.css";
 
-import { presentationFromXML, Presentation } from "@rippledoc/presentation";
+import { Presentation } from "@rippledoc/presentation";
+import { presentationFromXML } from "@rippledoc/presentationBuilder";
 import { HTMLViewFactory } from "@rippledoc/htmlPresentationView";
 
 window.addEventListener("DOMContentLoaded", () => {

@@ -14,6 +14,10 @@ module.exports = {
         __dirname,
         "./packages/presentation/src",
       ),
+      "@rippledoc/presentationBuilder": path.resolve(
+        __dirname,
+        "./packages/presentationBuilder/src",
+      ),
       "@rippledoc/htmlPresentationView": path.resolve(
         __dirname,
         "./packages/htmlPresentationView/src",

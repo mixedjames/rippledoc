@@ -1,10 +1,7 @@
 import "../css/styles.css";
 
-import {
-  presentationFromXML,
-  nullViewFactory,
-  Presentation,
-} from "@rippledoc/presentation";
+import { nullViewFactory, Presentation } from "@rippledoc/presentation";
+import { presentationFromXML } from "@rippledoc/presentationBuilder";
 
 window.addEventListener("DOMContentLoaded", () => {
   const xmlInput = document.getElementById(

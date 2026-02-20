@@ -1,13 +1,13 @@
-import type { Presentation } from "../Presentation";
-import type { Section } from "../Section";
-import type { Element } from "../Element";
+import type { Presentation } from "../model/Presentation";
+import type { Section } from "../model/Section";
+import type { Element } from "../model/Element";
 
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
 import type { ViewFactory } from "./ViewFactory";
 
-import { ImageElement } from "../ImageElement";
+import { ImageElement } from "../model/ImageElement";
 
 class NullPresentationView implements PresentationView {
   realise(): void {

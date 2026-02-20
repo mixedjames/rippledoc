@@ -1,13 +1,13 @@
 import { Module } from "@rippledoc/expressions";
 import type { Expression } from "@rippledoc/expressions";
 
-import type { ViewFactory } from "../view/ViewFactory";
-import type { Section } from "../Section";
-import type { Presentation } from "../Presentation";
-import { Element } from "../Element";
-import { Style } from "../Styles";
-import type { ScrollTriggerDescriptor } from "../ScrollTriggerDescriptor";
-import { ScrollTriggerDescriptorBuilder } from "./ScrollTriggerDescriptorBuilder";
+import type {
+  ViewFactory,
+  Section,
+  Presentation,
+} from "@rippledoc/presentation";
+import { Element, Style, ScrollTrigger } from "@rippledoc/presentation";
+import { ScrollTriggerBuilder } from "./ScrollTriggerBuilder";
 
 /**
  * Layout properties supported by an Element.
@@ -37,8 +37,7 @@ export class ElementBuilder {
   private readonly getters_ = new Map<LayoutKey, () => Expression>();
   private style_: Style = new Style();
 
-  private readonly scrollTriggerBuilders_: ScrollTriggerDescriptorBuilder[] =
-    [];
+  private readonly scrollTriggerBuilders_: ScrollTriggerBuilder[] = [];
 
   private built_ = false;
 
@@ -228,10 +227,10 @@ export class ElementBuilder {
    * The trigger's expressions are stored in a private submodule so they
    * do not leak into the element's public expression namespace.
    */
-  createScrollTrigger(): ScrollTriggerDescriptorBuilder {
+  createScrollTrigger(): ScrollTriggerBuilder {
     this.assertNotBuilt("createScrollTrigger");
 
-    const builder = new ScrollTriggerDescriptorBuilder({
+    const builder = new ScrollTriggerBuilder({
       parentModule: this.module_,
     });
 
@@ -239,9 +238,7 @@ export class ElementBuilder {
     return builder;
   }
 
-  private buildScrollTriggers(
-    presentation: Presentation,
-  ): ScrollTriggerDescriptor[] {
+  private buildScrollTriggers(presentation: Presentation): ScrollTrigger[] {
     return this.scrollTriggerBuilders_.map((builder) =>
       builder.build({ presentation }),
     );

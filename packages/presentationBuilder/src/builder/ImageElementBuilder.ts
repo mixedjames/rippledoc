@@ -1,7 +1,10 @@
 import { ElementBuilder } from "./ElementBuilder";
-import type { ViewFactory } from "../view/ViewFactory";
-import type { Section } from "../Section";
-import { ImageElement, ImageFit } from "../ImageElement";
+import {
+  ViewFactory,
+  Section,
+  ImageElement,
+  ImageFit,
+} from "@rippledoc/presentation";
 
 import type { Module } from "@rippledoc/expressions";
 
