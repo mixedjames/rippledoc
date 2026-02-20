@@ -1,4 +1,8 @@
-import type { SectionView, Section } from "@rippledoc/presentation";
+import type {
+  SectionView,
+  Section,
+  ScrollTriggerInternal,
+} from "@rippledoc/presentation";
 import { HTMLPresentationView } from "./HTMLPresentationView";
 
 /**
@@ -132,6 +136,14 @@ export class HTMLSectionView implements SectionView {
     contentStyle.position = "absolute";
     contentStyle.left = "0";
     contentStyle.top = "0";
+  }
+
+  registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void {
+    const presentation = this.section_.parent;
+    const presentationView = presentation.view;
+    if (presentationView instanceof HTMLPresentationView) {
+      presentationView.scrollTriggerManager.registerTriggers(triggers);
+    }
   }
 
   private computeSlug(): string {

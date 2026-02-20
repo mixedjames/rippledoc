@@ -104,7 +104,10 @@ async function handleRenderClick(options: {
   }
 
   try {
-    const viewFactory = new HTMLViewFactory({ root: rootHost });
+    const viewFactory = new HTMLViewFactory({
+      root: rootHost,
+      scrollingElement: viewport,
+    });
 
     const presentation = await presentationFromXML({
       text: source,

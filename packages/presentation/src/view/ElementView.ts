@@ -1,3 +1,5 @@
+import type { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
+
 /**
  * View abstraction for an element.
  *
@@ -10,4 +12,12 @@ export interface ElementView {
 
   /** Apply layout calculations and update the view. */
   layout(): void;
+
+  /**
+   * Register scroll triggers associated with this element.
+   *
+   * Implementations may use this to prepare any trigger-specific
+   * visualisation or runtime behaviour.
+   */
+  registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void;
 }

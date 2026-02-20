@@ -2,7 +2,8 @@ import type { Expression } from "@rippledoc/expressions";
 
 import type { Presentation } from "./Presentation";
 import type { Element } from "./Element";
-import type { ScrollTrigger } from "./ScrollTrigger";
+import type { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+import { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
 import { Style } from "./Styles";
 
 import type { SectionView } from "../view/SectionView";
@@ -55,7 +56,7 @@ export class Section {
   //     animated flag, transform state, scroll triggers
   private animated_ = false;
   private transform_: SectionTransform | null = null;
-  private readonly scrollTriggers_: ScrollTrigger[];
+  private readonly scrollTriggerInternals_: ScrollTriggerInternal[];
 
   /**
    * @param options.name Section name.
@@ -86,32 +87,32 @@ export class Section {
       sectionHeight,
       sectionBottom,
       scrollTriggers = [],
-      elements = [],
       style,
       viewFactory,
     } = options;
 
-    if (typeof name !== "string") {
-      throw new Error("Section: name must be a string");
-    }
-
-    this.name_ = name;
+    // (1) Store the simple properties that require no transformation or validation
+    //
     this.parent_ = parent;
+    this.name_ = name;
+
     this.sectionTop_ = sectionTop;
     this.sectionHeight_ = sectionHeight;
     this.sectionBottom_ = sectionBottom;
-
-    this.scrollTriggers_ = scrollTriggers;
-
-    if (elements) {
-      this.elements_ = elements;
-    }
 
     if (style) {
       this.style_ = style.clone();
     }
 
+    // (2) ScrollTriggers: these exist as ScrollTriggerInternal instances under the hood,
+    //     but we expose them as simple ScrollTrigger objects in the public API.
+    this.scrollTriggerInternals_ = scrollTriggers.map(
+      (trigger) => new ScrollTriggerInternal(trigger),
+    );
+
+    // (3) Create the view for this section and register scroll triggers with it.
     this.view_ = viewFactory.createSectionView(this);
+    this.view_.registerScrollTriggers(this.scrollTriggerInternals_);
   }
 
   /**
@@ -217,7 +218,9 @@ export class Section {
    * @returns A copy of the scroll trigger descriptors array.
    */
   get scrollTriggers(): readonly ScrollTrigger[] {
-    return this.scrollTriggers_.slice();
+    return this.scrollTriggerInternals_.map(
+      (internal) => internal.scrollTrigger,
+    );
   }
 
   /**

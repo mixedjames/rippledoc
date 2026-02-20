@@ -1,6 +1,6 @@
 import type { Section } from "./Section";
 import type { PresentationDisplay } from "./PresentationDisplay";
-import type { ScrollTrigger } from "./ScrollTrigger";
+import type { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { PresentationGeometry } from "./PresentationGeometry";
 
 import type { PresentationView } from "../view/PresentationView";

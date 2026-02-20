@@ -1,7 +1,8 @@
 import type { Expression } from "@rippledoc/expressions";
 
 import type { Section } from "./Section";
-import type { ScrollTrigger } from "./ScrollTrigger";
+import type { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+import { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
 import { Style } from "./Styles";
 
 import type { ElementView } from "../view/ElementView";
@@ -35,8 +36,7 @@ export class Element {
   private readonly height_: Expression;
 
   private readonly style_: Style = new Style();
-
-  private readonly scrollTriggers_: ScrollTrigger[];
+  private readonly scrollTriggerInternals_: ScrollTriggerInternal[];
 
   private readonly parent_: Section;
   private readonly view_: ElementView;
@@ -84,21 +84,8 @@ export class Element {
       scrollTriggers = [],
     } = options;
 
-    if (typeof name !== "string") {
-      throw new Error("Element: name must be a string");
-    }
-
-    // All 6 properties should be provided as Expression objects
-    if (!left || !right || !width || !top || !bottom || !height) {
-      throw new Error(
-        "Element: All layout properties (left, right, width, top, bottom, height) must be provided",
-      );
-    }
-
-    if (!parent) {
-      throw new Error("Element: parent section must be provided");
-    }
-
+    // (1) Store the simple properties that require no transformation or validation
+    this.parent_ = parent;
     this.name_ = name;
 
     this.left_ = left;
@@ -108,16 +95,30 @@ export class Element {
     this.bottom_ = bottom;
     this.height_ = height;
 
-    this.scrollTriggers_ = scrollTriggers;
-
     if (style) {
       this.style_ = style.clone();
     }
 
-    this.parent_ = parent;
+    // (2) ScrollTriggers: these exist as ScrollTriggerInternal instances under the hood,
+    //     but we expose them as simple ScrollTrigger objects in the public API.
+    this.scrollTriggerInternals_ = scrollTriggers.map(
+      (trigger) => new ScrollTriggerInternal(trigger),
+    );
+
+    // (3) Create the view and register scroll triggers with it.
     this.view_ = this.createView(viewFactory);
+    this.view_.registerScrollTriggers(this.scrollTriggerInternals_);
   }
 
+  /**
+   * Create the view for this element using the provided view factory.
+   *
+   * This is a key extension point for custom element types with bespoke view
+   * implementations.
+   *
+   * @param viewFactory Factory for creating views.
+   * @returns The created element view.
+   */
   protected createView(viewFactory: ViewFactory): ElementView {
     return viewFactory.createElementView(this);
   }
@@ -221,7 +222,9 @@ export class Element {
    * @returns A copy of the scroll trigger descriptors array.
    */
   get scrollTriggers(): readonly ScrollTrigger[] {
-    return this.scrollTriggers_.slice();
+    return this.scrollTriggerInternals_.map(
+      (internal) => internal.scrollTrigger,
+    );
   }
 
   /**

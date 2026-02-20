@@ -6,7 +6,7 @@ import { PresentationGeometry } from "../model/PresentationGeometry";
 import { Section } from "../model/Section";
 import { Element } from "../model/Element";
 import { ImageElement } from "../model/ImageElement";
-import { ScrollTrigger } from "../model/ScrollTrigger";
+import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { ElementTransform } from "../animation/ElementTransform";
 import { SectionTransform } from "../animation/SectionTransform";
 import { nullViewFactory } from "../view/NullViewFactory";

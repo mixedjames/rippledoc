@@ -32,6 +32,11 @@ class NullSectionView implements SectionView {
   layout(): void {
     // no-op
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  registerScrollTriggers(_triggers: readonly unknown[]): void {
+    // no-op
+  }
 }
 
 class NullElementView implements ElementView {
@@ -40,6 +45,11 @@ class NullElementView implements ElementView {
   }
 
   layout(): void {
+    // no-op
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  registerScrollTriggers(_triggers: readonly unknown[]): void {
     // no-op
   }
 }

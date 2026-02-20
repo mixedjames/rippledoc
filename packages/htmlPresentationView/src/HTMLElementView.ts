@@ -1,5 +1,10 @@
-import type { ElementView, Element } from "@rippledoc/presentation";
+import type {
+  ElementView,
+  Element,
+  ScrollTriggerInternal,
+} from "@rippledoc/presentation";
 import { HTMLSectionView } from "./HTMLSectionView";
+import { HTMLPresentationView } from "./HTMLPresentationView";
 
 /**
  * HTML implementation of ElementView.
@@ -105,6 +110,15 @@ export class HTMLElementView implements ElementView {
       style.backgroundSize = "cover";
       style.backgroundRepeat = "no-repeat";
       style.backgroundPosition = "center center";
+    }
+  }
+
+  registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void {
+    const section = this.element_.parent;
+    const presentation = section.parent;
+    const presentationView = presentation.view;
+    if (presentationView instanceof HTMLPresentationView) {
+      presentationView.scrollTriggerManager.registerTriggers(triggers);
     }
   }
 

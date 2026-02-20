@@ -21,13 +21,19 @@ import { HTMLImageElementView } from "./HTMLImageElementView";
  */
 export class HTMLViewFactory implements ViewFactory {
   private readonly root_: HTMLElement;
+  private readonly scrollingElement_: HTMLElement;
 
-  constructor(options: { root: HTMLElement }) {
+  constructor(options: { root: HTMLElement; scrollingElement?: HTMLElement }) {
     this.root_ = options.root;
+    this.scrollingElement_ = options.scrollingElement ?? options.root;
   }
 
   createPresentationView(presentation: Presentation): HTMLPresentationView {
-    return new HTMLPresentationView({ presentation, root: this.root_ });
+    return new HTMLPresentationView({
+      presentation,
+      root: this.root_,
+      scrollingElement: this.scrollingElement_,
+    });
   }
 
   createSectionView(section: Section): HTMLSectionView {

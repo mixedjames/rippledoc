@@ -54,11 +54,12 @@ export { PresentationGeometry } from "./model/PresentationGeometry";
 export { Section } from "./model/Section";
 export { Element } from "./model/Element";
 export { ImageElement, ImageFit } from "./model/ImageElement";
-
-export { ScrollTrigger } from "./model/ScrollTrigger";
 export { Style } from "./model/Styles";
 
 // Animation API
+export { ScrollTrigger } from "./scrollTrigger/ScrollTrigger";
+export { ScrollTriggerInternal } from "./scrollTrigger/ScrollTriggerInternal";
+
 export { SectionTransform } from "./animation/SectionTransform";
 export { ElementTransform } from "./animation/ElementTransform";
 

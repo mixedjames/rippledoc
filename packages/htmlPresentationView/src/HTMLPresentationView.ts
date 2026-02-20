@@ -1,5 +1,6 @@
 import type { PresentationView, Presentation } from "@rippledoc/presentation";
 import { HTMLTriggerMarkers } from "./HTMLTriggerMarkers";
+import { HTMLScrollTriggerManager } from "./scrollTrigger/HTMLScrollTriggerManager";
 
 /**
  * Skeleton HTML implementation of PresentationView.
@@ -15,10 +16,19 @@ export class HTMLPresentationView implements PresentationView {
   private backgroundsContainer_: HTMLElement | null = null;
   private elementsContainer_: HTMLElement | null = null;
   private triggerMarkers_: HTMLTriggerMarkers | null = null;
+  private readonly scrollTriggerManager_: HTMLScrollTriggerManager;
 
-  constructor(options: { presentation: Presentation; root: HTMLElement }) {
+  constructor(options: {
+    presentation: Presentation;
+    root: HTMLElement;
+    scrollingElement?: HTMLElement;
+  }) {
     this.presentation_ = options.presentation;
     this.root_ = options.root;
+    const scrollingElement = options.scrollingElement ?? this.root_;
+    this.scrollTriggerManager_ = new HTMLScrollTriggerManager({
+      scrollingElement,
+    });
   }
 
   realise(): void {
@@ -96,5 +106,12 @@ export class HTMLPresentationView implements PresentationView {
   /** Container that holds section content elements (and their child elements). */
   get elementsContainer(): HTMLElement | null {
     return this.elementsContainer_;
+  }
+
+  /**
+   * Central manager for all scroll triggers associated with this presentation.
+   */
+  get scrollTriggerManager(): HTMLScrollTriggerManager {
+    return this.scrollTriggerManager_;
   }
 }

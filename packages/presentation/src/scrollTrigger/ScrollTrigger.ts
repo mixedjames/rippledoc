@@ -1,5 +1,5 @@
 import { Expression } from "@rippledoc/expressions";
-import { Presentation } from "./Presentation";
+import { Presentation } from "../model/Presentation";
 
 /**
  * Immutable descriptor for a scroll trigger window within a Presentation.
