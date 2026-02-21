@@ -73,6 +73,14 @@ function getDefaultXmlExample(): string {
     "  </section>",
     '  <section h="slideHeight">',
     '    <element l="60" w="320" t="sectionTop+60" h="180" />',
+    "    <scroll-trigger",
+    '      name="t1"',
+    '      start="sectionTop" start-hits="middle"',
+    '      end="sectionBottom" end-hits="middle"',
+    "      />",
+    "  </section>",
+    '  <section h="slideHeight">',
+    '    <element l="60" w="320" t="sectionTop+60" h="180" />',
     "  </section>",
     "</document>",
   ].join("\n");
@@ -132,6 +140,13 @@ async function handleRenderClick(options: {
 
     presentation.display.realise();
     setPresentation(presentation);
+
+    presentation.scrollTriggers.forEach((trigger) => {
+      trigger.on("start", (e) => console.log("start"));
+      trigger.on("end", (e) => console.log("end"));
+      trigger.on("reverseStart", (e) => console.log("reverseStart"));
+      trigger.on("reverseEnd", (e) => console.log("reverseEnd"));
+    });
 
     if (status) {
       const triggerCount = presentation.scrollTriggers.length;

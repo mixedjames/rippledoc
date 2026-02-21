@@ -121,7 +121,6 @@ export class PresentationBuilder {
 
     const presentation = new Presentation({
       geometry: this.geometry_,
-      sections: [],
       viewFactory: this.viewFactory_,
     });
 

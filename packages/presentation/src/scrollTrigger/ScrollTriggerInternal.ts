@@ -1,5 +1,11 @@
 import type { ScrollTrigger } from "./ScrollTrigger";
 
+enum TriggerState {
+  Before = "before",
+  Active = "active",
+  After = "after",
+}
+
 /**
  * Internal representation of a ScrollTrigger within the presentation system.
  *
@@ -25,6 +31,9 @@ import type { ScrollTrigger } from "./ScrollTrigger";
 export class ScrollTriggerInternal {
   private scrollTrigger_: ScrollTrigger;
 
+  // Track previous state to avoid redundant callbacks
+  private lastState_: TriggerState = TriggerState.Before;
+
   constructor(scrollTrigger: ScrollTrigger) {
     this.scrollTrigger_ = scrollTrigger;
   }
@@ -34,9 +43,76 @@ export class ScrollTriggerInternal {
   }
 
   onScroll(scrollY: number): void {
-    // Not implemented yet
-    console.log(
-      `ScrollTriggerInternal.onScroll: scrollY=${scrollY}, triggerStart=${this.scrollTrigger_.start}, triggerEnd=${this.scrollTrigger_.end}`,
-    );
+    /**
+     * Algorithm:
+     * 1. Determine current state based on scroll position relative to start/end triggers
+     * 2. Calculate progress (0-1) if between triggers
+     * 3. Dispatch start events if entering active range
+     * 4. Dispatch scroll event if in active range
+     * 5. Dispatch end events if exiting active range
+     *
+     * Order is key to ensure correct event sequencing:
+     * - Listeners must recieve start events before *any* scroll events
+     * - Listeners must recieve end events after *all* scroll events
+     */
+
+    const startY = this.scrollTrigger_.start;
+    const endY = this.scrollTrigger_.end;
+
+    let state: TriggerState;
+    let progress: number;
+
+    if (scrollY < startY) {
+      // Before the trigger range
+      state = TriggerState.Before;
+      progress = 0;
+    } else if (scrollY >= endY) {
+      // After the trigger range
+      state = TriggerState.After;
+      progress = 1;
+    } else {
+      // Within the trigger range
+      state = TriggerState.Active;
+      progress = (scrollY - startY) / (endY - startY);
+    }
+
+    // 1. Dispatch start events when entering active range
+    if (
+      state === TriggerState.Active &&
+      this.lastState_ !== TriggerState.Active
+    ) {
+      // Entering from top (scrolling down)
+      if (this.lastState_ === TriggerState.Before) {
+        //this.callbacks_.onStart(eventData);
+        this.scrollTrigger_.emit("start", { progress });
+      }
+      // Entering from bottom (scrolling up)
+      else if (this.lastState_ === TriggerState.After) {
+        this.scrollTrigger_.emit("reverseStart", { progress });
+      }
+    }
+
+    // 2. Dispatch scroll event while in active range
+    if (state === TriggerState.Active) {
+      this.scrollTrigger_.emit("scroll", { progress });
+    }
+
+    // 3. Dispatch end events when exiting active range
+    if (
+      state !== TriggerState.Active &&
+      this.lastState_ === TriggerState.Active
+    ) {
+      // Exiting at bottom (scrolling down)
+      if (state === TriggerState.After) {
+        this.scrollTrigger_.emit("end", { progress });
+      }
+      // Exiting at top (scrolling up)
+      else if (state === TriggerState.Before) {
+        this.scrollTrigger_.emit("reverseEnd", { progress });
+      }
+    }
+
+    // 4. Update last state
+    this.lastState_ = state;
   }
 }

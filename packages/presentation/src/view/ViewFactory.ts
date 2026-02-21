@@ -14,6 +14,7 @@ import type { ImageElement } from "../model/ImageElement";
  */
 export interface ViewFactory {
   createPresentationView(presentation: Presentation): PresentationView;
+
   createSectionView(section: Section): SectionView;
 
   createElementView(element: Element): ElementView;

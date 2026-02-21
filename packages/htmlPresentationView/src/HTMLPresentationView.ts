@@ -28,6 +28,7 @@ export class HTMLPresentationView implements PresentationView {
     const scrollingElement = options.scrollingElement ?? this.root_;
     this.scrollTriggerManager_ = new HTMLScrollTriggerManager({
       scrollingElement,
+      presentation: this.presentation_,
     });
   }
 
