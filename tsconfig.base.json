@@ -14,8 +14,7 @@
       "@rippledoc/presentation": ["packages/presentation"],
       "@rippledoc/presentationBuilder": ["packages/presentationBuilder"],
       "@rippledoc/htmlPresentation": ["packages/htmlPresentation"],
-      "@rippledoc/htmlPresentationView": ["packages/htmlPresentationView"],
-      "@rippledoc/scrollTrigger": ["packages/scrollTrigger"]
+      "@rippledoc/htmlPresentationView": ["packages/htmlPresentationView"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

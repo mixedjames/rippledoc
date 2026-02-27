@@ -1,7 +1,6 @@
 type Listener<E, K extends keyof E> = (payload: E[K]) => void;
 
 export class TypedEmitter<E extends Record<string, unknown>> {
-
   private listeners_: { [K in keyof E]?: Set<Listener<E, K>> } = {};
 
   on<K extends keyof E>(event: K, listener: Listener<E, K>): () => void {
@@ -31,8 +30,7 @@ export class TypedEmitter<E extends Record<string, unknown>> {
   clear<K extends keyof E>(event?: K): void {
     if (event) {
       delete this.listeners_[event];
-    }
-    else {
+    } else {
       this.listeners_ = {};
     }
   }

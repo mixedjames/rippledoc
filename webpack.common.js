@@ -22,10 +22,6 @@ module.exports = {
         __dirname,
         "./packages/htmlPresentationView/src",
       ),
-      "@rippledoc/scrollTrigger": path.resolve(
-        __dirname,
-        "./packages/scrollTrigger/src",
-      ),
     },
   },
 
