@@ -1,4 +1,5 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import * as Sanitizer from "@rippledoc/sanitizer";
 
 import { presentationFromXML } from "@rippledoc/presentationBuilder";
 import { HTMLViewFactory } from "./HTMLViewFactory";
@@ -183,5 +184,78 @@ describe("HTMLPresentationView integration", () => {
     expect(() => {
       presentation.display.layout();
     }).toThrow(/layout\(\) called before realise\(\)/i);
+  });
+
+  it("sanitises inline SVG images loaded from external sources", async () => {
+    const originalFetch = globalThis.fetch;
+
+    const sanitizeSpy = vi
+      .spyOn(Sanitizer, "sanitizeSVG")
+      .mockImplementation((dirty: string) =>
+        dirty.replace(/<script[\s\S]*?<\/script>/, ""),
+      );
+
+    const MALICIOUS_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+  <script>window.__xss__ = true;</script>
+  <circle cx="5" cy="5" r="5" fill="red" />
+</svg>
+`;
+
+    // Mock fetch to return a malicious SVG payload.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        statusText: "OK",
+        text: () => Promise.resolve(MALICIOUS_SVG),
+      }),
+    );
+
+    const root = document.createElement("div");
+    document.body.appendChild(root);
+
+    const viewFactory = new HTMLViewFactory({ root });
+
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section h="slideHeight">
+    <image
+      name="malicious"
+      source="http://example.test/malicious.svg"
+      l="0" w="100"
+      t="sectionTop" h="50"
+    />
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      text: xml,
+      viewFactory,
+    });
+
+    presentation.display.realise();
+    presentation.display.layout();
+
+    // Allow queued tasks (fetch + sanitisation + DOM insertion) to run.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const svg = root.querySelector("svg") as SVGElement | null;
+    expect(svg).not.toBeNull();
+
+    // Ensure the sanitizer was invoked with the malicious SVG.
+    expect(sanitizeSpy).toHaveBeenCalled();
+    expect(sanitizeSpy.mock.calls[0]![0]).toContain("__xss__");
+
+    // The malicious <script> should have been removed by sanitisation.
+    expect(svg!.querySelector("script")).toBeNull();
+
+    // Non-dangerous SVG content should remain.
+    expect(svg!.querySelector("circle")).not.toBeNull();
+
+    sanitizeSpy.mockRestore();
+    globalThis.fetch = originalFetch!;
   });
 });

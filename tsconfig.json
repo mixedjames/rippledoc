@@ -5,6 +5,9 @@
       "path": "./packages/expressions"
     },
     {
+      "path": "./packages/sanitizer"
+    },
+    {
       "path": "./packages/presentation"
     },
     {

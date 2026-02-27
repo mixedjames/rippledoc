@@ -17,6 +17,7 @@ export default defineConfig({
         __dirname,
         "packages/expressions/src",
       ),
+      "@rippledoc/sanitizer": path.resolve(__dirname, "packages/sanitizer/src"),
       "@rippledoc/presentation": path.resolve(
         __dirname,
         "packages/presentation/src",

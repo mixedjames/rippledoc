@@ -1,5 +1,6 @@
 import { HTMLElementView } from "./HTMLElementView";
 import { ImageElement, ImageFit } from "@rippledoc/presentation";
+import { sanitizeSVG } from "@rippledoc/sanitizer";
 
 export class HTMLImageElementView extends HTMLElementView {
   private readonly imageElement_: ImageElement;
@@ -53,8 +54,9 @@ export class HTMLImageElementView extends HTMLElementView {
         return response.text();
       })
       .then((svgText) => {
+        const sanitized = sanitizeSVG(svgText);
         const parser = new DOMParser();
-        const doc = parser.parseFromString(svgText, "image/svg+xml");
+        const doc = parser.parseFromString(sanitized, "image/svg+xml");
         const svg = doc.documentElement;
 
         if (!svg || svg.nodeName.toLowerCase() !== "svg") {
