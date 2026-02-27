@@ -54,6 +54,7 @@ export { PresentationGeometry } from "./model/PresentationGeometry";
 export { Section } from "./model/Section";
 export { Element } from "./model/Element";
 export { ImageElement, ImageFit } from "./model/ImageElement";
+export { HTMLFragmentElement } from "./model/HTMLElement";
 export { Style } from "./model/Styles";
 
 // Animation API

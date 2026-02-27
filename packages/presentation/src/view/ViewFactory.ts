@@ -1,6 +1,7 @@
 import type { Presentation } from "../model/Presentation";
 import type { Section } from "../model/Section";
 import type { Element } from "../model/Element";
+import type { HTMLFragmentElement } from "../model/HTMLElement";
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
@@ -20,4 +21,6 @@ export interface ViewFactory {
   createElementView(element: Element): ElementView;
 
   createImageElementView(element: ImageElement): ElementView;
+
+  createHTMLFragmentElementView(element: HTMLFragmentElement): ElementView;
 }

@@ -4,6 +4,7 @@ import {
   nullViewFactory,
   Element,
   ImageElement,
+  HTMLFragmentElement,
   ScrollTrigger,
 } from "@rippledoc/presentation";
 
@@ -158,6 +159,44 @@ describe("PresentationBuilder – happy paths", () => {
     expect(image.width).toBe(50);
     expect(image.top).toBe(20);
     expect(image.height).toBe(30);
+  });
+
+  it("can build an HTMLFragmentElement via createHTMLFragmentElement", () => {
+    const builder = new PresentationBuilder({
+      viewFactory: nullViewFactory,
+    });
+
+    const section = builder.createSection();
+    section.setHeight("100");
+
+    const fragmentBuilder = section.createHTMLFragmentElement();
+
+    const fragment = document.createDocumentFragment();
+    const span = document.createElement("span");
+    span.textContent = "Hello from fragment";
+    fragment.appendChild(span);
+
+    fragmentBuilder.setFragment(fragment);
+    fragmentBuilder.setLeft("10");
+    fragmentBuilder.setWidth("50");
+    fragmentBuilder.setTop("20");
+    fragmentBuilder.setHeight("30");
+
+    const presentation = builder.build();
+
+    const builtSection = presentation.sections[0]!;
+    expect(builtSection.elements.length).toBe(1);
+
+    const element = builtSection.elements[0]!;
+    expect(element).toBeInstanceOf(HTMLFragmentElement);
+
+    const htmlElement = element as HTMLFragmentElement;
+    expect(htmlElement.fragment.childNodes.length).toBe(1);
+
+    expect(element.left).toBe(10);
+    expect(element.width).toBe(50);
+    expect(element.top).toBe(20);
+    expect(element.height).toBe(30);
   });
 
   it("builds element scroll triggers with viewport offsets", () => {

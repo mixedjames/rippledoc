@@ -1,8 +1,15 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import * as Sanitizer from "@rippledoc/sanitizer";
+import { Expression } from "@rippledoc/expressions";
 
 import { presentationFromXML } from "@rippledoc/presentationBuilder";
 import { HTMLViewFactory } from "./HTMLViewFactory";
+import {
+  Presentation,
+  PresentationGeometry,
+  Section,
+  HTMLFragmentElement,
+} from "@rippledoc/presentation";
 
 const SAMPLE_XML = `
 <document>
@@ -12,6 +19,13 @@ const SAMPLE_XML = `
   </section>
 </document>
 `;
+
+function makeConstExpression(value: number): Expression {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new Expression({
+    evaluate: () => value,
+  } as any);
+}
 
 describe("HTMLPresentationView integration", () => {
   afterEach(() => {
@@ -257,5 +271,77 @@ describe("HTMLPresentationView integration", () => {
 
     sanitizeSpy.mockRestore();
     globalThis.fetch = originalFetch!;
+  });
+
+  it("renders HTMLElement fragments into the DOM", () => {
+    const root = document.createElement("div");
+    document.body.appendChild(root);
+
+    const viewFactory = new HTMLViewFactory({ root });
+
+    const geometry = new PresentationGeometry({
+      basisWidth: 800,
+      basisHeight: 600,
+    });
+
+    const presentation = new Presentation({
+      viewFactory,
+      geometry,
+    });
+
+    const section = new Section({
+      name: "HTML section",
+      parent: presentation,
+      sectionTop: makeConstExpression(0),
+      sectionHeight: makeConstExpression(geometry.basis.height),
+      sectionBottom: makeConstExpression(geometry.basis.height),
+      elements: [],
+      viewFactory,
+    });
+
+    const fragment = document.createDocumentFragment();
+    const span = document.createElement("span");
+    span.textContent = "Hello DOM";
+    fragment.appendChild(span);
+
+    const htmlElement = new HTMLFragmentElement({
+      fragment,
+      element: {
+        name: "html-fragment",
+        parent: section,
+        left: makeConstExpression(0),
+        right: makeConstExpression(geometry.basis.width),
+        width: makeConstExpression(geometry.basis.width),
+        top: makeConstExpression(0),
+        bottom: makeConstExpression(geometry.basis.height),
+        height: makeConstExpression(geometry.basis.height),
+        viewFactory,
+      },
+    });
+
+    section._setElements([htmlElement]);
+    presentation._setSections([section]);
+
+    presentation.display.realise();
+    presentation.display.layout();
+
+    const container = root.querySelector(
+      ".presentation-root",
+    ) as HTMLElement | null;
+    expect(container).not.toBeNull();
+
+    const elementsContainer = container!.querySelector(
+      ".elements",
+    ) as HTMLElement | null;
+    expect(elementsContainer).not.toBeNull();
+    expect(elementsContainer!.children.length).toBe(1);
+
+    const sectionEl = elementsContainer!.children[0] as HTMLElement;
+    const elementDiv = sectionEl.querySelector("div") as HTMLDivElement | null;
+    expect(elementDiv).not.toBeNull();
+
+    const spanInDom = elementDiv!.querySelector("span");
+    expect(spanInDom).not.toBeNull();
+    expect(spanInDom!.textContent).toBe("Hello DOM");
   });
 });

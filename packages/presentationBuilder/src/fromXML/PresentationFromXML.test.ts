@@ -6,6 +6,7 @@ import {
   Element,
   ImageElement,
   ImageFit,
+  HTMLFragmentElement,
   ScrollTrigger,
 } from "@rippledoc/presentation";
 
@@ -261,6 +262,52 @@ describe("presentationFromXML", () => {
     ).rejects.toThrow(
       "<image> element must have a non-empty 'source' attribute",
     );
+  });
+
+  it("creates HTMLFragmentElement instances from <textbox> nodes and sanitises HTML", async () => {
+    const xml = `
+<document>
+  <slideSize w="800" h="600" />
+  <section name="text" h="slideHeight">
+    <textbox
+      name="box1"
+      l="10" w="100"
+      t="sectionTop" h="50"
+    >
+      <span>Hello <strong>world</strong></span>
+      <script>window.__xss__ = true;</script>
+    </textbox>
+  </section>
+</document>
+`;
+
+    const presentation = await presentationFromXML({
+      viewFactory: nullViewFactory,
+      text: xml,
+    });
+
+    expect(presentation.sections).toHaveLength(1);
+    const section = presentation.sections[0]!;
+    expect(section.elements).toHaveLength(1);
+
+    const element = section.elements[0]!;
+    expect(element).toBeInstanceOf(HTMLFragmentElement);
+
+    const fragmentElement = element as HTMLFragmentElement;
+
+    const clone = fragmentElement.fragment.cloneNode(true) as DocumentFragment;
+    const container = document.createElement("div");
+    container.appendChild(clone);
+
+    const span = container.querySelector("span");
+    expect(span).not.toBeNull();
+    expect(span!.textContent).toContain("Hello");
+
+    const script = container.querySelector("script");
+    expect(script).toBeNull();
+
+    expect(element.left).toBe(10);
+    expect(element.width).toBe(100);
   });
 
   it("parses section-level <scroll-trigger> elements", async () => {

@@ -6,6 +6,7 @@ import { PresentationGeometry } from "../model/PresentationGeometry";
 import { Section } from "../model/Section";
 import { Element } from "../model/Element";
 import { ImageElement } from "../model/ImageElement";
+import { HTMLFragmentElement } from "../model/HTMLElement";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { ElementTransform } from "../animation/ElementTransform";
 import { SectionTransform } from "../animation/SectionTransform";
@@ -167,6 +168,65 @@ describe("Presentation", () => {
     expect(presentation.sections[0]!.elements[0]).toBeInstanceOf(ImageElement);
     const builtImage = presentation.sections[0]!.elements[0] as ImageElement;
     expect(builtImage.source).toBe("images/foo.png");
+  });
+
+  it("supports HTMLFragmentElement instances within sections", () => {
+    const dummyGeometry = new PresentationGeometry();
+    const dummyPresentation = new Presentation({
+      viewFactory: nullViewFactory,
+      geometry: dummyGeometry,
+    });
+
+    const section = new Section({
+      name: "Section with HTML element",
+      parent: dummyPresentation,
+      sectionTop: makeConstExpression(0),
+      sectionHeight: makeConstExpression(100),
+      sectionBottom: makeConstExpression(100),
+      elements: [],
+      viewFactory: nullViewFactory,
+    });
+
+    const fragment = document.createDocumentFragment();
+    const span = document.createElement("span");
+    span.textContent = "hello";
+    fragment.appendChild(span);
+
+    const htmlElement = new HTMLFragmentElement({
+      fragment,
+      element: {
+        name: "html-element",
+        parent: section,
+        left: makeConstExpression(10),
+        right: makeConstExpression(110),
+        width: makeConstExpression(100),
+        top: makeConstExpression(20),
+        bottom: makeConstExpression(70),
+        height: makeConstExpression(50),
+        viewFactory: nullViewFactory,
+      },
+    });
+
+    section._setElements([htmlElement]);
+
+    const geometry = new PresentationGeometry({
+      basisWidth: 640,
+      basisHeight: 480,
+    });
+
+    const presentation = new Presentation({
+      viewFactory: nullViewFactory,
+      geometry,
+    });
+
+    presentation._setSections([section]);
+
+    expect(presentation.sections[0]!.elements[0]).toBeInstanceOf(
+      HTMLFragmentElement,
+    );
+    const builtElement = presentation.sections[0]!
+      .elements[0] as HTMLFragmentElement;
+    expect(builtElement.fragment.childNodes.length).toBe(1);
   });
 
   it("evaluates ScrollTrigger start and end via expressions", () => {

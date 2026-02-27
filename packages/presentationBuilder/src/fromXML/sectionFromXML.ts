@@ -1,4 +1,5 @@
 import { ImageFit } from "@rippledoc/presentation";
+import { sanitizeHTML } from "@rippledoc/sanitizer";
 import { PresentationBuilder } from "../builder/PresentationBuilder";
 import { loadFill } from "./xmlStyleUtils";
 import { loadScrollTrigger } from "./scrollTriggerFromXML";
@@ -37,7 +38,7 @@ function loadSection(
   }
 
   // Parse child elements in document order, supporting
-  // <fill>, <scroll-trigger>, <element> and <image> nodes.
+  // <fill>, <scroll-trigger>, <element>, <image> and <textbox> nodes.
   Array.from(sectionEl.children).forEach((child) => {
     const tag = child.tagName;
     if (tag === "fill") {
@@ -103,6 +104,23 @@ function loadSection(
       if (altAttr !== null) {
         image.setAltText(altAttr);
       }
+
+      return;
+    }
+
+    if (tag === "textbox") {
+      const textbox = section.createHTMLFragmentElement();
+      loadElement(child, textbox);
+
+      const rawHtml = child.innerHTML ?? "";
+      const sanitized = sanitizeHTML(rawHtml);
+
+      const template = document.createElement("template");
+      template.innerHTML = sanitized;
+      const fragment = template.content;
+
+      textbox.setFragment(fragment);
+      return;
     }
   });
 }

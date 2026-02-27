@@ -1,6 +1,7 @@
 import type { Presentation } from "../model/Presentation";
 import type { Section } from "../model/Section";
 import type { Element } from "../model/Element";
+import type { HTMLFragmentElement } from "../model/HTMLElement";
 
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
@@ -77,6 +78,10 @@ export class NullViewFactory implements ViewFactory {
   }
 
   createImageElementView(element: ImageElement): ElementView {
+    return this.createElementView(element);
+  }
+
+  createHTMLFragmentElementView(element: HTMLFragmentElement): ElementView {
     return this.createElementView(element);
   }
 }

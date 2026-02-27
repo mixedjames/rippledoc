@@ -5,6 +5,7 @@ import type { ViewFactory, Presentation } from "@rippledoc/presentation";
 import { Section, Style } from "@rippledoc/presentation";
 import { ElementBuilder } from "./ElementBuilder";
 import { ImageElementBuilder } from "./ImageElementBuilder";
+import { HTMLFragmentElementBuilder } from "./HTMLFragmentElementBuilder";
 import type { ScrollTrigger } from "@rippledoc/presentation";
 import { ScrollTriggerBuilder } from "./ScrollTriggerBuilder";
 
@@ -128,6 +129,17 @@ export class SectionBuilder {
     this.assertNotBuilt("createImageElement");
 
     const element = new ImageElementBuilder({
+      parentModule: this.module_,
+      viewFactory: this.viewFactory_,
+    });
+    this.elements_.push(element);
+    return element;
+  }
+
+  createHTMLFragmentElement(): HTMLFragmentElementBuilder {
+    this.assertNotBuilt("createHTMLFragmentElement");
+
+    const element = new HTMLFragmentElementBuilder({
       parentModule: this.module_,
       viewFactory: this.viewFactory_,
     });
