@@ -152,3 +152,41 @@ describe("Module mapped modules", () => {
     expect(getB().evaluate()).toBe(12);
   });
 });
+
+describe("Module native expressions", () => {
+  it("adds and evaluates simple native expressions", () => {
+    const root = Module.createRootModule();
+    const getN = root.addNativeExpression("n", () => 5);
+
+    root.compile();
+
+    expect(getN().evaluate()).toBe(5);
+  });
+
+  it("supports native expressions with dependencies and runtime replacement", () => {
+    const root = Module.createRootModule();
+
+    // Base expression that native expression will depend on.
+    const getBase = root.addExpression("base", "40 + 2");
+
+    // Native expression declared with a dependency on "base".
+    const native = root.addNativeExpression2(
+      "nativeWithDep",
+      () => {
+        const base = getBase();
+        return base.evaluate() * 2;
+      },
+      ["base"],
+    );
+
+    root.compile();
+
+    const expr = native.getExpression();
+    expect(expr.evaluate()).toBe(84); // (40 + 2) * 2
+
+    // Swap the underlying implementation.
+    native.replaceNativeFunction(() => 1);
+
+    expect(expr.evaluate()).toBe(1);
+  });
+});

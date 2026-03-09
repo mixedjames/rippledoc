@@ -3,6 +3,10 @@ import { Expression } from "../expressions/Expression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 import { parseExpression } from "../parser/Parser";
 import { createNativeExpression } from "../native/NativeExpression";
+import {
+  createNativeExpression2,
+  type NativeExpression2,
+} from "../native/NativeExpression2";
 import { hasCyclicalDependencies } from "./HasCyclicalDependencies";
 import { NameType } from "../parser/NameType";
 import type { BindingContext } from "../parser/BindingContext";
@@ -227,6 +231,58 @@ export class Module {
         );
       }
       return unboundExpression.dependentExpression.expression;
+    };
+  }
+
+  /**
+   * Adds a named native expression with optional dependencies to the module.
+   *
+   * This variant uses NativeExpression2 under the hood, allowing the native
+   * function to depend on other expressions (by name) and to be replaced at
+   * runtime after compilation.
+   *
+   * @param name The name of the expression.
+   * @param expression The native function implementing the expression.
+   * @param dependencies Optional list of dependency names (dot-separated).
+   * @returns An object with:
+   *   - getExpression: returns the bound Expression after compilation.
+   *   - replaceNativeFunction: replaces the underlying native function.
+   */
+  addNativeExpression2(
+    name: string,
+    expression: () => number,
+    dependencies: string[] = [],
+  ): { getExpression: () => Expression; replaceNativeFunction: (fn: () => number) => void } {
+    this.assertNotCompiled("addNativeExpression2");
+
+    if (this.names_.has(name)) {
+      throw new Error(
+        `Expression with name "${name}" already exists in this module`,
+      );
+    }
+
+    const nativeExpr: NativeExpression2 = createNativeExpression2(
+      expression,
+      dependencies,
+    );
+    const unboundExpression = nativeExpr.unboundExpression;
+    this.names_.set(name, { type: NameType.VALUE, value: unboundExpression });
+
+    return {
+      getExpression: () => {
+        if (
+          !unboundExpression.dependentExpression ||
+          !unboundExpression.dependentExpression.expression
+        ) {
+          throw new Error(
+            `Cannot access expression "${name}" before the module is compiled`,
+          );
+        }
+        return unboundExpression.dependentExpression.expression;
+      },
+      replaceNativeFunction: (fn: () => number) => {
+        nativeExpr.replaceNativeFunction(fn);
+      },
     };
   }
 
