@@ -2,13 +2,15 @@ import type { Presentation } from "../model/Presentation";
 import type { Section } from "../model/Section";
 import type { ContentDependentDimension, Element } from "../model/Element";
 import type { HTMLFragmentElement } from "../model/HTMLElement";
+import { ImageElement } from "../model/ImageElement";
 
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
 import type { ViewFactory } from "./ViewFactory";
 
-import { ImageElement } from "../model/ImageElement";
+import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+import { Pin } from "../animation/Pin";
 
 class NullPresentationView implements PresentationView {
   realise(): void {
@@ -64,6 +66,12 @@ class NullElementView implements ElementView {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   registerScrollTriggers(_triggers: readonly unknown[]): void {
     // no-op
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  createPin(options: { trigger: ScrollTrigger }): Pin {
+    // no-op, return dummy Pin instance
+    throw new Error("NullElementView does not support creating Pins");
   }
 }
 

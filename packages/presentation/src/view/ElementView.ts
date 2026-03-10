@@ -1,4 +1,6 @@
+import { Pin } from "../animation/Pin";
 import { ContentDependentDimension } from "../model/Element";
+import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import type { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
 
 /**
@@ -29,4 +31,11 @@ export interface ElementView {
    * visualisation or runtime behaviour.
    */
   registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void;
+
+  /**
+   * Create a pin for this element.
+   * @param options The options for creating the pin.
+   * @returns The created pin.
+   */
+  createPin(options: { trigger: ScrollTrigger }): Pin;
 }

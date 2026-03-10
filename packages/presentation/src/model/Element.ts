@@ -281,6 +281,25 @@ export class Element {
   }
 
   /**
+   * Look up a scroll trigger on this element by its optional name.
+   *
+   * Returns the first matching trigger, or undefined if no trigger
+   * with the provided name is found.
+   */
+  getScrollTriggerByName(
+    name: string,
+    onSuccess?: (trigger: ScrollTrigger) => void,
+  ): ScrollTrigger | undefined {
+    const trigger = this.scrollTriggers.find(
+      (trigger) => trigger.name === name,
+    );
+    if (trigger && onSuccess) {
+      onSuccess(trigger);
+    }
+    return trigger;
+  }
+
+  /**
    * Get the parent section of this element.
    * @returns The parent section.
    */

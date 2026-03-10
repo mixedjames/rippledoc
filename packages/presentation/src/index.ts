@@ -63,6 +63,7 @@ export { ScrollTriggerInternal } from "./scrollTrigger/ScrollTriggerInternal";
 
 export { SectionTransform } from "./animation/SectionTransform";
 export { ElementTransform } from "./animation/ElementTransform";
+export { Pin } from "./animation/Pin";
 
 // View API
 export type { PresentationView } from "./view/PresentationView";

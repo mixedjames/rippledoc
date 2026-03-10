@@ -20,6 +20,7 @@ type ScrollTriggerEvents = {
  * Do not construct directly – use ScrollTriggerBuilder instead.
  */
 export class ScrollTrigger {
+  private readonly name_: string;
   private start_: Expression;
   private end_: Expression;
 
@@ -31,9 +32,11 @@ export class ScrollTrigger {
     startViewOffset?: number;
     end: Expression;
     endViewOffset?: number;
+    name?: string;
   }) {
-    const { start, end } = options;
+    const { start, end, name } = options;
 
+    this.name_ = name ?? "";
     this.start_ = start;
     this.end_ = end;
   }
@@ -47,6 +50,13 @@ export class ScrollTrigger {
    * Emit a scroll trigger event. Not intended for external use.
    */
   emit = this.listeners_.emit.bind(this.listeners_);
+
+  /**
+   * Optional name for this trigger, when defined via the builder/XML.
+   */
+  get name(): string {
+    return this.name_;
+  }
 
   /**
    * Evaluate the configured start expression.

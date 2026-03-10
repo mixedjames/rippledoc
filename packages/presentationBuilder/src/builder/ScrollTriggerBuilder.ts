@@ -21,6 +21,8 @@ export class ScrollTriggerBuilder {
   private readonly expressions_ = new Map<TriggerKey, string>();
   private readonly getters_ = new Map<TriggerKey, () => Expression>();
 
+  private name_: string | undefined;
+
   private startViewOffset_ = 0;
   private endViewOffset_ = 0;
 
@@ -34,6 +36,14 @@ export class ScrollTriggerBuilder {
   // ─────────────────────────────────────────────────────────────
   // Construction-phase API
   // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Set an optional name for this trigger.
+   */
+  setName(name: string): void {
+    this.assertNotBuilt("setName");
+    this.name_ = name;
+  }
 
   /**
    * Set the start expression for this trigger.
@@ -101,6 +111,7 @@ export class ScrollTriggerBuilder {
       startViewOffset: this.startViewOffset_,
       end: this.get("end"),
       endViewOffset: this.endViewOffset_,
+      name: this.name_,
     });
   }
 

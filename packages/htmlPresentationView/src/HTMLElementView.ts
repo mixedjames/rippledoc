@@ -3,6 +3,8 @@ import {
   Element,
   ScrollTriggerInternal,
   ContentDependentDimension,
+  Pin,
+  ScrollTrigger,
 } from "@rippledoc/presentation";
 import { HTMLSectionView } from "./HTMLSectionView";
 import { HTMLPresentationView } from "./HTMLPresentationView";
@@ -157,6 +159,11 @@ export class HTMLElementView implements ElementView {
     if (presentationView instanceof HTMLPresentationView) {
       presentationView.scrollTriggerManager.registerTriggers(triggers);
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  createPin(options: { trigger: ScrollTrigger }): Pin {
+    throw new Error("Pin creation not implemented in HTMLElementView");
   }
 
   getContentDependentDimension(d: ContentDependentDimension): number {

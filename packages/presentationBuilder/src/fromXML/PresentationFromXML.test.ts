@@ -339,6 +339,9 @@ describe("presentationFromXML", () => {
 
     const trigger = triggers[0]!;
 
+    expect(trigger.name).toBe("t1");
+    expect(section.getScrollTriggerByName("t1")).toBe(trigger);
+
     // slideHeight expression evaluates to 600, but the default
     // viewport height is 480 and scale is 1, so:
     // viewportHeight = 480
@@ -379,6 +382,9 @@ describe("presentationFromXML", () => {
     expect(triggers.length).toBe(1);
 
     const trigger = triggers[0]!;
+
+    // Anonymous trigger: name should be undefined and lookup should fail
+    expect(element.getScrollTriggerByName("does-not-exist")).toBeUndefined();
 
     // With default viewport height 480 and scale 1:
     // viewportHeight = 480

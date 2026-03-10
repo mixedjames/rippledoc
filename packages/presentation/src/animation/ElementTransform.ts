@@ -16,8 +16,7 @@ export class ElementTransform {
     this.element_ = element;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pin(options: { trigger: ScrollTrigger }): Pin {
-    throw new Error("Pinning not yet implemented");
+    return this.element_.view.createPin(options);
   }
 }

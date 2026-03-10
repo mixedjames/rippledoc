@@ -6,10 +6,16 @@ export function loadScrollTrigger(
 ): void {
   // (1) Read required attributes
   //
+  const name = triggerEl.getAttribute("name");
   const start = triggerEl.getAttribute("start");
   const end = triggerEl.getAttribute("end");
   const startHits = triggerEl.getAttribute("start-hits");
   const endHits = triggerEl.getAttribute("end-hits");
+
+  // Optional name: only set if non-empty
+  if (name && name.trim() !== "") {
+    builder.setName(name.trim());
+  }
 
   // (2) start/end
   // The are required: validate and always set
