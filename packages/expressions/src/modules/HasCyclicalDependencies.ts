@@ -1,3 +1,4 @@
+import { Expression } from "../expressions/Expression";
 import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 
 /**
@@ -7,10 +8,10 @@ import type { UncheckedExpression } from "../expressions/UncheckedExpression";
  */
 export function hasCyclicalDependencies(
   expressions: UncheckedExpression[],
+  sortedExpressions: Expression[] = [],
 ): boolean {
-  if (!Array.isArray(expressions)) {
-    throw new Error("No dependent expressions provided.");
-  }
+  // Clear the sorted expressions array before starting.
+  sortedExpressions.length = 0;
 
   if (expressions.length === 0) {
     // No expressions means no dependencies, so no cycles.
@@ -18,7 +19,7 @@ export function hasCyclicalDependencies(
   }
 
   for (let i = 0; i < expressions.length; i++) {
-    switch (resolveAtLeastOne(expressions)) {
+    switch (resolveAtLeastOne(expressions, sortedExpressions)) {
       case DependencyResolutionResult.AllDone:
         // (a) No unresolved expressions?
         //     All expressions resolved successfully, so no cycles.
@@ -55,6 +56,7 @@ enum DependencyResolutionResult {
  */
 function resolveAtLeastOne(
   expressions: UncheckedExpression[],
+  sortedExpressions: Expression[],
 ): DependencyResolutionResult {
   // False unless we resolve at least one expression in this pass.
   let madeProgress = false;
@@ -79,7 +81,7 @@ function resolveAtLeastOne(
 
     if (!de.hasUnresolvedDependencies()) {
       unresolvedCount--;
-      de.resolve();
+      sortedExpressions.push(de.resolve());
       madeProgress = true;
     }
   } // end for

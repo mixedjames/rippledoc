@@ -1,4 +1,4 @@
-import { Element } from "./Element";
+import { Element, ContentDependentDimension } from "./Element";
 import { Section } from "./Section";
 
 import { ViewFactory } from "../view/ViewFactory";
@@ -32,6 +32,8 @@ export class ImageElement extends Element {
       height: Expression;
       parent: Section;
       viewFactory: ViewFactory;
+      contentDependentDimension: ContentDependentDimension;
+      replaceNativeFunction?: (fn: () => number) => void;
     };
   }) {
     super(options.element);

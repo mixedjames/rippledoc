@@ -1,6 +1,11 @@
-import type { PresentationView, Presentation } from "@rippledoc/presentation";
+import type {
+  PresentationView,
+  Presentation,
+  Element,
+} from "@rippledoc/presentation";
 import { HTMLTriggerMarkers } from "./HTMLTriggerMarkers";
 import { HTMLScrollTriggerManager } from "./scrollTrigger/HTMLScrollTriggerManager";
+import { HTMLElementView } from "./HTMLElementView";
 
 /**
  * Skeleton HTML implementation of PresentationView.
@@ -11,12 +16,16 @@ import { HTMLScrollTriggerManager } from "./scrollTrigger/HTMLScrollTriggerManag
  */
 export class HTMLPresentationView implements PresentationView {
   private readonly presentation_: Presentation;
+
   private readonly root_: HTMLElement;
   private container_: HTMLElement | null = null;
   private backgroundsContainer_: HTMLElement | null = null;
   private elementsContainer_: HTMLElement | null = null;
+
   private triggerMarkers_: HTMLTriggerMarkers | null = null;
   private readonly scrollTriggerManager_: HTMLScrollTriggerManager;
+
+  private readonly contentDependentElements_: Element[] = [];
 
   constructor(options: {
     presentation: Presentation;
@@ -61,9 +70,22 @@ export class HTMLPresentationView implements PresentationView {
       throw new Error("HTMLPresentationView.layout() called before realise()");
     }
 
+    // Supports content-dependent layout:
+    // Elements with content-dependent geometry have their non-dependent height/width applied
+    // and their dependent axis cleared before layout to allow subsequent measurement of the
+    // dependent dimension.
+    for (const element of this.contentDependentElements_) {
+      const elementView = element.view as HTMLElementView;
+      elementView.applyContentDependentLayout();
+    }
+
     if (this.triggerMarkers_) {
       this.triggerMarkers_.relayout();
     }
+  }
+
+  declareContentDependentElements(elements: Element[]): void {
+    this.contentDependentElements_.push(...elements);
   }
 
   setTriggerMarkerVisibility(visible: boolean): void {

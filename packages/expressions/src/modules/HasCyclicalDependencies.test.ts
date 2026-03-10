@@ -41,11 +41,4 @@ describe("hasCyclicalDependencies", () => {
 
     expect(hasCyclicalDependencies(expressions)).toBe(true);
   });
-
-  it("throws when input is not an array", () => {
-    // @ts-expect-error intentional misuse for runtime guard
-    expect(() => hasCyclicalDependencies(null)).toThrow(
-      /No dependent expressions provided\./,
-    );
-  });
 });

@@ -1,3 +1,4 @@
+import type { Element } from "./Element";
 import type { Section } from "./Section";
 import type { PresentationDisplay } from "./PresentationDisplay";
 import type { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
@@ -5,6 +6,7 @@ import { PresentationGeometry } from "./PresentationGeometry";
 
 import type { PresentationView } from "../view/PresentationView";
 import type { ViewFactory } from "../view/ViewFactory";
+import { Expression } from "packages/expressions/dist/expressions/Expression";
 
 /**
  * Represents an immutable presentation containing sections and slide geometry.
@@ -38,6 +40,10 @@ export class Presentation {
   private readonly display_: PresentationDisplay;
 
   private geometry_: PresentationGeometry;
+
+  // Map to track which elements depend on which expressions for content-dependent properties.
+  // Will be null after bootstrapping.
+  private expressionToElementMap_: Map<Expression, Element> | null = new Map();
 
   /**
    * @param options.geometry Shared geometry state for this presentation.
@@ -170,5 +176,46 @@ export class Presentation {
    */
   _setSections(sections: Section[]): void {
     this.sections_ = sections;
+  }
+
+  /**
+   * INTERNAL IMPLEMENTATION DETAIL - NOT PART OF PUBLIC API.
+   */
+  _declareContentDependentElement(
+    element: Element,
+    expression: Expression,
+  ): void {
+    if (!this.expressionToElementMap_) {
+      throw new Error(
+        "Presentation._declareContentDependentElement: expressionToElementMap_ is null - bootstrapping already complete",
+      );
+    }
+
+    this.expressionToElementMap_.set(expression, element);
+  }
+
+  /**
+   * INTERNAL IMPLEMENTATION DETAIL - NOT PART OF PUBLIC API.
+   */
+  _setSortedExpressions(expressions: Expression[]): void {
+    if (!this.expressionToElementMap_) {
+      throw new Error(
+        "Presentation._setSortedExpressions: expressionToElementMap_ is null - bootstrapping already complete",
+      );
+    }
+
+    const contentDependentElements: Element[] = [];
+
+    expressions.forEach((expr) => {
+      const element = this.expressionToElementMap_!.get(expr);
+      if (element) {
+        contentDependentElements.push(element);
+      }
+    });
+
+    // Tell the view about the content-dependent elements in the correct order, then discard the map
+    // since it's no longer needed.
+    this.view_.declareContentDependentElements(contentDependentElements);
+    this.expressionToElementMap_ = null;
   }
 }

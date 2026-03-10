@@ -4,7 +4,7 @@ import { Expression } from "@rippledoc/expressions";
 import { Presentation } from "../model/Presentation";
 import { PresentationGeometry } from "../model/PresentationGeometry";
 import { Section } from "../model/Section";
-import { Element } from "../model/Element";
+import { Element, ContentDependentDimension } from "../model/Element";
 import { ImageElement } from "../model/ImageElement";
 import { HTMLFragmentElement } from "../model/HTMLElement";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
@@ -99,6 +99,7 @@ describe("Presentation", () => {
       top: makeConstExpression(20),
       bottom: makeConstExpression(70),
       height: makeConstExpression(50),
+      contentDependentDimension: ContentDependentDimension.None,
       viewFactory: nullViewFactory,
     });
     section._setElements([element]);
@@ -148,6 +149,7 @@ describe("Presentation", () => {
         bottom: makeConstExpression(70),
         height: makeConstExpression(50),
         viewFactory: nullViewFactory,
+        contentDependentDimension: ContentDependentDimension.None,
       },
     });
 
@@ -203,6 +205,7 @@ describe("Presentation", () => {
         top: makeConstExpression(20),
         bottom: makeConstExpression(70),
         height: makeConstExpression(50),
+        contentDependentDimension: ContentDependentDimension.None,
         viewFactory: nullViewFactory,
       },
     });
@@ -284,6 +287,7 @@ describe("Presentation", () => {
       height: makeConstExpression(50),
       scrollTriggers: [trigger],
       viewFactory: nullViewFactory,
+      contentDependentDimension: ContentDependentDimension.None,
     });
 
     expect(element.scrollTriggers.length).toBe(1);
@@ -334,6 +338,7 @@ describe("Presentation", () => {
       bottom: makeConstExpression(50),
       height: makeConstExpression(50),
       viewFactory: nullViewFactory,
+      contentDependentDimension: ContentDependentDimension.None,
     });
 
     expect(element.animated).toBe(false);

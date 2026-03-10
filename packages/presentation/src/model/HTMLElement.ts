@@ -1,4 +1,4 @@
-import { Element } from "./Element";
+import { Element, ContentDependentDimension } from "./Element";
 import type { Section } from "./Section";
 
 import type { ViewFactory } from "../view/ViewFactory";
@@ -29,6 +29,8 @@ export class HTMLFragmentElement extends Element {
       top: Expression;
       bottom: Expression;
       height: Expression;
+      contentDependentDimension: ContentDependentDimension;
+      replaceNativeFunction?: (fn: () => number) => void;
       parent: Section;
       viewFactory: ViewFactory;
     };

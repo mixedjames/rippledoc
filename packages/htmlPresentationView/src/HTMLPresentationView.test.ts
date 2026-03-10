@@ -9,6 +9,7 @@ import {
   PresentationGeometry,
   Section,
   HTMLFragmentElement,
+  ContentDependentDimension,
 } from "@rippledoc/presentation";
 
 const SAMPLE_XML = `
@@ -315,6 +316,7 @@ describe("HTMLPresentationView integration", () => {
         top: makeConstExpression(0),
         bottom: makeConstExpression(geometry.basis.height),
         height: makeConstExpression(geometry.basis.height),
+        contentDependentDimension: ContentDependentDimension.None,
         viewFactory,
       },
     });

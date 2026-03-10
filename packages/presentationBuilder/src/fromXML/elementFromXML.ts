@@ -1,22 +1,9 @@
-import type { Style } from "@rippledoc/presentation";
+import { ContentDependentDimension } from "@rippledoc/presentation";
+import { ElementBuilder } from "../builder/ElementBuilder";
 import { loadFill } from "./xmlStyleUtils";
 import { loadScrollTrigger } from "./scrollTriggerFromXML";
 
-export type ElementLikeBuilder = {
-  setName(name: string): void;
-  setLeft(expr: string): void;
-  setRight(expr: string): void;
-  setWidth(expr: string): void;
-  setTop(expr: string): void;
-  setBottom(expr: string): void;
-  setHeight(expr: string): void;
-  style: Style;
-};
-
-export function loadElement(
-  elementEl: Element,
-  element: ElementLikeBuilder,
-): void {
+export function loadElement(elementEl: Element, element: ElementBuilder): void {
   const l = elementEl.getAttribute("l");
   const r = elementEl.getAttribute("r");
   const w = elementEl.getAttribute("w");
@@ -30,28 +17,43 @@ export function loadElement(
   }
 
   // Set each non-empty attribute
-  if (l && l.trim() !== "") {
-    element.setLeft(l);
+  const lAttr = l && l.trim();
+  const rAttr = r && r.trim();
+  const wAttr = w && w.trim();
+  const tAttr = t && t.trim();
+  const bAttr = bEl && bEl.trim();
+  const hAttr = hEl && hEl.trim();
+
+  if (lAttr) {
+    element.setLeft(lAttr);
   }
 
-  if (r && r.trim() !== "") {
-    element.setRight(r);
+  if (rAttr) {
+    element.setRight(rAttr);
   }
 
-  if (w && w.trim() !== "") {
-    element.setWidth(w);
+  if (wAttr) {
+    if (wAttr.toLowerCase() === "content") {
+      element.setContentDependentDimension(ContentDependentDimension.Width);
+    } else {
+      element.setWidth(wAttr);
+    }
   }
 
-  if (t && t.trim() !== "") {
-    element.setTop(t);
+  if (tAttr) {
+    element.setTop(tAttr);
   }
 
-  if (bEl && bEl.trim() !== "") {
-    element.setBottom(bEl);
+  if (bAttr) {
+    element.setBottom(bAttr);
   }
 
-  if (hEl && hEl.trim() !== "") {
-    element.setHeight(hEl);
+  if (hAttr) {
+    if (hAttr.toLowerCase() === "content") {
+      element.setContentDependentDimension(ContentDependentDimension.Height);
+    } else {
+      element.setHeight(hAttr);
+    }
   }
 
   // Parse optional <fill> or <scroll-trigger> children.

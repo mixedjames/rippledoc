@@ -11,6 +11,15 @@ import type { ViewFactory } from "../view/ViewFactory";
 import { ElementTransform } from "../animation/ElementTransform";
 
 /**
+ * Content-dependent dimension types for element layout.
+ */
+export enum ContentDependentDimension {
+  None = "none",
+  Width = "width",
+  Height = "height",
+}
+
+/**
  * Immutable element node in a Section.
  *
  * An Element captures:
@@ -34,6 +43,7 @@ export class Element {
   private readonly top_: Expression;
   private readonly bottom_: Expression;
   private readonly height_: Expression;
+  private readonly contentDependentDimension_: ContentDependentDimension;
 
   private readonly style_: Style = new Style();
   private readonly scrollTriggerInternals_: ScrollTriggerInternal[];
@@ -65,6 +75,15 @@ export class Element {
     top: Expression;
     bottom: Expression;
     height: Expression;
+    contentDependentDimension: ContentDependentDimension;
+    /**
+     * Optional hook for swapping the underlying implementation of the
+     * content-dependent expression (width or height) after compilation.
+     *
+     * This must be provided whenever {@link contentDependentDimension}
+     * is not {@link ContentDependentDimension.None}.
+     */
+    replaceNativeFunction?: (fn: () => number) => void;
     style?: Style;
     scrollTriggers?: ScrollTrigger[];
     parent: Section;
@@ -95,6 +114,8 @@ export class Element {
     this.bottom_ = bottom;
     this.height_ = height;
 
+    this.contentDependentDimension_ = options.contentDependentDimension;
+
     if (style) {
       this.style_ = style.clone();
     }
@@ -108,6 +129,30 @@ export class Element {
     // (3) Create the view and register scroll triggers with it.
     this.view_ = this.createView(viewFactory);
     this.view_.registerScrollTriggers(this.scrollTriggerInternals_);
+
+    // (4) If this element has a content-dependent dimension, we must
+    // delegate the underlying expression implementation to the view.
+    if (this.contentDependentDimension_ !== ContentDependentDimension.None) {
+      if (!options.replaceNativeFunction) {
+        throw new Error(
+          "Element: replaceNativeFunction is required when contentDependentDimension is not None",
+        );
+      }
+
+      options.replaceNativeFunction(() =>
+        this.view_.getContentDependentDimension(
+          this.contentDependentDimension_,
+        ),
+      );
+
+      // Notify the Presentation that this is a content-dependent element
+      this.parent_.parent._declareContentDependentElement(
+        this,
+        this.contentDependentDimension_ == ContentDependentDimension.Width
+          ? this.width_
+          : this.height_,
+      );
+    }
   }
 
   /**
@@ -177,6 +222,14 @@ export class Element {
    */
   get height(): number {
     return this.height_.evaluate();
+  }
+
+  /**
+   * Get the content-dependent dimension type for this element.
+   * @returns The content-dependent dimension type.
+   */
+  get contentDependentDimension(): ContentDependentDimension {
+    return this.contentDependentDimension_;
   }
 
   /**

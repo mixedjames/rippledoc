@@ -1,6 +1,6 @@
 import type { Presentation } from "../model/Presentation";
 import type { Section } from "../model/Section";
-import type { Element } from "../model/Element";
+import type { ContentDependentDimension, Element } from "../model/Element";
 import type { HTMLFragmentElement } from "../model/HTMLElement";
 
 import type { PresentationView } from "./PresentationView";
@@ -16,6 +16,11 @@ class NullPresentationView implements PresentationView {
   }
 
   layout(): void {
+    // no-op
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  declareContentDependentElements(elements: Element[]): void {
     // no-op
   }
 
@@ -47,6 +52,13 @@ class NullElementView implements ElementView {
 
   layout(): void {
     // no-op
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getContentDependentDimension(d: ContentDependentDimension): number {
+    // no-op, return dummy value
+
+    return 0;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

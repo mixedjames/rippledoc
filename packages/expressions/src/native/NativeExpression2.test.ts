@@ -46,9 +46,8 @@ describe("NativeExpression2", () => {
   });
 
   it("allows replacing the native function after bind/resolve", () => {
-    const { unboundExpression, replaceNativeFunction } = createNativeExpression2(
-      () => 1,
-    );
+    const { unboundExpression, replaceNativeFunction } =
+      createNativeExpression2(() => 1);
 
     const ctx = new DefaultBindingContext();
     const dep = unboundExpression.bind(ctx);

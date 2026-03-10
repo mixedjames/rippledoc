@@ -15,7 +15,8 @@ class UnboundNativeFunctionNode extends AstNode {
   private readonly nativeFn_: () => number;
   private readonly dependencyNames_: string[];
 
-  private uncheckedNativeFunctionNode_: UncheckedNativeFunctionNode | null = null;
+  private uncheckedNativeFunctionNode_: UncheckedNativeFunctionNode | null =
+    null;
 
   /**
    * Create a new unbound native function node.
@@ -38,10 +39,13 @@ class UnboundNativeFunctionNode extends AstNode {
    * Returns an UncheckedNativeFunctionNode that owns the dependency links.
    */
   override bind(context: BindingContext): AstNode {
-    const dependencies = this.dependencyNames_.map(d => {
-      return context.lookupName(d.split('.'), NameType.VALUE);
+    const dependencies = this.dependencyNames_.map((d) => {
+      return context.lookupName(d.split("."), NameType.VALUE);
     });
-    this.uncheckedNativeFunctionNode_ = new UncheckedNativeFunctionNode(this.nativeFn_, dependencies);
+    this.uncheckedNativeFunctionNode_ = new UncheckedNativeFunctionNode(
+      this.nativeFn_,
+      dependencies,
+    );
     return this.uncheckedNativeFunctionNode_;
   }
 
@@ -64,7 +68,9 @@ class UnboundNativeFunctionNode extends AstNode {
 
   get uncheckedNativeFunctionNode(): UncheckedNativeFunctionNode {
     if (this.uncheckedNativeFunctionNode_ === null) {
-      throw new Error("UncheckedNativeFunctionNode is not available until after binding");
+      throw new Error(
+        "UncheckedNativeFunctionNode is not available until after binding",
+      );
     }
     return this.uncheckedNativeFunctionNode_;
   }
@@ -86,7 +92,7 @@ class UncheckedNativeFunctionNode extends AstNode {
 
   constructor(
     nativeFn: () => number,
-    dependencies: (() => UncheckedExpression)[]
+    dependencies: (() => UncheckedExpression)[],
   ) {
     super();
     if (typeof nativeFn !== "function") {
@@ -124,13 +130,15 @@ class UncheckedNativeFunctionNode extends AstNode {
 
   private ensureLinkedDependencies(): void {
     if (this.linkedDependencies_ === null) {
-      this.linkedDependencies_ = this.dependencies_.map(linkFn => linkFn());
+      this.linkedDependencies_ = this.dependencies_.map((linkFn) => linkFn());
     }
   }
 
   get nativeFunctionNode(): NativeFunctionNode {
     if (this.nativeFunctionNode_ === null) {
-      throw new Error("NativeFunctionNode is not available until after resolution");
+      throw new Error(
+        "NativeFunctionNode is not available until after resolution",
+      );
     }
     return this.nativeFunctionNode_;
   }
@@ -196,28 +204,29 @@ export interface NativeExpression2 {
  *    string names (including dot-separated module paths).
  * 2. The ability to replace the native function at runtime, after the
  *    expression has been bound and resolved.
- * 
+ *
  * Important Note:
  * If you change the native function after compilation, you must ensure that the new function
  * has dependencies that are compatible with the original function. The system cannot perform any
  * checks to verify this compatibility.
- * 
+ *
  * In particular it is possible to introduce a cyclical dependency resulting in infinite recursion.
- * 
+ *
  * This function exists mainly to solve bootstrapping issues. As such, clients should probably
  * discard the replaceNativeFunction capability after initial setup to avoid accidental misuse.
- * 
+ *
  */
 export function createNativeExpression2(
   nativeFn: () => number,
-  dependencies: string[] = []
+  dependencies: string[] = [],
 ): NativeExpression2 {
-
   const astNode = new UnboundNativeFunctionNode(nativeFn, dependencies);
   return {
     unboundExpression: new UnboundExpression(astNode),
     replaceNativeFunction(newFn: () => number) {
-      astNode.uncheckedNativeFunctionNode.nativeFunctionNode.replaceNativeFunction(newFn);
-    }
-  }
+      astNode.uncheckedNativeFunctionNode.nativeFunctionNode.replaceNativeFunction(
+        newFn,
+      );
+    },
+  };
 }

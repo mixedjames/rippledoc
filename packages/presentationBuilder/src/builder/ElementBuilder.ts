@@ -1,12 +1,17 @@
 import { Module } from "@rippledoc/expressions";
-import type { Expression } from "@rippledoc/expressions";
+import { Expression } from "@rippledoc/expressions";
 
 import type {
   ViewFactory,
   Section,
   Presentation,
 } from "@rippledoc/presentation";
-import { Element, Style, ScrollTrigger } from "@rippledoc/presentation";
+import {
+  Element,
+  Style,
+  ScrollTrigger,
+  ContentDependentDimension,
+} from "@rippledoc/presentation";
 import { ScrollTriggerBuilder } from "./ScrollTriggerBuilder";
 
 /**
@@ -37,6 +42,11 @@ export class ElementBuilder {
   private readonly getters_ = new Map<LayoutKey, () => Expression>();
   private style_: Style = new Style();
 
+  private contentDependentDimension_: ContentDependentDimension =
+    ContentDependentDimension.None;
+
+  private replaceNativeFunction_: ((fn: () => number) => void) | null = null;
+
   private readonly scrollTriggerBuilders_: ScrollTriggerBuilder[] = [];
 
   private built_ = false;
@@ -58,6 +68,19 @@ export class ElementBuilder {
 
   getName(): string {
     return this.name_;
+  }
+
+  setContentDependentDimension(d: ContentDependentDimension): void {
+    this.assertNotBuilt("setContentDependentDimension");
+
+    const key = this.getContentDependentLayoutKey(d);
+    if (key && this.expressions_.has(key)) {
+      throw new Error(
+        `ElementBuilder.setContentDependentDimension: cannot mark '${d}' as content-dependent when an explicit expression has already been provided for ${key}`,
+      );
+    }
+
+    this.contentDependentDimension_ = d;
   }
 
   setLeft(expr: string): void {
@@ -86,6 +109,12 @@ export class ElementBuilder {
 
   private setExpression(key: LayoutKey, expr: string): void {
     this.assertNotBuilt("setExpression");
+
+    if (this.isContentDependentKey(key)) {
+      throw new Error(
+        `ElementBuilder.setExpression: cannot set expression for content-dependent dimension '${key}'`,
+      );
+    }
 
     if (!expr || typeof expr !== "string") {
       throw new Error(`ElementBuilder: Invalid expression for ${key}`);
@@ -182,6 +211,8 @@ export class ElementBuilder {
       top: this.get("top"),
       bottom: this.get("bottom"),
       height: this.get("height"),
+      contentDependentDimension: this.contentDependentDimension_,
+      replaceNativeFunction: this.replaceNativeFunction_ ?? undefined,
       style: this.style_,
       viewFactory: this.viewFactory_,
       scrollTriggers,
@@ -211,13 +242,29 @@ export class ElementBuilder {
     ];
 
     for (const key of keys) {
-      const expr = this.expressions_.get(key);
-      if (!expr) {
-        throw new Error(`Missing layout expression: ${key}`);
-      }
+      if (this.isContentDependentKey(key)) {
+        const { getExpression, replaceNativeFunction } =
+          this.module_.addNativeExpression2(
+            key,
+            () => {
+              throw new Error(
+                `ElementBuilder: content-dependent expression '${key}' evaluated before view initialisation`,
+              );
+            },
+            this.getDependenciesForContentDependentKey(key),
+          );
 
-      const getter = this.module_.addExpression(key, expr);
-      this.getters_.set(key, getter);
+        this.getters_.set(key, getExpression);
+        this.replaceNativeFunction_ = replaceNativeFunction;
+      } else {
+        const expr = this.expressions_.get(key);
+        if (!expr) {
+          throw new Error(`Missing layout expression: ${key}`);
+        }
+
+        const getter = this.module_.addExpression(key, expr);
+        this.getters_.set(key, getter);
+      }
     }
   }
 
@@ -244,21 +291,97 @@ export class ElementBuilder {
     );
   }
 
+  // Validate and derive layout expressions for both axes.
+  // Split into axis-specific helpers so constraints are easier to read and verify.
   private validateAndDeriveLayout(): void {
-    // ----- Horizontal -----
+    this.validateAndDeriveHorizontalLayout();
+    this.validateAndDeriveVerticalLayout();
+  }
+
+  // Handle horizontal layout (left, width, right), delegating to
+  // content-dependent or fixed-width flows based on configuration.
+  private validateAndDeriveHorizontalLayout(): void {
     const hasLeft = this.expressions_.has("left");
     const hasWidth = this.expressions_.has("width");
     const hasRight = this.expressions_.has("right");
 
-    const horizontalCount = [hasLeft, hasWidth, hasRight].filter(
-      Boolean,
-    ).length;
+    const widthIsContent =
+      this.contentDependentDimension_ === ContentDependentDimension.Width;
 
-    if (horizontalCount !== 2) {
+    if (widthIsContent) {
+      this.validateAndDeriveContentDependentWidth({ hasLeft, hasRight });
+    } else {
+      this.validateAndDeriveFixedWidth({ hasLeft, hasWidth, hasRight });
+    }
+  }
+
+  // Handle vertical layout (top, height, bottom), delegating to
+  // content-dependent or fixed-height flows based on configuration.
+  private validateAndDeriveVerticalLayout(): void {
+    const hasTop = this.expressions_.has("top");
+    const hasHeight = this.expressions_.has("height");
+    const hasBottom = this.expressions_.has("bottom");
+
+    const heightIsContent =
+      this.contentDependentDimension_ === ContentDependentDimension.Height;
+
+    if (heightIsContent) {
+      this.validateAndDeriveContentDependentHeight({ hasTop, hasBottom });
+    } else {
+      this.validateAndDeriveFixedHeight({ hasTop, hasHeight, hasBottom });
+    }
+  }
+
+  // Content-dependent width: enforce "no explicit width" and
+  // "exactly one anchor", then derive the missing anchor.
+  private validateAndDeriveContentDependentWidth(options: {
+    hasLeft: boolean;
+    hasRight: boolean;
+  }): void {
+    const { hasLeft, hasRight } = options;
+
+    if (this.expressions_.has("width")) {
       throw new Error(
-        "ElementBuilder: Must specify exactly 2 of (left, width, right)",
+        "ElementBuilder: width cannot have an explicit expression when it is content-dependent",
       );
     }
+
+    const anchors = this.countSpecified(hasLeft, hasRight);
+
+    this.requireExactly(
+      anchors,
+      1,
+      "ElementBuilder: When width is content-dependent, you must specify exactly one of (left, right)",
+    );
+
+    // Derive the missing horizontal anchor in terms of the
+    // content-dependent width so that all layout expressions
+    // are available to the module.
+    if (hasLeft && !hasRight) {
+      this.expressions_.set("right", "left + width");
+    } else if (hasRight && !hasLeft) {
+      this.expressions_.set("left", "right - width");
+    }
+    // Do not derive width; it will be provided by the view at runtime and we provide a native
+    // expression that will be used to route the view-provided value at runtime.
+  }
+
+  // Fixed width: require exactly two of (left, width, right) and
+  // derive the missing one so all three expressions are available.
+  private validateAndDeriveFixedWidth(options: {
+    hasLeft: boolean;
+    hasWidth: boolean;
+    hasRight: boolean;
+  }): void {
+    const { hasLeft, hasWidth, hasRight } = options;
+
+    const horizontalCount = this.countSpecified(hasLeft, hasWidth, hasRight);
+
+    this.requireExactly(
+      horizontalCount,
+      2,
+      "ElementBuilder: Must specify exactly 2 of (left, width, right)",
+    );
 
     if (!hasLeft) {
       this.expressions_.set("left", "right - width");
@@ -267,19 +390,58 @@ export class ElementBuilder {
     } else if (!hasRight) {
       this.expressions_.set("right", "left + width");
     }
+  }
 
-    // ----- Vertical -----
-    const hasTop = this.expressions_.has("top");
-    const hasHeight = this.expressions_.has("height");
-    const hasBottom = this.expressions_.has("bottom");
+  // Content-dependent height: enforce "no explicit height" and
+  // "exactly one anchor", then derive the missing anchor.
+  private validateAndDeriveContentDependentHeight(options: {
+    hasTop: boolean;
+    hasBottom: boolean;
+  }): void {
+    const { hasTop, hasBottom } = options;
 
-    const verticalCount = [hasTop, hasHeight, hasBottom].filter(Boolean).length;
-
-    if (verticalCount !== 2) {
+    if (this.expressions_.has("height")) {
       throw new Error(
-        "ElementBuilder: Must specify exactly 2 of (top, height, bottom)",
+        "ElementBuilder: height cannot have an explicit expression when it is content-dependent",
       );
     }
+
+    const anchors = this.countSpecified(hasTop, hasBottom);
+
+    this.requireExactly(
+      anchors,
+      1,
+      "ElementBuilder: When height is content-dependent, you must specify exactly one of (top, bottom)",
+    );
+
+    // Derive the missing vertical anchor in terms of the
+    // content-dependent height so that all layout expressions
+    // are available to the module.
+    if (hasTop && !hasBottom) {
+      this.expressions_.set("bottom", "top + height");
+    } else if (hasBottom && !hasTop) {
+      this.expressions_.set("top", "bottom - height");
+    }
+    // Do not derive height; it will be provided by the view at runtime and we
+    // provide a native expression that will be used to route the view-provided value at runtime.
+  }
+
+  // Fixed height: require exactly two of (top, height, bottom) and
+  // derive the missing one so all three expressions are available.
+  private validateAndDeriveFixedHeight(options: {
+    hasTop: boolean;
+    hasHeight: boolean;
+    hasBottom: boolean;
+  }): void {
+    const { hasTop, hasHeight, hasBottom } = options;
+
+    const verticalCount = this.countSpecified(hasTop, hasHeight, hasBottom);
+
+    this.requireExactly(
+      verticalCount,
+      2,
+      "ElementBuilder: Must specify exactly 2 of (top, height, bottom)",
+    );
 
     if (!hasTop) {
       this.expressions_.set("top", "bottom - height");
@@ -288,6 +450,66 @@ export class ElementBuilder {
     } else if (!hasBottom) {
       this.expressions_.set("bottom", "top + height");
     }
+  }
+
+  // Count how many of the given flags are specified; used to express
+  // "exactly N of these must be provided" layout rules.
+  private countSpecified(...flags: boolean[]): number {
+    return flags.filter(Boolean).length;
+  }
+
+  // Shared helper to enforce "exactly N" constraints so the
+  // error-throwing pattern is consistent and easy to scan.
+  private requireExactly(
+    count: number,
+    expected: number,
+    message: string,
+  ): void {
+    if (count !== expected) {
+      throw new Error(message);
+    }
+  }
+
+  private isContentDependentKey(key: LayoutKey): boolean {
+    if (this.contentDependentDimension_ === ContentDependentDimension.Width) {
+      return key === "width";
+    }
+    if (this.contentDependentDimension_ === ContentDependentDimension.Height) {
+      return key === "height";
+    }
+    return false;
+  }
+
+  private getContentDependentLayoutKey(
+    d: ContentDependentDimension,
+  ): LayoutKey | null {
+    if (d === ContentDependentDimension.Width) {
+      return "width";
+    }
+    if (d === ContentDependentDimension.Height) {
+      return "height";
+    }
+    return null;
+  }
+
+  private getDependenciesForContentDependentKey(key: LayoutKey): string[] {
+    if (
+      this.contentDependentDimension_ === ContentDependentDimension.Width &&
+      key === "width"
+    ) {
+      // width depends on the non-dependent dimension: height
+      return ["height"];
+    }
+
+    if (
+      this.contentDependentDimension_ === ContentDependentDimension.Height &&
+      key === "height"
+    ) {
+      // height depends on the non-dependent dimension: width
+      return ["width"];
+    }
+
+    return [];
   }
 
   protected assertNotBuilt(method: string): void {

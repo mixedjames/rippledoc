@@ -117,7 +117,7 @@ export class PresentationBuilder {
 
     // Compile all module expressions
     this.built_ = true;
-    this.module_.compile();
+    const sortedExpressions = this.module_.compile();
 
     const presentation = new Presentation({
       geometry: this.geometry_,
@@ -128,6 +128,7 @@ export class PresentationBuilder {
       s.build({ parent: presentation }),
     );
     presentation._setSections(builtSections);
+    presentation._setSortedExpressions(sortedExpressions);
 
     return presentation;
   }

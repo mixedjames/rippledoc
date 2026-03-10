@@ -252,7 +252,10 @@ export class Module {
     name: string,
     expression: () => number,
     dependencies: string[] = [],
-  ): { getExpression: () => Expression; replaceNativeFunction: (fn: () => number) => void } {
+  ): {
+    getExpression: () => Expression;
+    replaceNativeFunction: (fn: () => number) => void;
+  } {
     this.assertNotCompiled("addNativeExpression2");
 
     if (this.names_.has(name)) {
@@ -351,8 +354,12 @@ export class Module {
    * Exception safety:
    * If an error occurs during compilation, the module is unrecoverably broken and should not be used
    * again. This is a trade-off to avoid the complexity of rolling back changes in case of an error.
+   *
+   * Returns:
+   * An array of bound expressions in topologically sorted order (i.e. if expression A depends on
+   * expression B, then B will appear before A in the array).
    */
-  compile(): void {
+  compile(): Expression[] {
     if (this.compiled_) {
       throw new Error("Module is already compiled");
     }
@@ -362,10 +369,15 @@ export class Module {
     }
 
     this.compiled_ = true;
+
     const expressions = this.bindExpressions();
-    if (hasCyclicalDependencies(expressions)) {
+    const sortedExpressions: Expression[] = [];
+
+    if (hasCyclicalDependencies(expressions, sortedExpressions)) {
       throw new Error("Circular dependency detected among expressions.");
     }
+
+    return sortedExpressions;
   }
 
   /**

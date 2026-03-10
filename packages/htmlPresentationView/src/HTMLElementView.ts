@@ -1,7 +1,8 @@
-import type {
+import {
   ElementView,
   Element,
   ScrollTriggerInternal,
+  ContentDependentDimension,
 } from "@rippledoc/presentation";
 import { HTMLSectionView } from "./HTMLSectionView";
 import { HTMLPresentationView } from "./HTMLPresentationView";
@@ -70,6 +71,42 @@ export class HTMLElementView implements ElementView {
     contentElement.appendChild(div);
   }
 
+  applyContentDependentLayout(): void {
+    if (!this.rootElement_) {
+      throw new Error(
+        "HTMLElementView.applyContentDependentLayout() called before realise()",
+      );
+    }
+
+    const style = this.rootElement_.style;
+
+    const section = this.element_.parent;
+    const presentation = section.parent;
+    const geometry = presentation.geometry;
+
+    const scale = geometry.scale;
+
+    switch (this.element_.contentDependentDimension) {
+      case ContentDependentDimension.Width: {
+        const heightPx = this.element_.height * scale;
+        style.height = `${heightPx}px`;
+        style.width = "";
+        break;
+      }
+
+      case ContentDependentDimension.Height: {
+        const widthPx = this.element_.width * scale;
+        style.height = "";
+        style.width = `${widthPx}px`;
+        break;
+      }
+
+      default:
+        // No content-dependent layout needed.
+        break;
+    }
+  }
+
   layout(): void {
     if (!this.rootElement_) {
       throw new Error("HTMLElementView.layout() called before realise()");
@@ -120,6 +157,34 @@ export class HTMLElementView implements ElementView {
     if (presentationView instanceof HTMLPresentationView) {
       presentationView.scrollTriggerManager.registerTriggers(triggers);
     }
+  }
+
+  getContentDependentDimension(d: ContentDependentDimension): number {
+    if (!this.rootElement_) {
+      throw new Error(
+        "HTMLElementView.getContentDependentDimension() called before realise()",
+      );
+    }
+
+    const section = this.element_.parent;
+    const presentation = section.parent;
+    const geometry = presentation.geometry;
+    const scale = geometry.scale || 1;
+
+    let pixelValue: number;
+
+    switch (d) {
+      case ContentDependentDimension.Width:
+        pixelValue = this.rootElement_.offsetWidth;
+        break;
+      case ContentDependentDimension.Height:
+        pixelValue = this.rootElement_.offsetHeight;
+        break;
+      default:
+        return 0;
+    }
+
+    return pixelValue / scale;
   }
 
   private computeSlug(): string {

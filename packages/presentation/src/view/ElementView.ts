@@ -1,3 +1,4 @@
+import { ContentDependentDimension } from "../model/Element";
 import type { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
 
 /**
@@ -12,6 +13,14 @@ export interface ElementView {
 
   /** Apply layout calculations and update the view. */
   layout(): void;
+
+  /**
+   * Get the content-dependent dimension value for this element.
+   *
+   * @param d The content-dependent dimension type.
+   * @returns The value of the content-dependent dimension.
+   */
+  getContentDependentDimension(d: ContentDependentDimension): number;
 
   /**
    * Register scroll triggers associated with this element.
