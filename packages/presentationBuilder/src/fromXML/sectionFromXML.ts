@@ -47,9 +47,8 @@ function loadSection(
     }
 
     if (tag === "scroll-trigger") {
-      loadScrollTrigger(child, {
-        createScrollTrigger: () => section.createScrollTrigger(),
-      });
+      const trigger = section.createScrollTrigger();
+      loadScrollTrigger(child, trigger);
       return;
     }
 

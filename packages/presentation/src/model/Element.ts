@@ -256,7 +256,7 @@ export class Element {
   set animated(value: boolean) {
     if (value && !this.animated_) {
       if (!this.transform_) {
-        this.transform_ = new ElementTransform();
+        this.transform_ = new ElementTransform(this);
       }
     }
     this.animated_ = value;

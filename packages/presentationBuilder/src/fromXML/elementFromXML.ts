@@ -3,7 +3,19 @@ import { ElementBuilder } from "../builder/ElementBuilder";
 import { loadFill } from "./xmlStyleUtils";
 import { loadScrollTrigger } from "./scrollTriggerFromXML";
 
+// Entry point: configure an ElementBuilder from its XML representation.
+// Delegates to helpers for clarity: one for attributes, one for children.
 export function loadElement(elementEl: Element, element: ElementBuilder): void {
+  loadElementAttributes(elementEl, element);
+  loadElementChildren(elementEl, element);
+}
+
+// Load all layout/name attributes for the current element.
+// Interprets "content" as a signal for content-dependent width/height.
+function loadElementAttributes(
+  elementEl: Element,
+  element: ElementBuilder,
+): void {
   const l = elementEl.getAttribute("l");
   const r = elementEl.getAttribute("r");
   const w = elementEl.getAttribute("w");
@@ -55,8 +67,13 @@ export function loadElement(elementEl: Element, element: ElementBuilder): void {
       element.setHeight(hAttr);
     }
   }
+}
 
-  // Parse optional <fill> or <scroll-trigger> children.
+// Handle child nodes that extend the element, such as <fill> and <scroll-trigger>.
+function loadElementChildren(
+  elementEl: Element,
+  element: ElementBuilder,
+): void {
   Array.from(elementEl.children).forEach((child) => {
     if (child.tagName === "fill") {
       loadFill(child, element);
@@ -64,21 +81,8 @@ export function loadElement(elementEl: Element, element: ElementBuilder): void {
     }
 
     if (child.tagName === "scroll-trigger") {
-      // Only handle scroll triggers for builders that support them.
-      const anyBuilder = element as unknown as {
-        createScrollTrigger?: () => {
-          setStart(expr: string): void;
-          setEnd(expr: string): void;
-          setStartViewOffset(offset: number): void;
-          setEndViewOffset(offset: number): void;
-        };
-      };
-
-      if (typeof anyBuilder.createScrollTrigger === "function") {
-        loadScrollTrigger(child, {
-          createScrollTrigger: anyBuilder.createScrollTrigger.bind(anyBuilder),
-        });
-      }
+      const trigger = element.createScrollTrigger();
+      loadScrollTrigger(child, trigger);
     }
   });
 }

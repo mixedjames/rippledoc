@@ -1,21 +1,19 @@
-export type ScrollTriggerBuilderFactory = {
-  createScrollTrigger(): {
-    setStart(expr: string): void;
-    setEnd(expr: string): void;
-    setStartViewOffset(offset: number): void;
-    setEndViewOffset(offset: number): void;
-  };
-};
+import type { ScrollTriggerBuilder } from "../builder/ScrollTriggerBuilder";
 
 export function loadScrollTrigger(
   triggerEl: Element,
-  factory: ScrollTriggerBuilderFactory,
+  builder: ScrollTriggerBuilder,
 ): void {
-  const builder = factory.createScrollTrigger();
-
+  // (1) Read required attributes
+  //
   const start = triggerEl.getAttribute("start");
   const end = triggerEl.getAttribute("end");
+  const startHits = triggerEl.getAttribute("start-hits");
+  const endHits = triggerEl.getAttribute("end-hits");
 
+  // (2) start/end
+  // The are required: validate and always set
+  //
   if (!start || !start.trim()) {
     throw new Error("<scroll-trigger> element must have a 'start' attribute");
   }
@@ -27,9 +25,9 @@ export function loadScrollTrigger(
   builder.setStart(start);
   builder.setEnd(end);
 
-  const startHits = triggerEl.getAttribute("start-hits");
-  const endHits = triggerEl.getAttribute("end-hits");
-
+  // (3) start-hits/end-hits
+  // These are optional: only set if non-empty, but validate if present
+  //
   if (startHits && startHits.trim() !== "") {
     builder.setStartViewOffset(parseViewportHitPosition(startHits));
   }
