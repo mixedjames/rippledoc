@@ -68,8 +68,8 @@ function getDefaultXmlExample(): string {
     "<document>",
     '  <slideSize w="800" h="600" />',
     '  <section h="slideHeight">',
-    '    <image source="img/drawing.png" l="40" w="200" t="sectionTop+40" h="120" />',
-    '    <element l="280" w="240" t="sectionTop+80" h="160" />',
+    //    '    <image source="img/drawing.png" l="40" w="200" t="sectionTop+40" h="120" />',
+    //    '    <element l="280" w="240" t="sectionTop+80" h="160" />',
     "  </section>",
     '  <section h="slideHeight">',
     '    <textbox l="60" w="320" t="sectionTop+60" h="180">',
@@ -83,7 +83,7 @@ function getDefaultXmlExample(): string {
     "    </textbox>",
     "  </section>",
     '  <section h="slideHeight">',
-    '    <element l="60" w="320" t="sectionTop+60" h="180" />',
+    //    '    <element l="60" w="320" t="sectionTop+60" h="180" />',
     "  </section>",
     "</document>",
   ].join("\n");
@@ -143,13 +143,6 @@ async function handleRenderClick(options: {
 
     presentation.display.realise();
     setPresentation(presentation);
-
-    presentation.scrollTriggers.forEach((trigger) => {
-      trigger.on("start", (e) => console.log("start"));
-      trigger.on("end", (e) => console.log("end"));
-      trigger.on("reverseStart", (e) => console.log("reverseStart"));
-      trigger.on("reverseEnd", (e) => console.log("reverseEnd"));
-    });
 
     if (status) {
       const triggerCount = presentation.scrollTriggers.length;

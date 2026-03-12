@@ -102,39 +102,63 @@ export class HTMLPresentationView implements PresentationView {
       return;
     }
 
-    if (!this.container_) {
+    if (!this.isRealised) {
       this.realise();
-    }
-
-    if (!this.container_) {
-      throw new Error(
-        "HTMLPresentationView.setTriggerMarkerVisibility() called before container was created",
-      );
     }
 
     if (!this.triggerMarkers_) {
       this.triggerMarkers_ = new HTMLTriggerMarkers({
         presentation: this.presentation_,
-        container: this.container_,
+        container: this.container,
       });
     }
 
     this.triggerMarkers_.setVisible(true);
   }
 
+  get isRealised(): boolean {
+    return !!this.container_;
+  }
+
   /** Root container element for this presentation, created during realise(). */
-  get container(): HTMLElement | null {
+  get container(): HTMLElement {
+    if (!this.container_) {
+      throw new Error("HTMLPresentationView.container called before realise()");
+    }
+
     return this.container_;
   }
 
   /** Container that holds stacked section background elements. */
-  get backgroundsContainer(): HTMLElement | null {
+  get backgroundsContainer(): HTMLElement {
+    if (!this.backgroundsContainer_) {
+      throw new Error(
+        "HTMLPresentationView.backgroundsContainer called before realise()",
+      );
+    }
+
     return this.backgroundsContainer_;
   }
 
   /** Container that holds section content elements (and their child elements). */
-  get elementsContainer(): HTMLElement | null {
+  get elementsContainer(): HTMLElement {
+    if (!this.elementsContainer_) {
+      throw new Error(
+        "HTMLPresentationView.elementsContainer called before realise()",
+      );
+    }
+
     return this.elementsContainer_;
+  }
+
+  get pinnedElementsContainer(): HTMLElement {
+    if (!this.pinnedElementsContainer_) {
+      throw new Error(
+        "HTMLPresentationView.pinnedElementsContainer called before realise()",
+      );
+    }
+
+    return this.pinnedElementsContainer_;
   }
 
   /**

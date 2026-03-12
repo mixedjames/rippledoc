@@ -266,8 +266,15 @@ export class Element {
    * Runtime transform state for this element, if animation has been
    * explicitly enabled via the animated flag.
    */
-  get transform(): ElementTransform | null {
-    return this.transform_;
+  get transform(): ElementTransform {
+    if (!this.animated_) {
+      throw new Error(
+        "Element.transform accessed but animated is false. Set animated to true to enable transforms.",
+      );
+    }
+
+    // Safe use if '!' because transform_ is guaranteed to be non-null when animated_ is true.
+    return this.transform_!;
   }
 
   /**

@@ -26,13 +26,30 @@ export class HTMLSectionView implements SectionView {
     this.slug_ = this.computeSlug();
   }
 
-  /** Background DOM node for this section (created after realise()). */
-  get backgroundElement(): HTMLDivElement | null {
+  /**
+   * Indicates whether this view has created its DOM nodes.
+   */
+  get isRealised(): boolean {
+    return this.backgroundElement_ !== null && this.contentElement_ !== null;
+  }
+
+  /** Background DOM node for this section. Only valid after realise(). */
+  get backgroundElement(): HTMLDivElement {
+    if (!this.backgroundElement_) {
+      throw new Error(
+        "HTMLSectionView.backgroundElement accessed before realise()",
+      );
+    }
     return this.backgroundElement_;
   }
 
-  /** Content <section> DOM node for this section (created after realise()). */
-  get contentElement(): HTMLElement | null {
+  /** Content <section> DOM node for this section. Only valid after realise(). */
+  get contentElement(): HTMLElement {
+    if (!this.contentElement_) {
+      throw new Error(
+        "HTMLSectionView.contentElement accessed before realise()",
+      );
+    }
     return this.contentElement_;
   }
 
@@ -83,12 +100,12 @@ export class HTMLSectionView implements SectionView {
   }
 
   layout(): void {
-    if (!this.backgroundElement_ || !this.contentElement_) {
+    if (!this.isRealised) {
       throw new Error("HTMLSectionView.layout() called before realise()");
     }
 
-    const background = this.backgroundElement_;
-    const content = this.contentElement_;
+    const background = this.backgroundElement;
+    const content = this.contentElement;
 
     const presentation = this.section_.parent;
     const geometry = presentation.geometry;

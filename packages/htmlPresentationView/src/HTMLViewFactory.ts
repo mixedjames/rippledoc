@@ -16,10 +16,6 @@ import { HTMLFragmentElementView } from "./HTMLFragmentElementView";
 /**
  * HTML implementation of the ViewFactory.
  *
- * This skeleton wires the presentation model to simple DOM-based view
- * classes. The goal here is just to provide a concrete, compiling
- * implementation; the rendering logic is intentionally minimal and can
- * be extended later.
  */
 export class HTMLViewFactory implements ViewFactory {
   private readonly root_: HTMLElement;

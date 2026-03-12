@@ -31,9 +31,21 @@ export class HTMLElementView implements ElementView {
   }
 
   /**
-   * Root DOM element for this view. Only created after realise().
+   * Indicates whether this view has created its root DOM element.
    */
-  get rootElement(): HTMLDivElement | null {
+  get isRealised(): boolean {
+    return this.rootElement_ !== null;
+  }
+
+  /**
+   * Root DOM element for this view. Only valid after realise().
+   *
+   * Callers should use isRealised to guard access.
+   */
+  get rootElement(): HTMLDivElement {
+    if (!this.rootElement_) {
+      throw new Error("HTMLElementView.rootElement accessed before realise()");
+    }
     return this.rootElement_;
   }
 
@@ -74,6 +86,12 @@ export class HTMLElementView implements ElementView {
     }
 
     contentElement.appendChild(div);
+
+    // Notify any HTML-based animations (e.g. pins) that the view
+    // has been realised so they can react to DOM availability.
+    this.forEachHTMLPin((pin) => {
+      pin.refresh();
+    });
   }
 
   applyContentDependentLayout(): void {
@@ -153,6 +171,12 @@ export class HTMLElementView implements ElementView {
       style.backgroundRepeat = "no-repeat";
       style.backgroundPosition = "center center";
     }
+
+    // Forward layout changes to any HTMLPin instances so they can
+    // keep placeholder and clone positions in sync with this element.
+    this.forEachHTMLPin((pin) => {
+      pin.refresh();
+    });
   }
 
   registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void {
@@ -164,7 +188,6 @@ export class HTMLElementView implements ElementView {
     }
   }
 
-   
   createPin(options: { trigger: ScrollTrigger }): Pin {
     return new HTMLPin(this.element_, options);
   }
@@ -208,6 +231,24 @@ export class HTMLElementView implements ElementView {
     const index = elements.indexOf(this.element_);
     const ordinal = index >= 0 ? index + 1 : 1;
     return `${ordinal}`;
+  }
+
+  /**
+   * Helper to iterate over all HTMLPin instances associated with this
+   * element's transform. Uses the model-level animated flag as the
+   * source of truth for whether transform state is available.
+   */
+  private forEachHTMLPin(callback: (pin: HTMLPin) => void): void {
+    if (!this.element_.animated) {
+      return;
+    }
+
+    const transform = this.element_.transform;
+    for (const pin of transform.pins) {
+      if (pin instanceof HTMLPin) {
+        callback(pin);
+      }
+    }
   }
 
   private static slugify(name: string): string {

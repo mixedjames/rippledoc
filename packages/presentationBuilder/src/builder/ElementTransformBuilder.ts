@@ -61,7 +61,7 @@ export class ElementTransformBuilder {
         element.animated = true;
       }
 
-      element.transform!.pin({ trigger });
+      element.transform.pin({ trigger });
     }
 
     this.pinInstructions_.length = 0;

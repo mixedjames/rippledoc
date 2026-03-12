@@ -54,21 +54,11 @@ export class HTMLTriggerMarkers {
     const tx = geometry.tx;
     const basisWidth = geometry.basis.width;
 
-    triggers.forEach((trigger, index) => {
+    triggers.forEach((trigger) => {
       const start = trigger.start;
       const end = trigger.end;
       const startY = start * scale;
       const endY = end * scale;
-
-      // Basic debug logging so demo users can confirm mapping.
-      // Intentionally kept lightweight.
-
-      console.log("[HTMLTriggerMarkers] trigger", index, {
-        start,
-        end,
-        startY,
-        endY,
-      });
 
       const makeLine = (y: number, type: "start" | "end") => {
         const line = document.createElement("div");
