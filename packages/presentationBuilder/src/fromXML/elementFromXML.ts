@@ -69,7 +69,7 @@ function loadElementAttributes(
   }
 }
 
-// Handle child nodes that extend the element, such as <fill> and <scroll-trigger>.
+// Handle child nodes that extend the element, such as <fill>, <scroll-trigger>, and <pin>.
 function loadElementChildren(
   elementEl: Element,
   element: ElementBuilder,
@@ -83,6 +83,18 @@ function loadElementChildren(
     if (child.tagName === "scroll-trigger") {
       const trigger = element.createScrollTrigger();
       loadScrollTrigger(child, trigger);
+      return;
+    }
+
+    if (child.tagName === "pin") {
+      const triggerName = child.getAttribute("trigger");
+      if (!triggerName || triggerName.trim() === "") {
+        throw new Error(
+          "loadElementChildren: <pin> element requires a non-empty 'trigger' attribute",
+        );
+      }
+
+      element.addPinByTriggerName(triggerName.trim());
     }
   });
 }

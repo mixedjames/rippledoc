@@ -39,6 +39,10 @@ export class ScrollTriggerBuilder {
 
   /**
    * Set an optional name for this trigger.
+   *
+   * NOTE: Name uniqueness is not enforced here; callers that
+   * resolve triggers by name are responsible for handling any
+   * ambiguity or enforcing uniqueness at the appropriate scope.
    */
   setName(name: string): void {
     this.assertNotBuilt("setName");

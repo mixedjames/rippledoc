@@ -21,6 +21,7 @@ export class HTMLPresentationView implements PresentationView {
   private container_: HTMLElement | null = null;
   private backgroundsContainer_: HTMLElement | null = null;
   private elementsContainer_: HTMLElement | null = null;
+  private pinnedElementsContainer_: HTMLElement | null = null;
 
   private triggerMarkers_: HTMLTriggerMarkers | null = null;
   private readonly scrollTriggerManager_: HTMLScrollTriggerManager;
@@ -56,13 +57,18 @@ export class HTMLPresentationView implements PresentationView {
     const elements = document.createElement("div");
     elements.className = "elements";
 
+    const pinnedElements = document.createElement("div");
+    pinnedElements.className = "pinned-elements";
+
     container.appendChild(backgrounds);
     container.appendChild(elements);
+    container.appendChild(pinnedElements);
     this.root_.appendChild(container);
 
     this.container_ = container;
     this.backgroundsContainer_ = backgrounds;
     this.elementsContainer_ = elements;
+    this.pinnedElementsContainer_ = pinnedElements;
   }
 
   layout(): void {

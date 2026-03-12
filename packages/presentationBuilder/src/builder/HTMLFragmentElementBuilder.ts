@@ -40,9 +40,13 @@ export class HTMLFragmentElementBuilder extends ElementBuilder {
       );
     }
 
-    return new HTMLFragmentElement({
+    const element = new HTMLFragmentElement({
       fragment: this.fragment_,
       element: this.getBuildOptions({ parent: options.parent }),
     });
+
+    this.applyTransforms(element);
+
+    return element;
   }
 }

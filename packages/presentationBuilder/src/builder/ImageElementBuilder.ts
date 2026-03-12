@@ -48,11 +48,15 @@ export class ImageElementBuilder extends ElementBuilder {
   }
 
   override build(options: { parent: Section }): ImageElement {
-    return new ImageElement({
+    const element = new ImageElement({
       source: this.source_,
       fit: this.fit_,
       altText: this.altText_,
       element: this.getBuildOptions({ parent: options.parent }),
     });
+
+    this.applyTransforms(element);
+
+    return element;
   }
 }

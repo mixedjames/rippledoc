@@ -13,6 +13,7 @@ import {
   ContentDependentDimension,
 } from "@rippledoc/presentation";
 import { ScrollTriggerBuilder } from "./ScrollTriggerBuilder";
+import { ElementTransformBuilder } from "./ElementTransformBuilder";
 
 /**
  * Layout properties supported by an Element.
@@ -48,6 +49,8 @@ export class ElementBuilder {
   private replaceNativeFunction_: ((fn: () => number) => void) | null = null;
 
   private readonly scrollTriggerBuilders_: ScrollTriggerBuilder[] = [];
+
+  private readonly transformBuilder_ = new ElementTransformBuilder();
 
   private built_ = false;
 
@@ -101,6 +104,11 @@ export class ElementBuilder {
 
   setBottom(expr: string): void {
     this.setExpression("bottom", expr);
+  }
+
+  addPinByTriggerName(triggerName: string): void {
+    this.assertNotBuilt("addPinByTriggerName");
+    this.transformBuilder_.addPinByTriggerName(triggerName);
   }
 
   setHeight(expr: string): void {
@@ -194,8 +202,11 @@ export class ElementBuilder {
     this.built_ = true;
 
     const { parent } = options;
+    const element = new Element(this.getBuildOptions({ parent }));
 
-    return new Element(this.getBuildOptions({ parent }));
+    this.applyTransforms(element);
+
+    return element;
   }
 
   protected getBuildOptions(options: { parent: Section }) {
@@ -289,6 +300,15 @@ export class ElementBuilder {
     return this.scrollTriggerBuilders_.map((builder) =>
       builder.build({ presentation }),
     );
+  }
+
+  /**
+   * Apply any recorded transform/animation instructions to the
+   * provided element instance. Subclasses that override build()
+   * should call this to ensure transforms are wired correctly.
+   */
+  protected applyTransforms(element: Element): void {
+    this.transformBuilder_.applyTo(element);
   }
 
   // Validate and derive layout expressions for both axes.
