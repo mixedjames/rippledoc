@@ -12,21 +12,20 @@ import { safariScrollFix } from "./SafariScrollFix";
  * scroll-related behaviour can be coordinated from a single place.
  */
 export class HTMLScrollTriggerManager {
-  private readonly scrollingElement_: HTMLElement;
+  private scrollingElement_: HTMLElement | null;
   private readonly presentation_: Presentation;
   private readonly triggers_: ScrollTriggerInternal[] = [];
 
-  constructor(options: {
-    scrollingElement: HTMLElement;
-    presentation: Presentation;
-  }) {
-    this.scrollingElement_ = options.scrollingElement;
+  constructor(options: { presentation: Presentation }) {
     this.presentation_ = options.presentation;
+    this.scrollingElement_ = null;
+  }
 
-    safariScrollFix(this.scrollingElement_);
+  private attachScrollListener(target: HTMLElement): void {
+    safariScrollFix(target);
 
     addRAFThrottledScrollListener({
-      target: this.scrollingElement_,
+      target,
       callback: (scrollTop: number) => {
         // Convert DOM scrollTop (in viewport pixels) to presentation
         // coordinates using the current presentation geometry.
@@ -53,7 +52,21 @@ export class HTMLScrollTriggerManager {
     return this.triggers_.slice();
   }
 
-  get scrollingElement(): HTMLElement {
+  get scrollingElement(): HTMLElement | null {
     return this.scrollingElement_;
+  }
+
+  /**
+   * Rebinds scroll handling to a new DOM element. Existing listeners remain
+   * attached, but the provided element becomes the canonical scrollingElement
+   * and will also drive trigger updates.
+   */
+  setScrollingElement(scrollingElement: HTMLElement): void {
+    if (this.scrollingElement_ === scrollingElement) {
+      return;
+    }
+
+    this.scrollingElement_ = scrollingElement;
+    this.attachScrollListener(scrollingElement);
   }
 }

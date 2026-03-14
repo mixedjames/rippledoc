@@ -15,13 +15,14 @@ export class HTMLFragmentElementView extends HTMLElementView {
     this.htmlElement_ = options.element;
   }
 
-  override realise(): void {
-    super.realise();
+  override subclassRealise(): void {
+    // We don't want the default behaviour
+    // super.subclassRealise();
 
     const root = this.rootElement;
     if (!root) {
       throw new Error(
-        "HTMLFragmentElementView.realise() called before HTMLElementView.realise()",
+        "HTMLFragmentElementView.subclassRealise() called before HTMLElementView.realise()",
       );
     }
 

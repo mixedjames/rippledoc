@@ -16,11 +16,8 @@ window.addEventListener("DOMContentLoaded", () => {
     "error-output",
   ) as HTMLDivElement | null;
   const viewport = document.getElementById("viewport") as HTMLDivElement | null;
-  const rootHost = document.getElementById(
-    "presentation-root",
-  ) as HTMLDivElement | null;
 
-  if (!xmlInput || !renderBtn || !errorOutput || !viewport || !rootHost) {
+  if (!xmlInput || !renderBtn || !errorOutput || !viewport) {
     return;
   }
 
@@ -50,7 +47,6 @@ window.addEventListener("DOMContentLoaded", () => {
       status,
       errorOutput,
       viewport,
-      rootHost,
       setPresentation(p: Presentation) {
         currentPresentation = p;
         relayout();
@@ -94,15 +90,13 @@ async function handleRenderClick(options: {
   status: HTMLSpanElement | null;
   errorOutput: HTMLDivElement;
   viewport: HTMLDivElement;
-  rootHost: HTMLDivElement;
   setPresentation: (presentation: Presentation) => void;
 }): Promise<void> {
-  const { xmlInput, status, errorOutput, viewport, rootHost, setPresentation } =
-    options;
+  const { xmlInput, status, errorOutput, viewport, setPresentation } = options;
 
   const source = xmlInput.value.trim();
   errorOutput.textContent = "";
-  rootHost.innerHTML = "";
+  viewport.innerHTML = "";
 
   if (status) {
     status.textContent = source
@@ -116,8 +110,8 @@ async function handleRenderClick(options: {
 
   try {
     const viewFactory = new HTMLViewFactory({
-      root: rootHost,
-      scrollingElement: viewport,
+      // Use #viewport as the host; all internal structure is code-created.
+      root: viewport,
     });
 
     const presentation = await presentationFromXML({

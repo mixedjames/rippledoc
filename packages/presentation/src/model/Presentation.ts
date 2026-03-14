@@ -125,6 +125,14 @@ export class Presentation {
     return this.geometry_.basis.height;
   }
 
+  get totalHeight(): number {
+    if (this.sections_.length === 0) {
+      return 0;
+    }
+
+    return this.sections_[this.sections_.length - 1]!.sectionBottom;
+  }
+
   /**
    * Get all scroll triggers defined on this presentation's sections and elements.
    * @returns A flat array of ScrollTrigger instances.

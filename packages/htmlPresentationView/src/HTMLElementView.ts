@@ -19,6 +19,20 @@ import { HTMLPin } from "./animation/HTMLPin";
  * presentation coordinates. The created DOM node is *not* attached to
  * the document automatically; callers (or higher-level views) can
  * append the exposed root element where appropriate.
+ *
+ * ## Subclassing
+ * This class is not designed for free subclassing - it has specific extension points. If you
+ * cant find a suitable one, please open an issue or PR to add one rather than overriding things
+ * willy-nilly. This is brittle and don't blame me if a subsequent update shoots your custom
+ * subclass in the foot.
+ *
+ * Extension points:
+ * - subclassRealise(): called after the root element is created and attached to the parent
+ *   section's content container, but before any layout or animation updates are triggered. This is
+ *   the main extension point for adding custom content or structure inside the element's root.
+ * - applyContentDependentLayout(): called during layout() if the element has a content-dependent
+ *   dimension. By default this does nothing;
+ *
  */
 export class HTMLElementView implements ElementView {
   private readonly element_: Element;
@@ -50,6 +64,21 @@ export class HTMLElementView implements ElementView {
   }
 
   realise(): void {
+    // Implementation is in three phases to allow for flexible subclassing:
+    // (1) Create the root element and attach it to the parent section's content container.
+    //     Subclasses can override subclassRealise() to add content or structure
+    //     inside the root element without needing to worry about parent section
+    //     attachment.
+    // (2) Call subclassRealise() to allow subclasses to add content or structure
+    //     inside the root element.
+    // (3) Notify any HTML-based animations (e.g. pins) that the view has been
+    //     realised so they can react to DOM availability.
+
+    // ********************************************************************************************
+    // (1) Phase 1: do basic root element creation and attachment to parent section
+    //     *before* notifying subclass.
+    //
+
     if (this.rootElement_) {
       return;
     }
@@ -57,13 +86,6 @@ export class HTMLElementView implements ElementView {
     const div = document.createElement("div");
     div.className = `element-${this.slug_}-content`;
     div.dataset.elementName = this.element_.name;
-
-    // Add a label so element names/slugs are visible in demos.
-    const label = document.createElement("span");
-    label.className = "element-label";
-    const name = this.element_.name?.trim();
-    label.textContent = name && name.length > 0 ? name : this.slug_;
-    div.appendChild(label);
 
     this.rootElement_ = div;
 
@@ -87,11 +109,30 @@ export class HTMLElementView implements ElementView {
 
     contentElement.appendChild(div);
 
+    // ********************************************************************************************
+    // (2) Phase 2: notify subclass
+    //
+
+    this.subclassRealise();
+
+    // ********************************************************************************************
+    // (3) Phase 3: notify children (e.g. pins and animations) that the view is fully realised.
+    //
+
     // Notify any HTML-based animations (e.g. pins) that the view
     // has been realised so they can react to DOM availability.
     this.forEachHTMLPin((pin) => {
       pin.refresh();
     });
+  }
+
+  protected subclassRealise(): void {
+    // Add a label so element names/slugs are visible in demos.
+    const label = document.createElement("span");
+    label.className = "element-label";
+    const name = this.element_.name?.trim();
+    label.textContent = name && name.length > 0 ? name : this.slug_;
+    this.rootElement.appendChild(label);
   }
 
   applyContentDependentLayout(): void {

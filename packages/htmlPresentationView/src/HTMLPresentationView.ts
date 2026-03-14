@@ -17,11 +17,29 @@ import { HTMLElementView } from "./HTMLElementView";
 export class HTMLPresentationView implements PresentationView {
   private readonly presentation_: Presentation;
 
+  /**
+   * Host element supplied by the caller.
+   * Its size and positioning define the client-visible presentation area.
+   */
   private readonly root_: HTMLElement;
+
+  /**
+   * Internally created viewport element that holds the scrolling
+   * presentation content (backgrounds and elements).
+   * This sits inside the host element and is opaque to callers
+   * other than its documented class names.
+   */
   private container_: HTMLElement | null = null;
   private backgroundsContainer_: HTMLElement | null = null;
   private elementsContainer_: HTMLElement | null = null;
   private pinnedElementsContainer_: HTMLElement | null = null;
+  private overlayContainer_: HTMLElement | null = null;
+  /**
+   * Internal scrollable content wrapper inside the viewport. This is not
+   * part of the public structure contract; it exists purely so we can
+   * express the presentation's total height in DOM terms.
+   */
+  private contentContainer_: HTMLElement | null = null;
 
   private triggerMarkers_: HTMLTriggerMarkers | null = null;
   private readonly scrollTriggerManager_: HTMLScrollTriggerManager;
@@ -35,9 +53,7 @@ export class HTMLPresentationView implements PresentationView {
   }) {
     this.presentation_ = options.presentation;
     this.root_ = options.root;
-    const scrollingElement = options.scrollingElement ?? this.root_;
     this.scrollTriggerManager_ = new HTMLScrollTriggerManager({
-      scrollingElement,
       presentation: this.presentation_,
     });
   }
@@ -47,9 +63,16 @@ export class HTMLPresentationView implements PresentationView {
       return;
     }
 
-    const container = document.createElement("div");
-    container.className = "presentation-root";
-    container.style.position = "relative";
+    if (!this.root_.style.position || this.root_.style.position === "static") {
+      this.root_.style.position = "relative";
+    }
+
+    const viewport = document.createElement("div");
+    viewport.className = "presentation-root rdoc-presentation-viewport";
+
+    // Internal scrollable content wrapper. Backgrounds and elements live
+    // inside this node so its explicit height controls the scroll range.
+    const content = document.createElement("div");
 
     const backgrounds = document.createElement("div");
     backgrounds.className = "backgrounds";
@@ -57,18 +80,38 @@ export class HTMLPresentationView implements PresentationView {
     const elements = document.createElement("div");
     elements.className = "elements";
 
+    content.appendChild(backgrounds);
+    content.appendChild(elements);
+    viewport.appendChild(content);
+
+    const overlay = document.createElement("div");
+    overlay.className = "rdoc-presentation-overlay";
+    const overlayStyle = overlay.style;
+    overlayStyle.position = "absolute";
+    overlayStyle.left = "0";
+    overlayStyle.top = "0";
+    overlayStyle.right = "0";
+    overlayStyle.bottom = "0";
+
     const pinnedElements = document.createElement("div");
-    pinnedElements.className = "pinned-elements";
+    pinnedElements.className =
+      "pinned-elements rdoc-presentation-overlay-pinned";
 
-    container.appendChild(backgrounds);
-    container.appendChild(elements);
-    container.appendChild(pinnedElements);
-    this.root_.appendChild(container);
+    overlay.appendChild(pinnedElements);
 
-    this.container_ = container;
+    this.root_.appendChild(viewport);
+    this.root_.appendChild(overlay);
+
+    this.container_ = viewport;
+    this.contentContainer_ = content;
     this.backgroundsContainer_ = backgrounds;
     this.elementsContainer_ = elements;
     this.pinnedElementsContainer_ = pinnedElements;
+    this.overlayContainer_ = overlay;
+
+    // Ensure scroll-trigger handling is bound to the internal viewport,
+    // not the host or any external scrolling element.
+    this.scrollTriggerManager_.setScrollingElement(viewport);
   }
 
   layout(): void {
@@ -83,6 +126,16 @@ export class HTMLPresentationView implements PresentationView {
     for (const element of this.contentDependentElements_) {
       const elementView = element.view as HTMLElementView;
       elementView.applyContentDependentLayout();
+    }
+
+    // Express the presentation's total height (in basis coords) as the
+    // scrollable content height inside the viewport.
+    if (this.contentContainer_) {
+      const totalHeight = this.presentation_.totalHeight;
+      const geometry = this.presentation_.geometry;
+      const scale = geometry.scale || 1;
+      const heightPx = totalHeight * scale;
+      this.contentContainer_.style.height = `${heightPx}px`;
     }
 
     if (this.triggerMarkers_) {
@@ -109,7 +162,8 @@ export class HTMLPresentationView implements PresentationView {
     if (!this.triggerMarkers_) {
       this.triggerMarkers_ = new HTMLTriggerMarkers({
         presentation: this.presentation_,
-        container: this.container,
+        // contentContainer_ is created whenever the view is realised.
+        container: this.contentContainer_!,
       });
     }
 

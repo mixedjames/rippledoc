@@ -342,7 +342,7 @@ describe("Presentation", () => {
     });
 
     expect(element.animated).toBe(false);
-    expect(element.transform).toBeNull();
+    expect(() => element.transform).toThrow();
 
     element.animated = true;
 

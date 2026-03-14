@@ -54,7 +54,12 @@ describe("HTMLPresentationView integration", () => {
       ".presentation-root",
     ) as HTMLElement | null;
     expect(container).not.toBeNull();
-    expect(container!.style.position).toBe("relative");
+    // The internal viewport should be the presentation root element and
+    // carries the rdoc-presentation-viewport class, while the client-supplied
+    // host is positioned relative so CSS can absolutely position the
+    // viewport inside it.
+    expect(container!.className).toContain("rdoc-presentation-viewport");
+    expect(root.style.position).toBe("relative");
 
     const backgrounds = container!.querySelector(
       ".backgrounds",
