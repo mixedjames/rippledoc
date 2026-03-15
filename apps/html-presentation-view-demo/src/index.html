@@ -5,10 +5,13 @@
     <title>HTML Presentation View Demo</title>
   </head>
 
-  <body>
-    <h1>HTML Presentation View Demo</h1>
+  <body class="app app--edit">
+    <h1 class="app-title">HTML Presentation View Demo</h1>
 
-    <main class="layout">
+    <main
+      class="layout app-page app-page--edit"
+      aria-label="Edit presentation view"
+    >
       <section class="editor">
         <p>
           Paste a presentation XML document below and click
@@ -25,6 +28,20 @@
           <code>&lt;element&gt;</code> children.
         </p>
 
+        <div class="sample-picker">
+          <label for="sample-select" class="sample-label"
+            >Start from a sample</label
+          >
+          <select id="sample-select" class="sample-select"></select>
+        </div>
+
+        <div class="style-picker">
+          <label for="style-select" class="style-label"
+            >Presentation style</label
+          >
+          <select id="style-select" class="style-select"></select>
+        </div>
+
         <label for="xml-input" class="editor-label">Presentation XML</label>
         <textarea
           id="xml-input"
@@ -37,15 +54,29 @@
           <button id="render-btn" type="button">Render Presentation</button>
           <span id="status" class="status" aria-live="polite"></span>
         </div>
-      </section>
 
-      <section class="results">
-        <h2>Rendered Presentation</h2>
         <div id="error-output" class="error-output" aria-live="polite"></div>
-
-        <!-- Everything within #presentation-root is code-created -->
-        <div id="viewport" class="viewport"></div>
       </section>
     </main>
+
+    <section
+      id="view-page"
+      class="app-page app-page--view"
+      aria-label="Full presentation view"
+      aria-hidden="true"
+    >
+      <header class="view-toolbar">
+        <button id="back-to-edit-btn" type="button">
+          &larr; Back to editor
+        </button>
+        <button id="fullscreen-btn" type="button">Enter fullscreen</button>
+        <span id="view-status" class="status" aria-live="polite"></span>
+      </header>
+
+      <div id="view-error-output" class="error-output" aria-live="polite"></div>
+
+      <!-- Full-page presentation viewport; all content is code-created -->
+      <div id="fullpage-viewport" class="fullpage-viewport"></div>
+    </section>
   </body>
 </html>

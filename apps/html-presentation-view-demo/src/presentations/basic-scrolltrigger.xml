@@ -1,0 +1,24 @@
+<document>
+
+  <!-- The basis coordinates and aspect ration for the presentation -->
+  <slideSize w="800" h="600" />
+
+  <section h="slideHeight">
+  </section>
+
+  <section h="slideHeight">
+    <textbox l="60" w="320" t="sectionTop+60" h="180">
+      <scroll-trigger
+        name="t1"
+        start="sectionTop" start-hits="middle"
+        end="sectionBottom" end-hits="middle"
+        />
+      <pin trigger="t1"/>
+      This section has a pinned textbox. Scroll triggers are defined as child nodes of the element they reference, and pins are defined as child nodes of the element they apply to.
+    </textbox>
+  </section>
+
+  <section h="slideHeight">
+  </section>
+
+</document>

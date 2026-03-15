@@ -119,6 +119,11 @@ export class HTMLPresentationView implements PresentationView {
       throw new Error("HTMLPresentationView.layout() called before realise()");
     }
 
+    this.root_.style.setProperty(
+      "--presentation-scale",
+      this.presentation_.geometry.scale.toPrecision(4), // eslint-disable-line no-magic-numbers
+    );
+
     // Supports content-dependent layout:
     // Elements with content-dependent geometry have their non-dependent height/width applied
     // and their dependent axis cleared before layout to allow subsequent measurement of the

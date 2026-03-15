@@ -1,0 +1,10 @@
+<document>
+
+  <slideSize w="800" h="600" />',
+
+  <section h="slideHeight">',
+    <textbox l="60" w="320" t="sectionTop+60" h="180">
+    </textbox>
+  </section>
+
+</document>

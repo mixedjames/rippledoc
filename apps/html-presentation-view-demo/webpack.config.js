@@ -25,12 +25,16 @@ module.exports = {
       filename: "index.html",
     }),
 
-    // Copy static resources (currently only images) to the output directory
+    // Copy static resources (images, sample presentations) to the output directory
     new CopyPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, "src/img"),
           to: "img",
+        },
+        {
+          from: path.resolve(__dirname, "src/presentations"),
+          to: "presentations",
         },
       ],
     }),
