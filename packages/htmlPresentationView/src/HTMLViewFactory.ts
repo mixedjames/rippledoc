@@ -1,5 +1,7 @@
 import type {
   ViewFactory,
+  PresentationView,
+  SectionView,
   Presentation,
   Section,
   Element,
@@ -34,19 +36,43 @@ export class HTMLViewFactory implements ViewFactory {
     });
   }
 
-  createSectionView(section: Section): HTMLSectionView {
-    return new HTMLSectionView({ section });
+  createSectionView(
+    section: Section,
+    parentView: PresentationView,
+  ): HTMLSectionView {
+    return new HTMLSectionView({
+      section,
+      parentView: parentView as HTMLPresentationView,
+    });
   }
 
-  createElementView(element: Element): HTMLElementView {
-    return new HTMLElementView({ element });
+  createElementView(
+    element: Element,
+    parentView: SectionView,
+  ): HTMLElementView {
+    return new HTMLElementView({
+      element,
+      parentView: parentView as HTMLSectionView,
+    });
   }
 
-  createImageElementView(element: ImageElement): HTMLElementView {
-    return new HTMLImageElementView({ element });
+  createImageElementView(
+    element: ImageElement,
+    parentView: SectionView,
+  ): HTMLElementView {
+    return new HTMLImageElementView({
+      element,
+      parentView: parentView as HTMLSectionView,
+    });
   }
 
-  createHTMLFragmentElementView(element: HTMLFragmentElement): HTMLElementView {
-    return new HTMLFragmentElementView({ element });
+  createHTMLFragmentElementView(
+    element: HTMLFragmentElement,
+    parentView: SectionView,
+  ): HTMLElementView {
+    return new HTMLFragmentElementView({
+      element,
+      parentView: parentView as HTMLSectionView,
+    });
   }
 }

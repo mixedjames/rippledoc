@@ -29,6 +29,7 @@ const PRESENTATION_STYLES: PresentationStyle[] = [
 const SAMPLE_DEFINITIONS: SampleDefinition[] = [
   { id: "default", name: "Default example" },
   { id: "scroll-trigger", name: "Scroll trigger example" },
+  { id: "elevator-pitch", name: "Elevator Pitch" },
 ];
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -263,6 +264,8 @@ async function loadSampleIntoEditor(
 
 function getSampleUrl(id: string): string {
   switch (id) {
+    case "elevator-pitch":
+      return "presentations/elevator-pitch.xml";
     case "scroll-trigger":
       return "presentations/basic-scrolltrigger.xml";
     case "default":

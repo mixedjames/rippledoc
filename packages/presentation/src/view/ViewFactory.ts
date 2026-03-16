@@ -2,6 +2,7 @@ import type { Presentation } from "../model/Presentation";
 import type { Section } from "../model/Section";
 import type { Element } from "../model/Element";
 import type { HTMLFragmentElement } from "../model/HTMLElement";
+
 import type { PresentationView } from "./PresentationView";
 import type { SectionView } from "./SectionView";
 import type { ElementView } from "./ElementView";
@@ -16,11 +17,20 @@ import type { ImageElement } from "../model/ImageElement";
 export interface ViewFactory {
   createPresentationView(presentation: Presentation): PresentationView;
 
-  createSectionView(section: Section): SectionView;
+  createSectionView(
+    section: Section,
+    parentView: PresentationView,
+  ): SectionView;
 
-  createElementView(element: Element): ElementView;
+  createElementView(element: Element, parentView: SectionView): ElementView;
 
-  createImageElementView(element: ImageElement): ElementView;
+  createImageElementView(
+    element: ImageElement,
+    parentView: SectionView,
+  ): ElementView;
 
-  createHTMLFragmentElementView(element: HTMLFragmentElement): ElementView;
+  createHTMLFragmentElementView(
+    element: HTMLFragmentElement,
+    parentView: SectionView,
+  ): ElementView;
 }

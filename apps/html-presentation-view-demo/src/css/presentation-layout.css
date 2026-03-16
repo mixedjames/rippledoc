@@ -12,14 +12,8 @@
   bottom: 0;
   right: 0;
 
-  overflow: auto;
-}
-
-.presentation-root {
-  background: #020617;
-  border-radius: 0.5rem;
-  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .rdoc-presentation-overlay {

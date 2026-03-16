@@ -15,7 +15,7 @@ export class HTMLPin implements Pin {
   private readonly element_: Element;
   private readonly scrollTrigger_: ScrollTrigger;
 
-  private rootElement_: HTMLDivElement | null = null;
+  private rootElement_: HTMLElement | null = null;
   private pinLayer_: HTMLElement | null = null;
 
   private placeholder_: HTMLDivElement | null = null;

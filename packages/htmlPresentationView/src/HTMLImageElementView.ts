@@ -1,22 +1,24 @@
 import { HTMLElementView } from "./HTMLElementView";
 import { ImageElement, ImageFit } from "@rippledoc/presentation";
 import { sanitizeSVG } from "@rippledoc/sanitizer";
+import { HTMLSectionView } from "./HTMLSectionView";
 
 export class HTMLImageElementView extends HTMLElementView {
   private readonly imageElement_: ImageElement;
 
-  constructor(options: { element: ImageElement }) {
+  constructor(options: { element: ImageElement; parentView: HTMLSectionView }) {
     super(options);
     this.imageElement_ = options.element;
   }
 
-  override realise(): void {
-    super.realise();
+  override subclassRealise(): void {
+    // We don't need the default behaviour.
+    //super.subclassRealise();
 
     const root = this.rootElement;
     if (!root) {
       throw new Error(
-        "HTMLImageElementView.realise() called before HTMLElementView.realise()",
+        "HTMLImageElementView.subclassRealise() called before HTMLElementView.realise()",
       );
     }
 

@@ -3,6 +3,7 @@ import type {
   Section,
   ScrollTriggerInternal,
 } from "@rippledoc/presentation";
+
 import { HTMLPresentationView } from "./HTMLPresentationView";
 
 /**
@@ -14,15 +15,24 @@ import { HTMLPresentationView } from "./HTMLPresentationView";
  *
  * Both nodes are created detached; higher-level code is responsible for
  * inserting them into the appropriate containers.
+ *
+ * Exposed properties:
+ * - isRealised
+ * - backgroundElement
+ * - contentElement
  */
 export class HTMLSectionView implements SectionView {
   private readonly section_: Section;
+  private readonly parentView_: HTMLPresentationView;
+
   private readonly slug_: string;
-  private backgroundElement_: HTMLDivElement | null = null;
+
+  private backgroundElement_: HTMLElement | null = null;
   private contentElement_: HTMLElement | null = null;
 
-  constructor(options: { section: Section }) {
+  constructor(options: { section: Section; parentView: HTMLPresentationView }) {
     this.section_ = options.section;
+    this.parentView_ = options.parentView;
     this.slug_ = this.computeSlug();
   }
 
@@ -34,7 +44,7 @@ export class HTMLSectionView implements SectionView {
   }
 
   /** Background DOM node for this section. Only valid after realise(). */
-  get backgroundElement(): HTMLDivElement {
+  get backgroundElement(): HTMLElement {
     if (!this.backgroundElement_) {
       throw new Error(
         "HTMLSectionView.backgroundElement accessed before realise()",
@@ -58,42 +68,29 @@ export class HTMLSectionView implements SectionView {
       return;
     }
 
+    // (1) Create DOM noted for background
     const bg = document.createElement("div");
-    bg.className = `${this.slug_}-section-background`;
-    bg.dataset.sectionName = this.section_.name;
+    bg.classList.add(`${this.slug_}-section-background`);
+    bg.classList.add("rdoc-section-background");
 
-    // Add a small label so section identities are visible in demos.
-    const label = document.createElement("span");
-    label.className = "section-label";
-    const name = this.section_.name?.trim();
-    label.textContent = name && name.length > 0 ? name : this.slug_;
-    bg.appendChild(label);
-
+    // (2) Create DOM node for content
     const sectionEl = document.createElement("section");
-    sectionEl.className = `${this.slug_}-section-content`;
-    sectionEl.dataset.sectionName = this.section_.name;
+    sectionEl.classList.add(`${this.slug_}-section-content`);
+    sectionEl.classList.add("rdoc-section-content");
 
     this.backgroundElement_ = bg;
     this.contentElement_ = sectionEl;
 
-    // Attach this section's DOM nodes into the presentation's root containers.
-    // Presentation.display.realise() guarantees that the PresentationView has already
-    // been realised by the time this section view is realised.
+    // (3) Attach this section's DOM nodes into the presentation's root containers.
+    //
+    // Note:
+    //   Presentation.display.realise() guarantees that the PresentationView has already
+    //   been realised by the time this section view is realised.
     const presentation = this.section_.parent;
-    const presentationView = presentation.view;
-    if (!(presentationView instanceof HTMLPresentationView)) {
-      throw new Error(
-        "HTMLSectionView.realise() expected parent Presentation.view to be an HTMLPresentationView",
-      );
-    }
+    const presentationView = presentation.view as HTMLPresentationView;
 
     const backgrounds = presentationView.backgroundsContainer;
     const elements = presentationView.elementsContainer;
-    if (!backgrounds || !elements) {
-      throw new Error(
-        "HTMLSectionView.realise() called before presentation view was fully realised",
-      );
-    }
 
     backgrounds.appendChild(bg);
     elements.appendChild(sectionEl);
@@ -104,34 +101,48 @@ export class HTMLSectionView implements SectionView {
       throw new Error("HTMLSectionView.layout() called before realise()");
     }
 
-    const background = this.backgroundElement;
-    const content = this.contentElement;
+    this.applyPositioning();
+    this.applyStyle();
+  }
 
+  private applyPositioning(): void {
+    // (1) Position the background element to cover the section's area in the presentation.
+    //
     const presentation = this.section_.parent;
     const geometry = presentation.geometry;
+
     const scale = geometry.scale;
     const tx = geometry.tx;
     const basisWidth = geometry.basis.width;
 
-    // Section geometry in basis coordinates
     const top = this.section_.sectionTop;
     const height = this.section_.sectionHeight;
 
-    // Convert to viewport pixels using the presentation geometry
     const topPx = top * scale;
     const heightPx = height * scale;
     const leftPx = tx;
     const widthPx = basisWidth * scale;
 
-    const bgStyle = background.style;
+    const bgStyle = this.backgroundElement.style;
     bgStyle.position = "absolute";
     bgStyle.left = `${leftPx}px`;
     bgStyle.top = `${topPx}px`;
     bgStyle.width = `${widthPx}px`;
     bgStyle.height = `${heightPx}px`;
 
+    // (2) Content sections are all positioned at the top-left of the
+    // root so that child elements can use global absolute coords.
+    const contentStyle = this.contentElement.style;
+    contentStyle.position = "absolute";
+    contentStyle.left = "0";
+    contentStyle.top = "0";
+  }
+
+  private applyStyle(): void {
     // Apply section fill style as a background.
+    const bgStyle = this.backgroundElement.style;
     const fill = this.section_.style.fill;
+
     const color = fill.color;
     if (color.a > 0) {
       const MAX_COLOR_VALUE = 255;
@@ -146,13 +157,6 @@ export class HTMLSectionView implements SectionView {
       bgStyle.backgroundRepeat = "no-repeat";
       bgStyle.backgroundPosition = "center center";
     }
-
-    // Content sections are all positioned at the top-left of the
-    // root so that child elements can use global absolute coords.
-    const contentStyle = content.style;
-    contentStyle.position = "absolute";
-    contentStyle.left = "0";
-    contentStyle.top = "0";
   }
 
   registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void {

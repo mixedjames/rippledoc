@@ -33,14 +33,22 @@ import { HTMLPin } from "./animation/HTMLPin";
  * - applyContentDependentLayout(): called during layout() if the element has a content-dependent
  *   dimension. By default this does nothing;
  *
+ * Implementation notes:
  */
 export class HTMLElementView implements ElementView {
+  // Relations:
+  //   element_ - the model peer
+  //   parentView_ - the parent section view
   private readonly element_: Element;
-  private readonly slug_: string;
-  private rootElement_: HTMLDivElement | null = null;
+  private readonly parentView_: HTMLSectionView;
 
-  constructor(options: { element: Element }) {
+  private rootElement_: HTMLElement | null = null;
+
+  private readonly slug_: string;
+
+  constructor(options: { element: Element; parentView: HTMLSectionView }) {
     this.element_ = options.element;
+    this.parentView_ = options.parentView;
     this.slug_ = this.computeSlug();
   }
 
@@ -56,13 +64,30 @@ export class HTMLElementView implements ElementView {
    *
    * Callers should use isRealised to guard access.
    */
-  get rootElement(): HTMLDivElement {
+  get rootElement(): HTMLElement {
     if (!this.rootElement_) {
       throw new Error("HTMLElementView.rootElement accessed before realise()");
     }
     return this.rootElement_;
   }
 
+  /**
+   * Implements ElementView.realise()
+   *
+   * This is *not* and extension point - please don't override this.
+   *
+   * This method does three things:
+   * (1) Creates the root element and attaches it to the parent section's content container.
+   * (2) Calls subclassRealise()
+   * (3) Notifies any subcomponents that depend on the full structure of the DOM
+   *
+   * HTMLElementView.subclassRealise *is* an extension point - it's fully intended to be overridden
+   * by subclasses.
+   *
+   * If you need need to modify the root element, do it there.
+   *
+   * @returns
+   */
   realise(): void {
     // Implementation is in three phases to allow for flexible subclassing:
     // (1) Create the root element and attach it to the parent section's content container.
@@ -78,36 +103,21 @@ export class HTMLElementView implements ElementView {
     // (1) Phase 1: do basic root element creation and attachment to parent section
     //     *before* notifying subclass.
     //
+    // Note: parents (HTMLSectionView in this case) are realised before their children. By the time
+    // we're called, it is guarenteed that it is safe to access the parent element's DOM.
+    //
 
     if (this.rootElement_) {
       return;
     }
 
     const div = document.createElement("div");
-    div.className = `element-${this.slug_}-content`;
+    div.classList.add(`element-${this.slug_}-content`);
+    div.classList.add("rdoc-element");
     div.dataset.elementName = this.element_.name;
 
     this.rootElement_ = div;
-
-    // Attach this element's root to its parent section's content container.
-    // By the time an Element's view is realised, Presentation.display.realise()
-    // guarantees that the parent Section's view has already been realised.
-    const section = this.element_.parent;
-    const sectionView = section.view;
-    if (!(sectionView instanceof HTMLSectionView)) {
-      throw new Error(
-        "HTMLElementView.realise() expected parent Section.view to be an HTMLSectionView",
-      );
-    }
-
-    const contentElement = sectionView.contentElement;
-    if (!contentElement) {
-      throw new Error(
-        "HTMLElementView.realise() called before parent section view was realised",
-      );
-    }
-
-    contentElement.appendChild(div);
+    this.parentView_.contentElement.appendChild(div);
 
     // ********************************************************************************************
     // (2) Phase 2: notify subclass
@@ -129,7 +139,8 @@ export class HTMLElementView implements ElementView {
   protected subclassRealise(): void {
     // Add a label so element names/slugs are visible in demos.
     const label = document.createElement("span");
-    label.className = "element-label";
+    label.className = "rdoc-element-label";
+
     const name = this.element_.name?.trim();
     label.textContent = name && name.length > 0 ? name : this.slug_;
     this.rootElement.appendChild(label);
@@ -144,8 +155,7 @@ export class HTMLElementView implements ElementView {
 
     const style = this.rootElement_.style;
 
-    const section = this.element_.parent;
-    const presentation = section.parent;
+    const presentation = this.element_.presentation;
     const geometry = presentation.geometry;
 
     const scale = geometry.scale;
@@ -176,9 +186,19 @@ export class HTMLElementView implements ElementView {
       throw new Error("HTMLElementView.layout() called before realise()");
     }
 
-    const elementNode = this.rootElement_;
-    const section = this.element_.parent;
-    const presentation = section.parent;
+    this.applyPositioning();
+    this.applyStyle();
+
+    // Forward layout changes to any HTMLPin instances so they can
+    // keep placeholder and clone positions in sync with this element.
+    this.forEachHTMLPin((pin) => {
+      pin.refresh();
+    });
+  }
+
+  private applyPositioning(): void {
+    const elementNode = this.rootElement;
+    const presentation = this.element_.presentation;
     const geometry = presentation.geometry;
 
     const scale = geometry.scale;
@@ -195,10 +215,13 @@ export class HTMLElementView implements ElementView {
     style.top = `${topPx}px`;
     style.width = `${widthPx}px`;
     style.height = `${heightPx}px`;
+  }
 
-    // Apply element fill style as a background, mirroring HTMLSectionView.
+  private applyStyle(): void {
+    const style = this.rootElement.style;
     const fill = this.element_.style.fill;
     const color = fill.color;
+
     if (color.a > 0) {
       const MAX_COLOR_VALUE = 255;
       const alpha = color.a / MAX_COLOR_VALUE;
@@ -212,18 +235,12 @@ export class HTMLElementView implements ElementView {
       style.backgroundRepeat = "no-repeat";
       style.backgroundPosition = "center center";
     }
-
-    // Forward layout changes to any HTMLPin instances so they can
-    // keep placeholder and clone positions in sync with this element.
-    this.forEachHTMLPin((pin) => {
-      pin.refresh();
-    });
   }
 
   registerScrollTriggers(triggers: readonly ScrollTriggerInternal[]): void {
-    const section = this.element_.parent;
-    const presentation = section.parent;
+    const presentation = this.element_.presentation;
     const presentationView = presentation.view;
+
     if (presentationView instanceof HTMLPresentationView) {
       presentationView.scrollTriggerManager.registerTriggers(triggers);
     }
@@ -240,10 +257,9 @@ export class HTMLElementView implements ElementView {
       );
     }
 
-    const section = this.element_.parent;
-    const presentation = section.parent;
+    const presentation = this.element_.presentation;
     const geometry = presentation.geometry;
-    const scale = geometry.scale || 1;
+    const scale = geometry.scale;
 
     let pixelValue: number;
 

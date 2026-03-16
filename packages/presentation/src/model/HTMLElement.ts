@@ -52,6 +52,6 @@ export class HTMLFragmentElement extends Element {
   }
 
   protected override createView(viewFactory: ViewFactory): ElementView {
-    return viewFactory.createHTMLFragmentElementView(this);
+    return viewFactory.createHTMLFragmentElementView(this, this.parent.view);
   }
 }

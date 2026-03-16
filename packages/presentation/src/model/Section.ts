@@ -111,7 +111,7 @@ export class Section {
     );
 
     // (3) Create the view for this section and register scroll triggers with it.
-    this.view_ = viewFactory.createSectionView(this);
+    this.view_ = viewFactory.createSectionView(this, this.parent.view);
     this.view_.registerScrollTriggers(this.scrollTriggerInternals_);
   }
 

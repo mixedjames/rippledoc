@@ -60,6 +60,6 @@ export class ImageElement extends Element {
   }
 
   protected override createView(viewFactory: ViewFactory): ElementView {
-    return viewFactory.createImageElementView(this);
+    return viewFactory.createImageElementView(this, this.parent.view);
   }
 }

@@ -34,6 +34,7 @@ export class HTMLPresentationView implements PresentationView {
   private elementsContainer_: HTMLElement | null = null;
   private pinnedElementsContainer_: HTMLElement | null = null;
   private overlayContainer_: HTMLElement | null = null;
+
   /**
    * Internal scrollable content wrapper inside the viewport. This is not
    * part of the public structure contract; it exists purely so we can
@@ -67,18 +68,20 @@ export class HTMLPresentationView implements PresentationView {
       this.root_.style.position = "relative";
     }
 
+    this.root_.classList.add("rdoc-presentation");
+
     const viewport = document.createElement("div");
-    viewport.className = "presentation-root rdoc-presentation-viewport";
+    viewport.className = "rdoc-presentation-viewport";
 
     // Internal scrollable content wrapper. Backgrounds and elements live
     // inside this node so its explicit height controls the scroll range.
     const content = document.createElement("div");
 
     const backgrounds = document.createElement("div");
-    backgrounds.className = "backgrounds";
+    backgrounds.className = "rdoc-backgrounds";
 
     const elements = document.createElement("div");
-    elements.className = "elements";
+    elements.className = "rdoc-elements";
 
     content.appendChild(backgrounds);
     content.appendChild(elements);
@@ -94,8 +97,7 @@ export class HTMLPresentationView implements PresentationView {
     overlayStyle.bottom = "0";
 
     const pinnedElements = document.createElement("div");
-    pinnedElements.className =
-      "pinned-elements rdoc-presentation-overlay-pinned";
+    pinnedElements.className = "rdoc-pinned-elements";
 
     overlay.appendChild(pinnedElements);
 

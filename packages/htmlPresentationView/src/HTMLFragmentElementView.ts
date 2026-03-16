@@ -1,5 +1,6 @@
 import { HTMLElementView } from "./HTMLElementView";
 import type { HTMLFragmentElement } from "@rippledoc/presentation";
+import { HTMLSectionView } from "./HTMLSectionView";
 
 /**
  * HTML view for HTMLElement model nodes.
@@ -10,7 +11,10 @@ import type { HTMLFragmentElement } from "@rippledoc/presentation";
 export class HTMLFragmentElementView extends HTMLElementView {
   private readonly htmlElement_: HTMLFragmentElement;
 
-  constructor(options: { element: HTMLFragmentElement }) {
+  constructor(options: {
+    element: HTMLFragmentElement;
+    parentView: HTMLSectionView;
+  }) {
     super(options);
     this.htmlElement_ = options.element;
   }

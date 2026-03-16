@@ -87,22 +87,30 @@ export class NullViewFactory implements ViewFactory {
     return new NullPresentationView();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createSectionView(_section: Section): SectionView {
+  createSectionView(
+    _section: Section, // eslint-disable-line @typescript-eslint/no-unused-vars
+    _parentView: PresentationView, // eslint-disable-line @typescript-eslint/no-unused-vars
+  ): SectionView {
     return new NullSectionView();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createElementView(_element: Element): ElementView {
+  createElementView(_element: Element, _parentView: SectionView): ElementView {
     return new NullElementView();
   }
 
-  createImageElementView(element: ImageElement): ElementView {
-    return this.createElementView(element);
+  createImageElementView(
+    element: ImageElement,
+    parentView: SectionView,
+  ): ElementView {
+    return this.createElementView(element, parentView);
   }
 
-  createHTMLFragmentElementView(element: HTMLFragmentElement): ElementView {
-    return this.createElementView(element);
+  createHTMLFragmentElementView(
+    element: HTMLFragmentElement,
+    parentView: SectionView,
+  ): ElementView {
+    return this.createElementView(element, parentView);
   }
 }
 

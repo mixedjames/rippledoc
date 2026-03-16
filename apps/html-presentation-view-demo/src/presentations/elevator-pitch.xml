@@ -1,0 +1,15 @@
+<document>
+
+  <slideSize w="800" h="600" />',
+
+  <section h="slideHeight">',
+    
+    <textbox
+      l="60" w="600" t="sectionTop + slideHeight/2 - height/2" h="content">
+      <h1>RippleDoc</h1>
+      <h2>Education meets ScrollyTelling</h2>
+    </textbox>
+
+  </section>
+
+</document>

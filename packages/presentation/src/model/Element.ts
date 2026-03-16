@@ -1,5 +1,6 @@
 import type { Expression } from "@rippledoc/expressions";
 
+import type { Presentation } from "./Presentation";
 import type { Section } from "./Section";
 import type { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { ScrollTriggerInternal } from "../scrollTrigger/ScrollTriggerInternal";
@@ -165,7 +166,7 @@ export class Element {
    * @returns The created element view.
    */
   protected createView(viewFactory: ViewFactory): ElementView {
-    return viewFactory.createElementView(this);
+    return viewFactory.createElementView(this, this.parent_.view);
   }
 
   /**
@@ -312,6 +313,10 @@ export class Element {
    */
   get parent(): Section {
     return this.parent_;
+  }
+
+  get presentation(): Presentation {
+    return this.parent_.parent;
   }
 
   /**
