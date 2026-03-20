@@ -4,10 +4,12 @@ export { PresentationBuilder } from "./components/presentation/PresentationBuild
 export { Section } from "./components/section/Section";
 export { SectionBuilder } from "./components/section/SectionBuilder";
 
-export { Element } from "./components/element/Element";
+export {
+  Element,
+  ContentDependentDimension,
+} from "./components/element/Element";
 export { ElementBuilder } from "./components/element/ElementBuilder";
 
 export { compilePresentation } from "./components/compilePresentation";
 
-// Temporary exports - testing purposes only!!!
-export { AxisBuilder } from "./components/common/AxisBuilder";
+export { HTMLPresentationView } from "./components/presentation/HTMLPresentationView";

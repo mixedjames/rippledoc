@@ -1,5 +1,6 @@
 import { Element } from "../element/Element";
 import { Presentation } from "../..";
+import { Expression } from "packages/expressions/dist";
 
 interface SectionPhase2Constructor {
   setElements(elements: Element[]): SectionPhase2Constructor;
@@ -9,15 +10,19 @@ interface SectionPhase2Constructor {
 
 type SectionOptions = {
   presentation: Presentation;
+
+  sectionTop: Expression;
+  sectionHeight: Expression;
+  sectionBottom: Expression;
 };
 
 export class Section {
+  // Construction-related data ---------------------------------------------------------------------
+  //
+
   private static constructionToken_: symbol = Symbol(
     "Section.ConstructorProtector",
   );
-
-  private presentation_: Presentation;
-  private elements_: Element[] | null = null;
 
   private phase2Constructor_: SectionPhase2Constructor | null = {
     setElements: (elements: Element[]) => {
@@ -29,6 +34,18 @@ export class Section {
       this.phase2Constructor_ = null;
     },
   };
+
+  // Structural relationships ----------------------------------------------------------------------
+  //
+
+  private presentation_: Presentation;
+  private elements_: Element[] | null = null;
+
+  // Owned properties ------------------------------------------------------------------------------
+  //
+  private sectionTop_: Expression;
+  private sectionHeight_: Expression;
+  private sectionBottom_: Expression;
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -42,6 +59,9 @@ export class Section {
     }
 
     this.presentation_ = options.presentation;
+    this.sectionTop_ = options.sectionTop;
+    this.sectionHeight_ = options.sectionHeight;
+    this.sectionBottom_ = options.sectionBottom;
   }
 
   private get phase2Constructor(): SectionPhase2Constructor {
@@ -82,6 +102,18 @@ export class Section {
   }
 
   // ----------------------------------------------------------------------------------------------
-  // ...
+  // Geometry
   // ----------------------------------------------------------------------------------------------
+
+  get sectionTop(): number {
+    return this.sectionTop_.evaluate();
+  }
+
+  get sectionHeight(): number {
+    return this.sectionHeight_.evaluate();
+  }
+
+  get sectionBottom(): number {
+    return this.sectionBottom_.evaluate();
+  }
 }

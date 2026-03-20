@@ -6,7 +6,7 @@ import { PresentationCompiler } from "../presentation/PresentationCompiler";
 
 import { ElementCompiler } from "../element/ElementCompiler";
 
-import { Module } from "@rippledoc/expressions";
+import { Module, Expression } from "@rippledoc/expressions";
 
 export class SectionCompiler {
   // Structural relationships
@@ -18,6 +18,10 @@ export class SectionCompiler {
   // Owned properties
   //
   private module_: Module;
+
+  private sectionTop_: (() => Expression) | null = null;
+  private sectionBottom_: (() => Expression) | null = null;
+  private sectionHeight_: (() => Expression) | null = null;
 
   constructor(options: {
     sectionBuilder: SectionBuilder;
@@ -44,6 +48,14 @@ export class SectionCompiler {
     return this.module_;
   }
 
+  get presentationCompiler(): PresentationCompiler {
+    return this.presentationCompiler_;
+  }
+
+  get builder(): SectionBuilder {
+    return this.builder_;
+  }
+
   setNextSection(nextSection: SectionCompiler) {
     this.module.mapModule("nextSection", nextSection.module);
   }
@@ -65,7 +77,42 @@ export class SectionCompiler {
     this.elements_.forEach((element) => element.beforeCompile());
   }
 
-  private validateAndDerive() { }
+  private validateAndDerive() {
+    //
+    //
+    const yAxisStrings = this.builder_.yAxis.deriveExpressions();
+    this.sectionTop_ = this.module.addExpression(
+      "sectionTop",
+      yAxisStrings.sectionTop,
+    );
+    this.sectionHeight_ = this.module.addExpression(
+      "sectionHeight",
+      yAxisStrings.sectionHeight,
+    );
+    this.sectionBottom_ = this.module.addExpression(
+      "sectionBottom",
+      yAxisStrings.sectionBottom,
+    );
+
+    // Create a the 'elements' namespace: this enables expressions on sections and elements (they
+    // inherit the parent section's namespace) to refer to elements by name, e.g.
+    // "elements.Element1.bottom"
+    //
+    // Notes:
+    // (1) We only map elements that have names
+    //     Possible FIXME: might be nice to support referring to elements by index?
+    // (2) We use the rootModule for the namespace - this prevents the new namespace from being
+    //     contaminated with other stuff in the section's namespace.
+    //
+    const elementsNamespace = this.module.rootModule.addSubModule();
+    this.module.mapModule("elements", elementsNamespace);
+
+    this.elements_.forEach((e) => {
+      if (e.builder.hasName) {
+        elementsNamespace.mapModule(e.builder.name, e.module);
+      }
+    });
+  }
 
   // ----------------------------------------------------------------------------------------------
   // Compilation steps
@@ -76,7 +123,12 @@ export class SectionCompiler {
    * Do not duplicate that comment here - single point of truth.
    */
   compile(presentation: Presentation): Section {
-    const s = Section.create({ presentation });
+    const s = Section.create({
+      presentation,
+      sectionTop: this.sectionTop_!(),
+      sectionHeight: this.sectionHeight_!(),
+      sectionBottom: this.sectionBottom_!(),
+    });
 
     s.phase2Constructor.setElements(
       this.elements_.map((ec: ElementCompiler) => {

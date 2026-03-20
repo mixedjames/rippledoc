@@ -167,6 +167,8 @@ export class Module {
    * Adds a named expression to the module.
    * Returns a function that, after the module is compiled, will return the bound expression.
    *
+   * This function can be called more than once and will return the same value.
+   *
    * @param name The name of the expression.
    * @param expression The expression string.
    * @returns A function that returns the bound expression after compilation.

@@ -1,11 +1,36 @@
 import { Section } from "../section/Section";
+import { Element } from "../element/Element";
+import { PresentationView, PresentationConnection } from "./PresentationView";
+
+export type ContentDependentElement = {
+  element: Element;
+  valueHolder: { value: number };
+};
 
 /**
- *
+ * IMPLEMENTATION DETAIL - clients must not use this interface.
  */
-interface Phase2Constructor {
+export interface Phase2Constructor {
+  /**
+   * Sets the sections of the presentation. These are in logical order (not dependency order).
+   * The array is shallow-copied so callers cannot modify the presentation's sections after setting
+   * them. The presentation takes ownership of the section objects themselves.
+   */
   setSections(sections: Section[]): Phase2Constructor;
 
+  /**
+   * Sets the sorted list of content-dependent elements. The list is expected to be sorted in
+   * dependency order, so that if element A's size depends on element B, then A comes after B in the
+   * list.
+   */
+  setSortedContentDependentElements(
+    elements: ContentDependentElement[],
+  ): Phase2Constructor;
+
+  /**
+   * Marks phase 2 of construction as complete. Frees any resources used to support phase 2
+   * construction, and prevents any further calls to the phase 2 constructor methods.
+   */
   complete(): void;
 }
 
@@ -16,8 +41,41 @@ type PresentationOptions = {
 /**
  *
  * # Implementation notes
+ * These are notes on the implementation of the presentation. They are not part of the public API,
+ * and clients must not rely on them. They are subject to change without warning.
  *
  * ## (1) Two-phase construction
+ * These is a chicken and egg problem in constructing the presentation. The sections of the
+ * presentation need to reference the presentation itself, but the presentation needs to know its
+ * sections. But the whole tree is immutable after construction. So what to do?
+ *
+ * I adopted a two-phase construction approach. The presentation is constructed in two phases:
+ * - Phase 1: details of the presentation that don't depend on the rest of the tree are passed
+ *   to the constructor via the create() method.
+ * - Phase 2: details of the presentation that do depend on the rest of the tree are set via the
+ *   Phase2Constructor interface, which is returned by the create() method.
+ * - Once phase 2 is complete, the presentation is fully constructed and immutable.
+ *
+ * ## (2) Content-dependent elements
+ *
+ * Content-dependent elements are unusual. In normal layout, data flows only in one direction -
+ * elements know their own geometry, and this is used by the rendering systems.
+ *
+ * Content-dependent elements depend on the rendering system to know their size however. In our
+ * model one dimension is fixed and the rendering system determines the other dimension based on
+ * that and the content.
+ *
+ * To faciliate this we keep a list of content-dependent elements in the presentation:
+ * - The list is sort in dependency order, so that if element A's size depends on element B, then A
+ *   comes after B in the list.
+ * - The list also contains value holders for the content-dependent dimension of each element (in
+ *   basis coorinates, not physical ones).
+ *
+ * The rendering system is expected to determine the content-dependent dimensions of the elements in
+ * order, updating the value holders as it goes.
+ *
+ * See PresentationCompiler for the details of how the sorted list of content-dependent elements is
+ * constructed.
  */
 export class Presentation {
   // Construction-related data ---------------------------------------------------------------------
@@ -32,16 +90,35 @@ export class Presentation {
       this.sections_.push(...sections);
       return this.phase2Constructor;
     },
+
+    setSortedContentDependentElements: (
+      elements: ContentDependentElement[],
+    ) => {
+      this.sortedContentDependentElements_.push(...elements);
+      return this.phase2Constructor;
+    },
+
     complete: () => {
       this.phase2Constructor_ = null;
     },
   };
+
+  // View properties -------------------------------------------------------------------------------
+  //
+
+  private viewConnection_: PresentationConnection = {
+    connectedPresentation: () => {
+      return this;
+    },
+  };
+  private view_: PresentationView | null = null;
 
   // Owned properties ------------------------------------------------------------------------------
   //
 
   private basisDimensions_: { width: number; height: number };
   private sections_: Section[] = [];
+  private sortedContentDependentElements_: ContentDependentElement[] = [];
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -80,10 +157,36 @@ export class Presentation {
   }
 
   // ----------------------------------------------------------------------------------------------
+  // View management
+  // ----------------------------------------------------------------------------------------------
+
+  attachView(view: PresentationView): void {
+    if (this.view_ !== null) {
+      throw new Error("A view is already attached to this presentation.");
+    }
+
+    this.view_ = view;
+    view.connect(this.viewConnection_);
+  }
+
+  detachView(): void {
+    if (this.view_ === null) {
+      throw new Error("No view is attached to this presentation.");
+    }
+
+    this.view_.disconnect();
+    this.view_ = null;
+  }
+
+  // ----------------------------------------------------------------------------------------------
   // ...
   // ----------------------------------------------------------------------------------------------
 
   get sections(): readonly Section[] {
     return this.sections_;
+  }
+
+  get basisDimensions(): { width: number; height: number } {
+    return { ...this.basisDimensions_ };
   }
 }

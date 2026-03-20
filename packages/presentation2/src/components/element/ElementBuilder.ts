@@ -1,7 +1,6 @@
 import { SectionBuilder } from "../section/SectionBuilder";
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { AxisBuilder } from "../common/AxisBuilder";
-import { ContentDependentDimension } from "./Element";
 
 /**
  *
@@ -24,11 +23,8 @@ export class ElementBuilder {
 
   // Order of axis components is key here: AxisBuilder.deriveExpressions depends on it
   // DO NOT CHANGE
-  private xAxis_ = new AxisBuilder(["left", "right", "width"] as const);
-  private yAxis_ = new AxisBuilder(["top", "bottom", "height"] as const);
-
-  private contentDependentDimension_: ContentDependentDimension =
-    ContentDependentDimension.None;
+  private xAxis_ = new AxisBuilder(["left", "width", "right"] as const);
+  private yAxis_ = new AxisBuilder(["top", "height", "bottom"] as const);
 
   constructor(options: { section: SectionBuilder }) {
     this.section_ = options.section;
@@ -59,14 +55,6 @@ export class ElementBuilder {
 
   get yAxis(): AxisBuilder<"top" | "height" | "bottom"> {
     return this.yAxis_;
-  }
-
-  get contentDependentDimension(): ContentDependentDimension {
-    return this.contentDependentDimension_;
-  }
-
-  set contentDependentDimension(value: ContentDependentDimension) {
-    this.contentDependentDimension_ = value;
   }
 
   // Name

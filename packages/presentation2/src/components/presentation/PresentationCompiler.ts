@@ -1,6 +1,11 @@
 import { PresentationBuilder } from "./PresentationBuilder";
-import { Presentation } from "./Presentation";
+import {
+  Presentation,
+  Phase2Constructor,
+  ContentDependentElement,
+} from "./Presentation";
 import { SectionCompiler } from "../section/SectionCompiler";
+import { Element } from "../element/Element";
 
 import { Module, Expression } from "@rippledoc/expressions";
 
@@ -47,7 +52,9 @@ export class PresentationCompiler {
   // Owned properties
   //
   private module_: Module;
+
   private sortedExpressions_: Expression[] | null = null;
+  private expressionToElement_ = new Map<Expression, ContentDependentElement>();
 
   constructor(builder: PresentationBuilder) {
     this.builder_ = builder;
@@ -71,6 +78,14 @@ export class PresentationCompiler {
     return this.module_;
   }
 
+  declareContentDependentElement(
+    element: Element,
+    expression: Expression,
+    valueHolder: { value: number },
+  ): void {
+    this.expressionToElement_.set(expression, { element, valueHolder });
+  }
+
   // ----------------------------------------------------------------------------------------------
   // Pre-compilation steps
   // ----------------------------------------------------------------------------------------------
@@ -88,6 +103,7 @@ export class PresentationCompiler {
 
   private validateAndDerive() {
     this.connectAdjacentSections();
+    this.mapNamedSections();
   }
 
   private connectAdjacentSections() {
@@ -103,6 +119,28 @@ export class PresentationCompiler {
       currentSection.setNextSection(nextSection);
       nextSection.setPreviousSection(currentSection);
     }
+  }
+
+  private mapNamedSections() {
+    // Create a the 'sections' namespace: this enables expressions on sections and elements (they
+    // inherit the parent section's namespace) to refer to sections by name, e.g.
+    // "sections.Section1.top"
+    //
+    // Notes:
+    // (1) We only map sections that have names
+    //     Possible FIXME: might be nice to support referring to sections by index?
+    // (2) We use the rootModule for the namespace - this prevents the new namespace from being
+    //     contaminated with other stuff in the section's namespace.
+    //
+
+    const sectionNamespace = this.module.rootModule.addSubModule();
+    this.module.mapModule("sections", sectionNamespace);
+
+    this.sections_.forEach((s) => {
+      if (s.builder.hasName) {
+        sectionNamespace.mapModule(s.builder.name, s.module);
+      }
+    });
   }
 
   /**
@@ -131,8 +169,38 @@ export class PresentationCompiler {
       ),
     );
 
+    this.buildSortedContentDependentElementList(p.phase2Constructor);
+
     p.phase2Constructor.complete();
 
     return p.presentation;
+  }
+
+  /**
+   * At this point we have:
+   * - A list of Expressions sorted by dependency order (i.e. if Expression A depends on Expression
+   *   B, then B will appear before A in the list).
+   * - A mapping from Expressions to the content-dependent Element that they are associated with.
+   *
+   * We can use these to build a list of content-dependent Elements sorted by dependency order. This
+   * is important because it allows us to update the content-dependent Elements in a single pass
+   * (i.e. we can guarantee that when we update an Element, all of the Elements that it depends on
+   * have already been updated).
+   *
+   * We then pass this list to the Presentation via the Phase2Constructor.
+   */
+  private buildSortedContentDependentElementList(
+    phase2Constructor: Phase2Constructor,
+  ): void {
+    const list: ContentDependentElement[] = [];
+
+    // ! ok as never null at this phase in compilation (i.e. post-beforeCompile)
+    this.sortedExpressions_!.forEach((e: Expression) => {
+      if (this.expressionToElement_.has(e)) {
+        list.push(this.expressionToElement_.get(e)!);
+      }
+    });
+
+    phase2Constructor.setSortedContentDependentElements(list);
   }
 }

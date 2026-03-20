@@ -104,4 +104,8 @@ export class Element {
   get height(): number {
     return this.height_.evaluate();
   }
+
+  get contentDependentDimension(): ContentDependentDimension {
+    return this.contentDependentDimension_;
+  }
 }
