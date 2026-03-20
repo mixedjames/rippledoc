@@ -13,6 +13,7 @@
       "@rippledoc/expressions": ["packages/expressions"],
       "@rippledoc/sanitizer": ["packages/sanitizer"],
       "@rippledoc/presentation": ["packages/presentation"],
+      "@rippledoc/presentation2": ["packages/presentation2"],
       "@rippledoc/presentationBuilder": ["packages/presentationBuilder"],
       "@rippledoc/htmlPresentation": ["packages/htmlPresentation"],
       "@rippledoc/htmlPresentationView": ["packages/htmlPresentationView"]

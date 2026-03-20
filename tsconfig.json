@@ -11,6 +11,9 @@
       "path": "./packages/presentation"
     },
     {
+      "path": "./packages/presentation2"
+    },
+    {
       "path": "./packages/presentationBuilder"
     },
     {
@@ -24,6 +27,9 @@
     },
     {
       "path": "./apps/html-presentation-view-demo"
+    },
+    {
+      "path": "./apps/just-messing"
     }
   ]
 }

@@ -32,7 +32,9 @@
     "build:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js",
     "watch:xml-presentation-structure-viewer": "webpack --config apps/xml-presentation-structure-viewer/webpack.config.js --watch",
     "build:html-presentation-view-demo": "webpack --config apps/html-presentation-view-demo/webpack.config.js",
-    "watch:html-presentation-view-demo": "webpack --config apps/html-presentation-view-demo/webpack.config.js --watch"
+    "watch:html-presentation-view-demo": "webpack --config apps/html-presentation-view-demo/webpack.config.js --watch",
+    "build:just-messing": "webpack --config apps/just-messing/webpack.config.js",
+    "watch:just-messing": "webpack --config apps/just-messing/webpack.config.js --watch"
   },
   "private": true,
   "workspaces": [
