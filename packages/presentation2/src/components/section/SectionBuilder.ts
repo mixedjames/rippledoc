@@ -1,6 +1,5 @@
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { ElementBuilder } from "../element/ElementBuilder";
-import { AxisBuilder } from "../common/AxisBuilder";
 
 export class SectionBuilder {
   private presentation_: PresentationBuilder;
@@ -8,11 +7,7 @@ export class SectionBuilder {
 
   private name_ = "";
 
-  private yAxis_ = new AxisBuilder([
-    "sectionTop",
-    "sectionHeight",
-    "sectionBottom",
-  ] as const);
+  private sectionHeight_: string = "";
 
   constructor(options: { presentation: PresentationBuilder }) {
     this.presentation_ = options.presentation;
@@ -43,8 +38,12 @@ export class SectionBuilder {
   // Axes
   //
 
-  get yAxis(): AxisBuilder<"sectionTop" | "sectionHeight" | "sectionBottom"> {
-    return this.yAxis_;
+  get sectionHeight(): string {
+    return this.sectionHeight_;
+  }
+
+  set sectionHeight(value: string) {
+    this.sectionHeight_ = value;
   }
 
   get name(): string {

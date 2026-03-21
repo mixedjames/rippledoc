@@ -1,6 +1,7 @@
 const path = require("path");
 const common = require("../../webpack.common.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   ...common,
@@ -18,10 +19,25 @@ module.exports = {
   },
 
   plugins: [
-    // Inject HTML template
+    // Inject HTML template for index.html
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html",
     }),
+
+    // Copy static resources (images, sample presentations) to the output directory
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src/img"),
+          to: "img",
+        },
+        {
+          from: path.resolve(__dirname, "src/presentations"),
+          to: "presentations",
+        },
+      ],
+    }),
   ],
+  // End of plugins
 };

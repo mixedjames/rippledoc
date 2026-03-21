@@ -1,0 +1,126 @@
+import { Presentation } from "../Presentation";
+import { HTMLPresentationViewInner } from "./HTMLPresentationView";
+
+export class HTMLPresentationDOM {
+  private htmlPresentationView_: HTMLPresentationViewInner;
+
+  // DOM elements - hierarchy:
+  //   fragment_ (document fragment)
+  //     root_ (div)
+  //       viewport_ (div)
+  //          backgrounds_ (div)
+  //          elements_ (div)
+  //       overlay_ (div)
+
+  private fragment_: DocumentFragment = document.createDocumentFragment();
+  private root_: HTMLElement = document.createElement("div");
+  private viewport_: HTMLElement = document.createElement("div");
+  private overlay_: HTMLElement = document.createElement("div");
+  private backgrounds_: HTMLElement = document.createElement("div");
+  private elements_: HTMLElement = document.createElement("div");
+
+  constructor(
+    htmlPresentationView: HTMLPresentationViewInner,
+    presentation: Presentation,
+  ) {
+    this.htmlPresentationView_ = htmlPresentationView;
+
+    // Connect DOM elements:
+    //
+    this.root_.appendChild(this.viewport_);
+    this.viewport_.appendChild(this.backgrounds_);
+    this.viewport_.appendChild(this.elements_);
+
+    this.root_.appendChild(this.overlay_);
+    this.fragment_.appendChild(this.root_);
+
+    // Setup standard class names:
+    // FIXME: these should be defined as constants somewhere
+    //
+    this.root_.classList.add("rdoc-root");
+    this.viewport_.classList.add("rdoc-viewport");
+    this.overlay_.classList.add("rdoc-overlay");
+    this.backgrounds_.classList.add("rdoc-backgrounds");
+    this.elements_.classList.add("rdoc-elements");
+
+    // The client will provide a container element and will append the fragment to it.
+    // We must fill the container.
+    //
+    [
+      this.root_,
+      this.viewport_,
+      this.overlay_,
+      this.backgrounds_,
+      this.elements_,
+    ].forEach((element) => {
+      element.style.position = "absolute";
+      element.style.left = "0";
+      element.style.top = "0";
+      element.style.width = "100%";
+      element.style.height = "100%";
+      element.style.overflow = "hidden";
+    });
+
+    // Apply specific styles to certain elements:
+    // - The viewport should scroll if content overflows.
+    // - The overlay should not capture pointer events (so that it doesn't interfere with interaction with the content)
+    //
+    this.backgrounds_.style.height = `${presentation.height}px`;
+    this.elements_.style.height = `${presentation.height}px`;
+
+    this.viewport_.style.overflowX = "hidden";
+    this.viewport_.style.overflowY = "auto";
+
+    this.overlay_.style.pointerEvents = "none";
+  }
+
+  appendToContainer(container: HTMLElement | string): void {
+    // Append our DOM to the container element.
+    //
+    const containerElement = (function () {
+      if (typeof container === "string") {
+        const element = document.querySelector(container);
+        if (!element) {
+          throw new Error(`No element found for selector: ${container}`);
+        }
+        return element;
+      } else {
+        return container;
+      }
+    })();
+
+    containerElement.appendChild(this.fragment_);
+  }
+
+  layout(): void {
+    const tx = this.htmlPresentationView_.physicalDimensions.tx;
+    const scale = this.htmlPresentationView_.physicalDimensions.scale;
+
+    this.backgrounds_.style.left = `${tx}px`;
+    this.elements_.style.left = `${tx}px`;
+
+    const height = this.htmlPresentationView_.presentation.height * scale;
+    this.backgrounds_.style.height = `${height}px`;
+    this.elements_.style.height = `${height}px`;
+  }
+
+  get htmlRoot(): HTMLElement {
+    return this.root_;
+  }
+
+  get htmlViewport(): HTMLElement {
+    return this.viewport_;
+  }
+
+  get htmlOverlay(): HTMLElement {
+    return this.overlay_;
+  }
+
+  get htmlBackgrounds(): HTMLElement {
+    return this.backgrounds_;
+  }
+
+  get htmlElements(): HTMLElement {
+    return this.elements_;
+  }
+}

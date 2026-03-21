@@ -1,0 +1,33 @@
+body {
+}
+
+.rdoc-root {
+}
+
+.rdoc-root * {
+  box-sizing: border-box;
+}
+
+.rdoc-root .rdoc-viewport {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
+  border: solid red 2px;
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {
+  border: solid black 2px;
+  background: palegoldenrod;
+}
+
+.rdoc-root .rdoc-overlay {
+}

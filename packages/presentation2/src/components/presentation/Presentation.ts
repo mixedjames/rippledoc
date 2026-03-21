@@ -36,7 +36,18 @@ export interface Phase2Constructor {
 
 type PresentationOptions = {
   basisDimensions: { width: number; height: number };
+  slideHeightNativeExpression: (newFn: () => number) => void;
 };
+
+export interface PhysicalDimensions {
+  get width(): number;
+
+  get height(): number;
+
+  get scale(): number;
+
+  get tx(): number;
+}
 
 /**
  *
@@ -110,6 +121,10 @@ export class Presentation {
     connectedPresentation: () => {
       return this;
     },
+
+    getSortedContentDependentElements: () => {
+      return this.sortedContentDependentElements_;
+    },
   };
   private view_: PresentationView | null = null;
 
@@ -119,6 +134,7 @@ export class Presentation {
   private basisDimensions_: { width: number; height: number };
   private sections_: Section[] = [];
   private sortedContentDependentElements_: ContentDependentElement[] = [];
+  private slideHeightNativeExpression_: (newFn: () => number) => void;
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -135,6 +151,7 @@ export class Presentation {
     }
 
     this.basisDimensions_ = { ...options.basisDimensions };
+    this.slideHeightNativeExpression_ = options.slideHeightNativeExpression;
   }
 
   private get phase2Constructor(): Phase2Constructor {
@@ -167,6 +184,16 @@ export class Presentation {
 
     this.view_ = view;
     view.connect(this.viewConnection_);
+
+    // After .connect is it reasonable to assume that the view sufficiently realised to provide
+    // physical dimensions, so we can set the slide height expression now.
+    //
+    this.slideHeightNativeExpression_(() => {
+      return (
+        this.view_!.physicalDimensions.height /
+        this.view_!.physicalDimensions.scale
+      );
+    });
   }
 
   detachView(): void {
@@ -174,8 +201,16 @@ export class Presentation {
       throw new Error("No view is attached to this presentation.");
     }
 
+    // Clear the slide height expression, since without a view there is no physical dimension to
+    // base it on.
+    this.slideHeightNativeExpression_(() => 1);
+
     this.view_.disconnect();
     this.view_ = null;
+  }
+
+  get hasView(): boolean {
+    return this.view_ !== null;
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -188,5 +223,20 @@ export class Presentation {
 
   get basisDimensions(): { width: number; height: number } {
     return { ...this.basisDimensions_ };
+  }
+
+  get physicalDimensions(): PhysicalDimensions {
+    if (this.view_ === null) {
+      throw new Error("No view is attached to this presentation.");
+    }
+
+    return this.view_.physicalDimensions;
+  }
+
+  get height(): number {
+    if (this.sections.length === 0) {
+      return 0;
+    }
+    return this.sections[this.sections.length - 1]!.sectionBottom;
   }
 }

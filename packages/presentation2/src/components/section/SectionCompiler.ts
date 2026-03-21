@@ -15,6 +15,9 @@ export class SectionCompiler {
   private presentationCompiler_: PresentationCompiler;
   private elements_: ElementCompiler[];
 
+  private prevSection_: SectionCompiler | null = null;
+  private nextSection_: SectionCompiler | null = null;
+
   // Owned properties
   //
   private module_: Module;
@@ -57,10 +60,12 @@ export class SectionCompiler {
   }
 
   setNextSection(nextSection: SectionCompiler) {
+    this.nextSection_ = nextSection;
     this.module.mapModule("nextSection", nextSection.module);
   }
 
   setPreviousSection(previousSection: SectionCompiler) {
+    this.prevSection_ = previousSection;
     this.module.mapModule("prevSection", previousSection.module);
   }
 
@@ -80,18 +85,19 @@ export class SectionCompiler {
   private validateAndDerive() {
     //
     //
-    const yAxisStrings = this.builder_.yAxis.deriveExpressions();
     this.sectionTop_ = this.module.addExpression(
       "sectionTop",
-      yAxisStrings.sectionTop,
+      this.prevSection_ ? "prevSection.sectionBottom" : "0",
     );
     this.sectionHeight_ = this.module.addExpression(
       "sectionHeight",
-      yAxisStrings.sectionHeight,
+      this.builder_.sectionHeight,
     );
     this.sectionBottom_ = this.module.addExpression(
       "sectionBottom",
-      yAxisStrings.sectionBottom,
+      this.prevSection_
+        ? "prevSection.sectionBottom + sectionHeight"
+        : "sectionHeight",
     );
 
     // Create a the 'elements' namespace: this enables expressions on sections and elements (they

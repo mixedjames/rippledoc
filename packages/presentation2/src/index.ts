@@ -12,4 +12,4 @@ export { ElementBuilder } from "./components/element/ElementBuilder";
 
 export { compilePresentation } from "./components/compilePresentation";
 
-export { HTMLPresentationView } from "./components/presentation/HTMLPresentationView";
+export { HTMLPresentationView } from "./components/presentation/htmlView/HTMLPresentationView";

@@ -56,6 +56,9 @@ export class PresentationCompiler {
   private sortedExpressions_: Expression[] | null = null;
   private expressionToElement_ = new Map<Expression, ContentDependentElement>();
 
+  private slideHeightNativeExpression_: ((newFn: () => number) => void) | null =
+    null;
+
   constructor(builder: PresentationBuilder) {
     this.builder_ = builder;
 
@@ -101,12 +104,19 @@ export class PresentationCompiler {
     this.finalize();
   }
 
-  private validateAndDerive() {
+  private validateAndDerive(): void {
     this.connectAdjacentSections();
     this.mapNamedSections();
+    this.mapBasisGeometry();
+
+    const nativeExpression = this.module.addNativeExpression2(
+      "slideHeight",
+      () => 1,
+    );
+    this.slideHeightNativeExpression_ = nativeExpression.replaceNativeFunction;
   }
 
-  private connectAdjacentSections() {
+  private connectAdjacentSections(): void {
     if (this.sections_.length <= 1) {
       return;
     }
@@ -121,7 +131,7 @@ export class PresentationCompiler {
     }
   }
 
-  private mapNamedSections() {
+  private mapNamedSections(): void {
     // Create a the 'sections' namespace: this enables expressions on sections and elements (they
     // inherit the parent section's namespace) to refer to sections by name, e.g.
     // "sections.Section1.top"
@@ -143,6 +153,17 @@ export class PresentationCompiler {
     });
   }
 
+  private mapBasisGeometry(): void {
+    this.module.addNativeExpression(
+      "basisWidth",
+      () => this.builder_.basisDimensions.width,
+    );
+    this.module.addNativeExpression(
+      "basisHeight",
+      () => this.builder_.basisDimensions.height,
+    );
+  }
+
   /**
    * PresentationCompiler differs from other Compiler modules in that it has a post-compilation
    * step: this can then perform validation/derivation that depends on a fully validated tree.
@@ -161,6 +182,7 @@ export class PresentationCompiler {
 
     const p = Presentation.create({
       basisDimensions: this.builder_.basisDimensions,
+      slideHeightNativeExpression: this.slideHeightNativeExpression_!,
     });
 
     p.phase2Constructor.setSections(
