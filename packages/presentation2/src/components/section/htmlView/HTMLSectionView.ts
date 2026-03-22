@@ -1,4 +1,4 @@
-import { HTMLPresentationViewInner } from "../../presentation/htmlView/HTMLPresentationView";
+import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
 import { Section } from "../Section";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 
@@ -6,7 +6,7 @@ export class HTMLSectionView {
   // Structural relationships ----------------------------------------------------------------------
   //
   private section_: Section;
-  private presentationView_: HTMLPresentationViewInner;
+  private presentationView_: HTMLPresentationViewRoot;
   private elementViews_: HTMLElementView[] = [];
 
   // DOM elements ----------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ export class HTMLSectionView {
   // ----------------------------------------------------------------------------------------------
 
   constructor(options: {
-    presentationView: HTMLPresentationViewInner;
+    presentationView: HTMLPresentationViewRoot;
     section: Section;
   }) {
     this.presentationView_ = options.presentationView;
@@ -39,6 +39,11 @@ export class HTMLSectionView {
     });
   }
 
+  disconnect(): void {
+    this.elementViews_.forEach((ev) => ev.disconnect());
+    this.elementViews_.length = 0;
+  }
+
   // ----------------------------------------------------------------------------------------------
   // Structural Relations
   // ----------------------------------------------------------------------------------------------
@@ -47,7 +52,7 @@ export class HTMLSectionView {
     return this.section_;
   }
 
-  get presentationView(): HTMLPresentationViewInner {
+  get presentationView(): HTMLPresentationViewRoot {
     return this.presentationView_;
   }
 

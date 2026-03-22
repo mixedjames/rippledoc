@@ -81,6 +81,15 @@ export class PresentationCompiler {
     return this.module_;
   }
 
+  /**
+   * Called by ElementCompiler.compile to report content-dependent Elements.
+   *
+   * View code updates valueHolder.value to provide the content-dependent value.
+   *
+   * @param element The element that is content-dependent.
+   * @param expression The expression that is content-dependent
+   * @param valueHolder
+   */
   declareContentDependentElement(
     element: Element,
     expression: Expression,
@@ -154,14 +163,18 @@ export class PresentationCompiler {
   }
 
   private mapBasisGeometry(): void {
-    this.module.addNativeExpression(
-      "basisWidth",
-      () => this.builder_.basisDimensions.width,
-    );
-    this.module.addNativeExpression(
-      "basisHeight",
-      () => this.builder_.basisDimensions.height,
-    );
+    // Basic dimension stored into temporaries. I'm not sure with closures exactly what is saved:
+    // Are we capturing builder_, or basisDimensions?
+    //
+    // In either case this creates a brittleness and potential memory leak - we want to discard all
+    // of the builder data after compilation, and closures mustn't prevent this.
+    //
+
+    const basisWidth = this.builder_.basisDimensions.width;
+    const basisHeight = this.builder_.basisDimensions.height;
+
+    this.module.addNativeExpression("basisWidth", () => basisWidth);
+    this.module.addNativeExpression("basisHeight", () => basisHeight);
   }
 
   /**

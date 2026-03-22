@@ -1,4 +1,4 @@
-import { HTMLPresentationViewInner } from "../../presentation/htmlView/HTMLPresentationView";
+import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
 import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { Element } from "../Element";
 
@@ -17,6 +17,8 @@ export class HTMLElementView {
     this.createDOM();
   }
 
+  disconnect(): void {}
+
   // ----------------------------------------------------------------------------------------------
   // Structural relationships
   // ----------------------------------------------------------------------------------------------
@@ -29,7 +31,7 @@ export class HTMLElementView {
     return this.sectionView_;
   }
 
-  get presentationView(): HTMLPresentationViewInner {
+  get presentationView(): HTMLPresentationViewRoot {
     return this.sectionView.presentationView;
   }
 

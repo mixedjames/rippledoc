@@ -4,14 +4,13 @@ import {
   ContentDependentElement,
 } from "./Presentation";
 
-export interface PresentationConnection {
-  connectedPresentation(): Presentation;
-
-  getSortedContentDependentElements(): ContentDependentElement[];
-}
+export type ConnectionData = {
+  presentation: Presentation;
+  sortedContentDependentElements: ContentDependentElement[];
+};
 
 export interface PresentationView {
-  connect(connection: PresentationConnection): void;
+  connect(connectionData: ConnectionData): void;
 
   disconnect(): void;
 

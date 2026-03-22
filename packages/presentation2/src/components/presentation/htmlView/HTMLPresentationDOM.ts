@@ -1,8 +1,8 @@
 import { Presentation } from "../Presentation";
-import { HTMLPresentationViewInner } from "./HTMLPresentationView";
+import { HTMLPresentationViewRoot } from "./HTMLPresentationViewRoot";
 
 export class HTMLPresentationDOM {
-  private htmlPresentationView_: HTMLPresentationViewInner;
+  private htmlPresentationView_: HTMLPresentationViewRoot;
 
   // DOM elements - hierarchy:
   //   fragment_ (document fragment)
@@ -20,7 +20,7 @@ export class HTMLPresentationDOM {
   private elements_: HTMLElement = document.createElement("div");
 
   constructor(
-    htmlPresentationView: HTMLPresentationViewInner,
+    htmlPresentationView: HTMLPresentationViewRoot,
     presentation: Presentation,
   ) {
     this.htmlPresentationView_ = htmlPresentationView;
@@ -72,6 +72,10 @@ export class HTMLPresentationDOM {
     this.viewport_.style.overflowY = "auto";
 
     this.overlay_.style.pointerEvents = "none";
+  }
+
+  disconnect(): void {
+    this.root_.remove();
   }
 
   appendToContainer(container: HTMLElement | string): void {

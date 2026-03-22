@@ -1,6 +1,6 @@
 import { Section } from "../section/Section";
 import { Element } from "../element/Element";
-import { PresentationView, PresentationConnection } from "./PresentationView";
+import { PresentationView } from "./PresentationView";
 
 export type ContentDependentElement = {
   element: Element;
@@ -116,16 +116,6 @@ export class Presentation {
 
   // View properties -------------------------------------------------------------------------------
   //
-
-  private viewConnection_: PresentationConnection = {
-    connectedPresentation: () => {
-      return this;
-    },
-
-    getSortedContentDependentElements: () => {
-      return this.sortedContentDependentElements_;
-    },
-  };
   private view_: PresentationView | null = null;
 
   // Owned properties ------------------------------------------------------------------------------
@@ -133,7 +123,20 @@ export class Presentation {
 
   private basisDimensions_: { width: number; height: number };
   private sections_: Section[] = [];
+
+  // View-dependent properties ---------------------------------------------------------------------
+  //
+  // These properties are oddities in that they all exists to connect the presentation tree to the
+  // underlying view. In the future I'd like to have some unified way of doing this, but for now
+  // they are just properties on the presentation.
+
+  // The list of content-dependent elements, sorted in dependency order. This is populated during
+  // phase 2 of construction, and is used by the view to determine the content-dependent dimensions
+  // of elements.
   private sortedContentDependentElements_: ContentDependentElement[] = [];
+
+  // The 'slideHeight' variable is provided to expressions during compilation. Clearly it varies
+  // depending on the view.
   private slideHeightNativeExpression_: (newFn: () => number) => void;
 
   // ----------------------------------------------------------------------------------------------
@@ -152,6 +155,8 @@ export class Presentation {
 
     this.basisDimensions_ = { ...options.basisDimensions };
     this.slideHeightNativeExpression_ = options.slideHeightNativeExpression;
+
+    this.installDefaultSlideHeightExpression();
   }
 
   private get phase2Constructor(): Phase2Constructor {
@@ -173,6 +178,44 @@ export class Presentation {
     return { presentation, phase2Constructor: presentation.phase2Constructor };
   }
 
+  /**
+   * The 'slideHeight' variable is used by expressions to determine the actual height of a slide
+   * in basis coordinates. It enables them to match the actual height of the viewport.
+   *
+   * It is, inevitably, a view-dependent property. However, we want expressions to be evaluable
+   * even when there is no view attached, so we need to have some default expression for it.
+   *
+   * Two functions exist as a pair:
+   * - `installDefaultSlideHeightExpression`
+   * - `installProperSlideHeightExpression`
+   */
+  private installDefaultSlideHeightExpression(): void {
+    // Default 'slideHeight' is the basis height. Is this a good default? Maybe not, but until
+    // the view is attached, there is no physical dimension to base it on, so this is the best we
+    // can do.
+
+    this.slideHeightNativeExpression_(() => this.basisDimensions_.height);
+  }
+
+  /**
+   * See installDefaultSlideHeightExpression
+   */
+  private installProperSlideHeightExpression(): void {
+    // Once the view is attached, 'slideHeight' should be based on the physical dimensions of the
+    // view. This is the expression we install when a view is attached.
+
+    this.slideHeightNativeExpression_(() => {
+      if (this.view_ === null) {
+        throw new Error("No view is attached to this presentation.");
+      }
+
+      return (
+        this.view_.physicalDimensions.height /
+        this.view_.physicalDimensions.scale
+      );
+    });
+  }
+
   // ----------------------------------------------------------------------------------------------
   // View management
   // ----------------------------------------------------------------------------------------------
@@ -183,17 +226,15 @@ export class Presentation {
     }
 
     this.view_ = view;
-    view.connect(this.viewConnection_);
+    view.connect({
+      presentation: this,
+      sortedContentDependentElements: this.sortedContentDependentElements_,
+    });
 
     // After .connect is it reasonable to assume that the view sufficiently realised to provide
     // physical dimensions, so we can set the slide height expression now.
     //
-    this.slideHeightNativeExpression_(() => {
-      return (
-        this.view_!.physicalDimensions.height /
-        this.view_!.physicalDimensions.scale
-      );
-    });
+    this.installProperSlideHeightExpression();
   }
 
   detachView(): void {
@@ -203,7 +244,7 @@ export class Presentation {
 
     // Clear the slide height expression, since without a view there is no physical dimension to
     // base it on.
-    this.slideHeightNativeExpression_(() => 1);
+    this.installDefaultSlideHeightExpression();
 
     this.view_.disconnect();
     this.view_ = null;
