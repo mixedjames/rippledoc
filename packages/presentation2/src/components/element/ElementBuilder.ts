@@ -1,6 +1,7 @@
 import { SectionBuilder } from "../section/SectionBuilder";
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { AxisBuilder } from "../common/AxisBuilder";
+import { ScrollTriggerBuilder } from "../scrollTrigger/ScrollTriggerBuilder";
 
 /**
  *
@@ -20,6 +21,7 @@ export class ElementBuilder {
   //
 
   private name_: string = "";
+  private scrollTriggers_: ScrollTriggerBuilder[] = [];
 
   // Order of axis components is key here: AxisBuilder.deriveExpressions depends on it
   // DO NOT CHANGE
@@ -40,6 +42,16 @@ export class ElementBuilder {
 
   get presentation(): PresentationBuilder {
     return this.section.presentation;
+  }
+
+  addScrollTrigger(): ScrollTriggerBuilder {
+    const scrollTrigger = new ScrollTriggerBuilder({ element: this });
+    this.scrollTriggers_.push(scrollTrigger);
+    return scrollTrigger;
+  }
+
+  get scrollTriggers(): readonly ScrollTriggerBuilder[] {
+    return this.scrollTriggers_;
   }
 
   // ----------------------------------------------------------------------------------------------

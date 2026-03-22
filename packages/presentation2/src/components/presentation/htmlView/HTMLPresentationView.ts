@@ -33,7 +33,6 @@ export class HTMLPresentationView {
     const self = this;
 
     options.presentation.attachView({
-
       // We will use connectionData in the future to pass information
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       connect: (connectionData: ConnectionData) => {

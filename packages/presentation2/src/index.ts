@@ -10,6 +10,9 @@ export {
 } from "./components/element/Element";
 export { ElementBuilder } from "./components/element/ElementBuilder";
 
+export { ScrollTrigger } from "./components/scrollTrigger/ScrollTrigger";
+export { ScrollTriggerBuilder } from "./components/scrollTrigger/ScrollTriggerBuilder";
+
 export { compilePresentation } from "./components/compilePresentation";
 
 export { HTMLPresentationView } from "./components/presentation/htmlView/HTMLPresentationView";

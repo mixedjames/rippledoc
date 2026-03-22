@@ -7,6 +7,7 @@ import { SectionCompiler } from "../section/SectionCompiler";
 import { containsIsolatedToken } from "../common/StringBoundaryHelper";
 
 import { Module, Expression } from "@rippledoc/expressions";
+import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
 
 export class ElementCompiler {
   // Structural relationships
@@ -30,6 +31,8 @@ export class ElementCompiler {
     ContentDependentDimension.None;
   private contentDependentDimensionHolder_ = { value: 42 };
 
+  private scrollTriggers_: ScrollTriggerCompiler[] = [];
+
   constructor(options: {
     elementBuilder: ElementBuilder;
     sectionCompiler: SectionCompiler;
@@ -38,6 +41,14 @@ export class ElementCompiler {
     this.sectionCompiler_ = options.sectionCompiler;
 
     this.module_ = this.sectionCompiler_.module.addSubModule();
+
+    this.scrollTriggers_ = this.builder_.scrollTriggers.map(
+      (scrollTriggerBuilder) =>
+        new ScrollTriggerCompiler({
+          scrollTriggerBuilder,
+          elementCompiler: this,
+        }),
+    );
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -62,6 +73,9 @@ export class ElementCompiler {
    */
   beforeCompile() {
     this.validateAndDerive();
+    this.scrollTriggers_.forEach((scrollTrigger) =>
+      scrollTrigger.beforeCompile(),
+    );
   }
 
   private validateAndDerive() {
@@ -104,7 +118,7 @@ export class ElementCompiler {
    * Do not duplicate that comment here - single point of truth.
    */
   compile(section: Section): Element {
-    const element = new Element({
+    const { element, phase2Constructor } = Element.create({
       section,
       name: this.builder_.name,
       contentDependentDimension: this.contentDependentDimension_,
@@ -134,6 +148,12 @@ export class ElementCompiler {
         this.contentDependentDimensionHolder_,
       );
     }
+
+    phase2Constructor.setScrollTriggers(
+      this.scrollTriggers_.map((st) => st.compile(element)),
+    );
+
+    phase2Constructor.complete();
 
     return element;
   }

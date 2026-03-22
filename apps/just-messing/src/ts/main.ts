@@ -3,7 +3,7 @@ import "../css/styles.css";
 import {
   PresentationBuilder,
   compilePresentation,
-  ContentDependentDimension,
+  ScrollTriggerBuilder,
   HTMLPresentationView,
 } from "@rippledoc/presentation2";
 
@@ -24,6 +24,11 @@ e1.xAxis.set("left", "10");
 e1.xAxis.set("right", "basisWidth-10");
 e1.yAxis.set("top", "10");
 e1.yAxis.set("height", "100");
+
+const st1 = e1.addScrollTrigger();
+st1.name = "ScrollTrigger1";
+st1.start = "top";
+st1.end = "start+10";
 
 const e2 = s1.addElement();
 e2.name = "Element2";
@@ -48,11 +53,9 @@ try {
   const p = await compilePresentation(pb);
 
   const e = p.sections[0]!.elements[0]!;
+  const st = e.scrollTriggers[0]!;
 
-  console.log(`Left: ${e.left}, Width: ${e.width}, Right: ${e.right}`);
-  console.log(`Top: ${e.top}, Height: ${e.height}, Bottom: ${e.bottom}`);
-
-  console.log(`Content-dependent dimension: ${e.contentDependentDimension}`);
+  console.log(st);
 
   const htmlView = new HTMLPresentationView({
     presentation: p,

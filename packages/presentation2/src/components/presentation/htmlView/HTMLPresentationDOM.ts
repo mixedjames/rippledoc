@@ -19,6 +19,10 @@ export class HTMLPresentationDOM {
   private backgrounds_: HTMLElement = document.createElement("div");
   private elements_: HTMLElement = document.createElement("div");
 
+  // ----------------------------------------------------------------------------------------------
+  // Construction
+  // ----------------------------------------------------------------------------------------------
+
   constructor(
     htmlPresentationView: HTMLPresentationViewRoot,
     presentation: Presentation,
@@ -96,6 +100,10 @@ export class HTMLPresentationDOM {
     containerElement.appendChild(this.fragment_);
   }
 
+  // ----------------------------------------------------------------------------------------------
+  // Layout
+  // ----------------------------------------------------------------------------------------------
+
   layout(): void {
     const tx = this.htmlPresentationView_.physicalDimensions.tx;
     const scale = this.htmlPresentationView_.physicalDimensions.scale;
@@ -107,6 +115,10 @@ export class HTMLPresentationDOM {
     this.backgrounds_.style.height = `${height}px`;
     this.elements_.style.height = `${height}px`;
   }
+
+  // ----------------------------------------------------------------------------------------------
+  // Properties
+  // ----------------------------------------------------------------------------------------------
 
   get htmlRoot(): HTMLElement {
     return this.root_;

@@ -2,6 +2,25 @@ import { Expression } from "@rippledoc/expressions";
 
 import { Section } from "../section/Section";
 import { Presentation } from "../presentation/Presentation";
+import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+
+interface ElementPhase2Constructor {
+  setScrollTriggers(scrollTriggers: ScrollTrigger[]): ElementPhase2Constructor;
+
+  complete(): void;
+}
+
+type ElementOptions = {
+  section: Section;
+  name: string;
+  contentDependentDimension: ContentDependentDimension;
+  left: Expression;
+  right: Expression;
+  width: Expression;
+  top: Expression;
+  bottom: Expression;
+  height: Expression;
+};
 
 /**
  * Content dependent dimension types.
@@ -13,9 +32,28 @@ export enum ContentDependentDimension {
 }
 
 export class Element {
+  // Construction-related data ---------------------------------------------------------------------
+  //
+
+  private static constructionToken_: symbol = Symbol(
+    "Element.ConstructorProtector",
+  );
+
+  private phase2Constructor_: ElementPhase2Constructor | null = {
+    setScrollTriggers: (scrollTriggers: ScrollTrigger[]) => {
+      this.scrollTriggers_ = scrollTriggers;
+      return this.phase2Constructor_!;
+    },
+
+    complete: () => {
+      this.phase2Constructor_ = null;
+    },
+  };
+
   // Structural relationships ----------------------------------------------------------------------
   //
   private section_: Section;
+  private scrollTriggers_: ScrollTrigger[] = [];
 
   // Owned properties ------------------------------------------------------------------------------
   //
@@ -32,17 +70,13 @@ export class Element {
   private bottom_: Expression;
   private height_: Expression;
 
-  constructor(options: {
-    section: Section;
-    name: string;
-    contentDependentDimension: ContentDependentDimension;
-    left: Expression;
-    right: Expression;
-    width: Expression;
-    top: Expression;
-    bottom: Expression;
-    height: Expression;
-  }) {
+  constructor(token: symbol, options: ElementOptions) {
+    if (token !== Element.constructionToken_) {
+      throw new Error(
+        "Element constructor is private. Use Element.create() instead.",
+      );
+    }
+
     this.section_ = options.section;
 
     this.name_ = options.name;
@@ -55,6 +89,24 @@ export class Element {
     this.top_ = options.top;
     this.bottom_ = options.bottom;
     this.height_ = options.height;
+  }
+
+  private get phase2Constructor(): ElementPhase2Constructor {
+    if (this.phase2Constructor_ === null) {
+      throw new Error("Phase 2 construction already complete");
+    }
+    return this.phase2Constructor_;
+  }
+
+  static create(options: ElementOptions): {
+    element: Element;
+    phase2Constructor: ElementPhase2Constructor;
+  } {
+    const element = new Element(Element.constructionToken_, options);
+    return {
+      element,
+      phase2Constructor: element.phase2Constructor,
+    };
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -107,5 +159,9 @@ export class Element {
 
   get contentDependentDimension(): ContentDependentDimension {
     return this.contentDependentDimension_;
+  }
+
+  get scrollTriggers(): readonly ScrollTrigger[] {
+    return this.scrollTriggers_;
   }
 }
