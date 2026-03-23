@@ -25,17 +25,17 @@ e1.xAxis.set("right", "basisWidth-10");
 e1.yAxis.set("top", "10");
 e1.yAxis.set("height", "100");
 
-const st1 = e1.addScrollTrigger();
-st1.name = "ScrollTrigger1";
-st1.start = "top";
-st1.end = "start+10";
-
 const e2 = s1.addElement();
 e2.name = "Element2";
 e2.xAxis.set("left", "10");
 e2.xAxis.set("right", "basisWidth-10");
 e2.yAxis.set("top", "elements.Element1.bottom+10");
 e2.yAxis.set("bottom", "sectionBottom-10");
+
+const st1 = e2.addScrollTrigger();
+st1.name = "ScrollTrigger1";
+st1.start = "top";
+st1.end = "bottom";
 
 const e4 = s2.addElement();
 e4.xAxis.set("left", "10");
@@ -52,10 +52,13 @@ e3.yAxis.set("height", "100");
 try {
   const p = await compilePresentation(pb);
 
-  const e = p.sections[0]!.elements[0]!;
+  const e = p.sections[0]!.elements[1]!;
   const st = e.scrollTriggers[0]!;
 
-  console.log(st);
+  st.on("start", () => console.log("ScrollTrigger1 started"));
+  st.on("reverseStart", () => console.log("ScrollTrigger1 reverse started"));
+  st.on("end", () => console.log("ScrollTrigger1 ended"));
+  st.on("reverseEnd", () => console.log("ScrollTrigger1 reverse ended"));
 
   const htmlView = new HTMLPresentationView({
     presentation: p,

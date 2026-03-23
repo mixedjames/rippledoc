@@ -3,6 +3,11 @@ import { TypedEmitter } from "../common/TypedEmitter";
 import { Section } from "../section/Section";
 import { Element } from "../element/Element";
 
+/**
+ * Events that may be emitted by a ScrollTrigger.
+ *
+ * Each event includes the current progress (0-1) through the trigger range.
+ */
 export type ScrollTriggerEvents = {
   start: { progress: number };
   end: { progress: number };
@@ -17,6 +22,27 @@ enum TriggerState {
   After = "after",
 }
 
+/**
+ * The public interface for clients using scroll triggers.
+ *
+ * Do not implement directly – use ScrollTriggerBuilder, or the .scrollTriggers collections on
+ * Section and Element instead.
+ *
+ * ScrollTriggers hold:
+ * - A name (optional, for reference in builder/XML)
+ * - Start and end expressions (evaluated to determine trigger points)
+ * - A reference to the parent Section or Element they are attached to
+ *
+ * ScrollTriggers emit events as the user scrolls through their range: (see ScrollTriggerEvents)
+ * - "start": when entering the active range from above
+ * - "end": when exiting the active range below
+ * - "reverseStart": when entering the active range from below (scrolling up)
+ * - "reverseEnd": when exiting the active range above (scrolling up)
+ * - "scroll": continuously while within the active range, with progress updates
+ *
+ * The ScrollTriggerBuilder is responsible for constructing ScrollTriggers with the correct expressions
+ * based on builder/XML configuration, and for calling onScroll with the current scroll position.
+ */
 export interface ScrollTrigger {
   /**
    * Optional name for this trigger, when defined via the builder/XML.
@@ -40,6 +66,17 @@ export interface ScrollTrigger {
   get end(): number;
 
   /**
+   * The Section this trigger is attached to.
+   */
+  get section(): Section;
+
+  /**
+   * The Element this trigger is attached to, if any. If the trigger is attached
+   * directly to a Section, this will throw an error.
+   */
+  get element(): Element;
+
+  /**
    * Subscribe to scroll trigger events. Returns an unsubscribe function.
    */
   on<K extends keyof ScrollTriggerEvents>(
@@ -49,6 +86,7 @@ export interface ScrollTrigger {
 }
 
 /**
+ *
  *
  * Do not construct directly – use ScrollTriggerBuilder instead.
  */
@@ -97,6 +135,20 @@ export class DefaultScrollTrigger implements ScrollTrigger {
 
   get end(): number {
     return this.end_.evaluate();
+  }
+
+  get section(): Section {
+    if (this.parent_ instanceof Section) {
+      return this.parent_;
+    }
+    return this.parent_.section;
+  }
+
+  get element(): Element {
+    if (!(this.parent_ instanceof Element)) {
+      throw new Error("ScrollTrigger parent is not an Element");
+    }
+    return this.parent_;
   }
 
   onScroll(scrollY: number): void {

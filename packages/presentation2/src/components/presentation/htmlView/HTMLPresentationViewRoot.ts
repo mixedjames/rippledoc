@@ -2,6 +2,7 @@ import { Presentation, PhysicalDimensions } from "../Presentation";
 import { HTMLPresentationDOM } from "./HTMLPresentationDOM";
 import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { ScaleHelper } from "./ScaleHelper";
+import { HTMLScrollTriggerManager } from "../../scrollTrigger/htmlView/HTMLScrollTriggerManager";
 
 export class HTMLPresentationViewRoot {
   // Structural relationships ----------------------------------------------------------------------
@@ -18,6 +19,8 @@ export class HTMLPresentationViewRoot {
   private scaleHelper_: ScaleHelper;
 
   private resizeObserver_: ResizeObserver;
+
+  private scrollTriggerManager_: HTMLScrollTriggerManager;
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -53,6 +56,12 @@ export class HTMLPresentationViewRoot {
     this.dom_.appendToContainer(options.container);
 
     // (4) *** MUST BE LAST STEP IN CONSTRUCTION ***
+    // Our hierarchy + associated DOM is now complete.
+
+    this.scrollTriggerManager_ = new HTMLScrollTriggerManager({
+      htmlPresentationRoot: this,
+    });
+
     this.resizeObserver_ = new ResizeObserver(() => {
       this.layout();
     });

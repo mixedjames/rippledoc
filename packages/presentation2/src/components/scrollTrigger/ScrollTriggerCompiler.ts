@@ -9,6 +9,11 @@ import { ScrollTriggerBuilder } from "./ScrollTriggerBuilder";
 
 import { Module, Expression } from "@rippledoc/expressions";
 
+/**
+ * Produces a concrete ScrollTrigger instance from a ScrollTriggerBuilder.
+ *
+ * See PresentationCompiler for more details on the compiler pattern in this presentation2.
+ */
 export class ScrollTriggerCompiler {
   private builder_: ScrollTriggerBuilder;
   private parentCompiler_: ElementCompiler | SectionCompiler;

@@ -2,6 +2,12 @@ import { ElementBuilder } from "../element/ElementBuilder";
 import { SectionBuilder } from "../section/SectionBuilder";
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 
+/**
+ * Bag-of-properties builder for ScrollTrigger.
+ *
+ * Implements the "Builder" role. See PresentationBuilder for more details on the Builder pattern in
+ * this presentation2.
+ */
 export class ScrollTriggerBuilder {
   private start_: string = "";
   private end_: string = "";
