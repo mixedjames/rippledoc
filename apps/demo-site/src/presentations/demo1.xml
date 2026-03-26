@@ -1,14 +1,18 @@
 <presentation>
 
-<size w="600" h="800" />
+<size w="720" h="1000" />
 
-<section name="title" b="elements.tb0.bottom+20">
-<textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
+<section name="title" h="slideHeight">
+<textbox
+  l="20"
+  r="basisWidth-20"
+  t="sectionTop + sectionHeight/2-height/2"
+  h="100" name="tb0">
 # A RippleDoc presentation
 </textbox>
 </section>
 
-<section name="s1" b="slideHeight">
+<section name="s1" h="slideHeight">
 
   <image
     name="img1"
@@ -41,7 +45,6 @@
 </section>
 
 <section h="slideHeight" name="s2">
-
   <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
   # Another slide
   This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt

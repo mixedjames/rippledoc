@@ -21,11 +21,7 @@ export class PresentationBuilder {
     return this.sections_;
   }
 
-  setBasisDimensions(width: number, height: number): void {
-    this.basisDimensions_ = { width, height };
-  }
-
   get basisDimensions(): { width: number; height: number } {
-    return { ...this.basisDimensions_ };
+    return this.basisDimensions_;
   }
 }
