@@ -85,16 +85,35 @@ export class SectionCompiler {
       "sectionTop",
       this.prevSection_ ? "prevSection.sectionBottom" : "0",
     );
-    this.sectionHeight_ = this.module.addExpression(
-      "sectionHeight",
-      this.builder_.sectionHeight,
-    );
-    this.sectionBottom_ = this.module.addExpression(
-      "sectionBottom",
-      this.prevSection_
-        ? "prevSection.sectionBottom + sectionHeight"
-        : "sectionHeight",
-    );
+
+    if (this.builder.hasSectionHeight && !this.builder.hasSectionBottom) {
+      this.sectionHeight_ = this.module.addExpression(
+        "sectionHeight",
+        this.builder_.sectionHeight,
+      );
+      this.sectionBottom_ = this.module.addExpression(
+        "sectionBottom",
+        this.prevSection_
+          ? "prevSection.sectionBottom + sectionHeight"
+          : "sectionHeight",
+      );
+    } else if (
+      !this.builder.hasSectionHeight &&
+      this.builder.hasSectionBottom
+    ) {
+      this.sectionBottom_ = this.module.addExpression(
+        "sectionBottom",
+        this.builder_.sectionBottom,
+      );
+      this.sectionHeight_ = this.module.addExpression(
+        "sectionHeight",
+        "sectionBottom - sectionTop",
+      );
+    } else {
+      throw new Error(
+        `Section must specify exactly one of 'sectionHeight' or 'sectionBottom'`,
+      );
+    }
 
     // Create a the 'elements' namespace: this enables expressions on sections and elements (they
     // inherit the parent section's namespace) to refer to elements by name, e.g.

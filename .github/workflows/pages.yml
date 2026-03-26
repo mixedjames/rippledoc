@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/demo-site/**"
-      - ".github/workflows/pages.yml"  # redeploy if workflow changes
+      - ".github/workflows/pages.yml" # redeploy if workflow changes
 
 jobs:
   deploy:

@@ -16,3 +16,5 @@ export { ScrollTriggerBuilder } from "./components/scrollTrigger/ScrollTriggerBu
 export { compilePresentation } from "./components/compilePresentation";
 
 export { HTMLPresentationView } from "./components/presentation/htmlView/HTMLPresentationView";
+
+export { loadFromXML } from "./components/loadFromXML/loadFromXML";
