@@ -1,8 +1,5 @@
-body {
-}
-
 .rdoc-root {
-  font-size: calc(var(--presentation-scale) * 14pt);
+  font-size: calc(var(--presentation-scale) * 12pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 
@@ -17,7 +14,6 @@ body {
 }
 
 .rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
-  border: solid red 2px;
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements {
@@ -27,18 +23,16 @@ body {
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {
-  border: solid black 2px;
-  background: palegoldenrod;
-
-  padding: 10px;
 }
 
 .rdoc-root .rdoc-overlay {
 }
 
-.rdoc-root .rdoc-overlay .rdoc-pin-clone {
-  border: solid blue 2px;
-  background: palegoldenrod;
+/*
+ */
 
-  padding: 10px;
+.rdoc-root .rdoc-elements .rdoc-text-box-element {
+}
+
+.rdoc-root .rdoc-elements .rdoc-image-element {
 }

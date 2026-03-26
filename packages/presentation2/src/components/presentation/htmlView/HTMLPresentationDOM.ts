@@ -27,6 +27,7 @@ export class HTMLPresentationDOM {
   constructor(
     htmlPresentationView: HTMLPresentationViewRoot,
     presentation: Presentation,
+    debugMode?: boolean,
   ) {
     this.htmlPresentationView_ = htmlPresentationView;
 
@@ -45,11 +46,15 @@ export class HTMLPresentationDOM {
     // FIXME: these should be defined as constants somewhere
     //
     this.root_.classList.add("rdoc-root");
+    if (debugMode) {
+      this.root_.classList.add("rdoc-debug-mode");
+    }
+
     this.viewport_.classList.add("rdoc-viewport");
     this.overlay_.classList.add("rdoc-overlay");
     this.backgrounds_.classList.add("rdoc-backgrounds");
     this.elements_.classList.add("rdoc-elements");
-    this.pins_.classList.add("rdoc-pins");
+    this.pins_.classList.add("rdoc-pins", "rdoc-elements");
 
     // The client will provide a container element and will append the fragment to it.
     // We must fill the container.

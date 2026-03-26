@@ -15,6 +15,7 @@ type SectionOptions = {
   sectionTop: Expression;
   sectionHeight: Expression;
   sectionBottom: Expression;
+  name: string;
 };
 
 export class Section {
@@ -49,6 +50,8 @@ export class Section {
 
   // Owned properties ------------------------------------------------------------------------------
   //
+  private name_: string = "";
+
   private sectionTop_: Expression;
   private sectionHeight_: Expression;
   private sectionBottom_: Expression;
@@ -70,6 +73,7 @@ export class Section {
     this.sectionTop_ = options.sectionTop;
     this.sectionHeight_ = options.sectionHeight;
     this.sectionBottom_ = options.sectionBottom;
+    this.name_ = options.name;
   }
 
   private get phase2Constructor(): SectionPhase2Constructor {
@@ -116,6 +120,10 @@ export class Section {
   // ----------------------------------------------------------------------------------------------
   // Geometry
   // ----------------------------------------------------------------------------------------------
+
+  get name(): string {
+    return this.name_;
+  }
 
   get sectionTop(): number {
     return this.sectionTop_.evaluate();

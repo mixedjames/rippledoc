@@ -18,6 +18,7 @@ export class HTMLTextBoxElementView extends HTMLElementView {
   }
 
   protected subclassCreateDOM(): void {
+    this.htmlElement.classList.add("rdoc-text-box-element");
     this.htmlElement.appendChild(this.element.content);
   }
 

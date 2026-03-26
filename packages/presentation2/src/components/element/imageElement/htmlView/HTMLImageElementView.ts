@@ -33,6 +33,8 @@ export class HTMLImageElementView extends HTMLElementView {
     }
     img.style.width = "100%";
     img.style.height = "100%";
+
+    this.htmlElement.classList.add("rdoc-image-element");
     this.htmlElement.appendChild(img);
   }
 

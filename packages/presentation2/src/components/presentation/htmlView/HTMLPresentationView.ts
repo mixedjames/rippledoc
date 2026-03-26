@@ -25,6 +25,7 @@ export class HTMLPresentationView {
   constructor(options: {
     presentation: Presentation;
     container: HTMLElement | string;
+    debugMode?: boolean;
   }) {
     // We use the self=this pattern to get around a TypeScript issue with getters created as part
     // of an object literal. See get physicalDimensions below.
@@ -41,6 +42,7 @@ export class HTMLPresentationView {
         this.pImpl_ = new HTMLPresentationViewRoot({
           presentation: options.presentation,
           container: options.container,
+          debugMode: options.debugMode,
           sortedContentDependentElements:
             connectionData.sortedContentDependentElements,
         });

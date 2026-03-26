@@ -69,8 +69,12 @@ export class HTMLElementView {
 
   protected createDOM(): void {
     this.htmlElement_ = document.createElement("div");
-    this.htmlElement_.classList.add("rdoc-element");
     this.htmlElement_.style.position = "absolute";
+
+    this.htmlElement_.classList.add("rdoc-element");
+    if (this.element.name.length > 0) {
+      this.htmlElement_.classList.add(`rdoc-element-${this.element.name}`);
+    }
 
     this.sectionView.htmlContentElement.appendChild(this.htmlElement_);
 

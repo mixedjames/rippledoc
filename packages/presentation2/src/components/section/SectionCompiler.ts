@@ -163,6 +163,7 @@ export class SectionCompiler {
       sectionTop: this.sectionTop_!(),
       sectionHeight: this.sectionHeight_!(),
       sectionBottom: this.sectionBottom_!(),
+      name: this.builder_.name,
     });
 
     s.phase2Constructor.setElements(

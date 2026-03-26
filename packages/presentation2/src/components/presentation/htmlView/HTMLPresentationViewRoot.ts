@@ -43,6 +43,7 @@ export class HTMLPresentationViewRoot {
     presentation: Presentation;
     container: HTMLElement | string;
     sortedContentDependentElements: ContentDependentElement[];
+    debugMode?: boolean;
   }) {
     this.presentation_ = options.presentation;
     this.scaleHelper_ = new ScaleHelper(options.presentation);
@@ -59,7 +60,11 @@ export class HTMLPresentationViewRoot {
     //
 
     // (1)
-    this.dom_ = new HTMLPresentationDOM(this, options.presentation);
+    this.dom_ = new HTMLPresentationDOM(
+      this,
+      options.presentation,
+      options.debugMode,
+    );
 
     // (2)
     this.sections_ = this.presentation_.sections.map((section) => {
