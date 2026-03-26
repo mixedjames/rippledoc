@@ -25,7 +25,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 }
 
 .rdoc-root {
-  font-size: calc(var(--presentation-scale) * 12pt);
+  font-size: calc(var(--presentation-scale) * 14pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 
@@ -65,7 +65,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 
   padding: 10px;
 }
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;AACA;;AAEA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,qBAAqB;AACvB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,uBAAuB;EACvB,yBAAyB;;EAEzB,aAAa;AACf;;AAEA;AACA;;AAEA;EACE,sBAAsB;EACtB,yBAAyB;;EAEzB,aAAa;AACf","sourcesContent":["body {\n}\n\n.rdoc-root {\n  font-size: calc(var(--presentation-scale) * 12pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  border: solid red 2px;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n  border: solid black 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n.rdoc-root .rdoc-overlay .rdoc-pin-clone {\n  border: solid blue 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;AACA;;AAEA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,qBAAqB;AACvB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,uBAAuB;EACvB,yBAAyB;;EAEzB,aAAa;AACf;;AAEA;AACA;;AAEA;EACE,sBAAsB;EACtB,yBAAyB;;EAEzB,aAAa;AACf","sourcesContent":["body {\n}\n\n.rdoc-root {\n  font-size: calc(var(--presentation-scale) * 14pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  border: solid red 2px;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n  border: solid black 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n.rdoc-root .rdoc-overlay .rdoc-pin-clone {\n  border: solid blue 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -3331,6 +3331,423 @@ class HTMLTextBoxElementView extends _htmlView_HTMLElementView__WEBPACK_IMPORTED
 
 /***/ },
 
+/***/ "../../packages/presentation2/src/components/loadFromXML/io/loadXMLSource.ts"
+/*!***********************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/io/loadXMLSource.ts ***!
+  \***********************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadXMLSource: () => (/* binding */ loadXMLSource)
+/* harmony export */ });
+/**
+ * Loads XML content from either a URL or a text string.
+ * Exactly one of the two options must be provided.
+ *
+ * @param options An object containing either a URL or a text string.
+ * @returns A promise that resolves to the XML content as a string.
+ */
+async function loadXMLSource(options) {
+    const { url, text } = options;
+    if ((url && text) || (!url && !text)) {
+        throw new Error("loadFromXML: exactly one of 'url' or 'text' must be provided");
+    }
+    if (typeof text === "string") {
+        return text;
+    }
+    // At this point we know url is defined.
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch XML: ${response.statusText}`);
+    }
+    return response.text();
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/io/parseXMLDocument.ts"
+/*!**************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/io/parseXMLDocument.ts ***!
+  \**************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   parseXMLDocument: () => (/* binding */ parseXMLDocument)
+/* harmony export */ });
+/**
+ * Parses an XML string into a Document object.
+ */
+function parseXMLDocument(xmlText) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    const parserError = xmlDoc.querySelector("parsererror");
+    if (parserError) {
+        throw new Error(`XML parsing error: ${parserError.textContent ?? ""}`);
+    }
+    return xmlDoc;
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadElement.ts"
+/*!******************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadElement.ts ***!
+  \******************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadElement: () => (/* binding */ loadElement)
+/* harmony export */ });
+/* harmony import */ var _loadTextBoxElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./loadTextBoxElement */ "../../packages/presentation2/src/components/loadFromXML/loadTextBoxElement.ts");
+/* harmony import */ var _loadImageElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadImageElement */ "../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts");
+
+
+function loadElement(options) {
+    const { element, sectionBuilder } = options;
+    const tagName = element.tagName.toLowerCase();
+    switch (tagName) {
+        case "textbox":
+            (0,_loadTextBoxElement__WEBPACK_IMPORTED_MODULE_0__.loadTextBoxElement)({ element, sectionBuilder });
+            break;
+        case "image":
+            (0,_loadImageElement__WEBPACK_IMPORTED_MODULE_1__.loadImageElement)({ element, sectionBuilder });
+            break;
+        default:
+            // Unknown child elements are ignored for now. Consider tightening this
+            // behaviour once the XML schema is stable.
+            break;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadFromXML.ts"
+/*!******************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadFromXML.ts ***!
+  \******************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadFromXML: () => (/* binding */ loadFromXML)
+/* harmony export */ });
+/* harmony import */ var _io_loadXMLSource__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./io/loadXMLSource */ "../../packages/presentation2/src/components/loadFromXML/io/loadXMLSource.ts");
+/* harmony import */ var _io_parseXMLDocument__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./io/parseXMLDocument */ "../../packages/presentation2/src/components/loadFromXML/io/parseXMLDocument.ts");
+/* harmony import */ var _loadPresentation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadPresentation */ "../../packages/presentation2/src/components/loadFromXML/loadPresentation.ts");
+
+
+
+async function loadFromXML(options) {
+    const xmlText = await (0,_io_loadXMLSource__WEBPACK_IMPORTED_MODULE_0__.loadXMLSource)(options);
+    const dom = (0,_io_parseXMLDocument__WEBPACK_IMPORTED_MODULE_1__.parseXMLDocument)(xmlText);
+    return (0,_loadPresentation__WEBPACK_IMPORTED_MODULE_2__.loadPresentation)({ dom });
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts"
+/*!***********************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts ***!
+  \***********************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   applyCommonElementAttributes: () => (/* binding */ applyCommonElementAttributes),
+/* harmony export */   loadImageElement: () => (/* binding */ loadImageElement)
+/* harmony export */ });
+/* harmony import */ var _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/imageElement/ImageElement */ "../../packages/presentation2/src/components/element/imageElement/ImageElement.ts");
+/* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
+/* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
+
+
+
+function loadImageElement(options) {
+    const { element, sectionBuilder } = options;
+    const builder = sectionBuilder.addImageElement();
+    applyCommonElementAttributes({ element, builder });
+    const src = element.getAttribute("src");
+    if (!src || src.trim() === "") {
+        throw new Error("<image> must have a src attribute");
+    }
+    builder.source = src;
+    const fitAttr = element.getAttribute("fit");
+    if (fitAttr && fitAttr.trim() !== "") {
+        const fit = fitAttr.trim().toLowerCase();
+        switch (fit) {
+            case "fill":
+                builder.fit = _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__.ImageFit.Fill;
+                break;
+            case "contain":
+                builder.fit = _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__.ImageFit.Contain;
+                break;
+            case "cover":
+                builder.fit = _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__.ImageFit.Cover;
+                break;
+            default:
+                throw new Error(`Invalid fit value '${fitAttr}' for <image>; expected 'fill', 'contain' or 'cover'`);
+        }
+    }
+    Array.prototype.forEach.call(element.children, (child) => {
+        const tag = child.tagName.toLowerCase();
+        if (tag === "scroll-trigger") {
+            const triggerBuilder = builder.addScrollTrigger();
+            (0,_loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__.loadScrollTrigger)({ element: child, builder: triggerBuilder });
+            return;
+        }
+        if (tag === "pin") {
+            const pinBuilder = builder.addPin();
+            (0,_loadPin__WEBPACK_IMPORTED_MODULE_2__.loadPin)({ element: child, builder: pinBuilder });
+            return;
+        }
+    });
+}
+function applyCommonElementAttributes(options) {
+    const { element, builder } = options;
+    const nameAttr = element.getAttribute("name");
+    if (nameAttr && nameAttr.trim() !== "") {
+        builder.name = nameAttr;
+    }
+    const l = element.getAttribute("l");
+    const w = element.getAttribute("w");
+    const r = element.getAttribute("r");
+    if (l && l.trim() !== "") {
+        builder.xAxis.set("left", l);
+    }
+    if (w && w.trim() !== "") {
+        builder.xAxis.set("width", w);
+    }
+    if (r && r.trim() !== "") {
+        builder.xAxis.set("right", r);
+    }
+    const t = element.getAttribute("t");
+    const h = element.getAttribute("h");
+    const b = element.getAttribute("b");
+    if (t && t.trim() !== "") {
+        builder.yAxis.set("top", t);
+    }
+    if (h && h.trim() !== "") {
+        builder.yAxis.set("height", h);
+    }
+    if (b && b.trim() !== "") {
+        builder.yAxis.set("bottom", b);
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts"
+/*!**************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadPin.ts ***!
+  \**************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadPin: () => (/* binding */ loadPin)
+/* harmony export */ });
+function loadPin(options) {
+    const { element, builder } = options;
+    const triggerAttr = element.getAttribute("trigger");
+    if (!triggerAttr || triggerAttr.trim() === "") {
+        throw new Error("<pin> must have a non-empty 'trigger' attribute");
+    }
+    builder.scrollTrigger = triggerAttr.trim();
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadPresentation.ts"
+/*!***********************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadPresentation.ts ***!
+  \***********************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadPresentation: () => (/* binding */ loadPresentation)
+/* harmony export */ });
+/* harmony import */ var _presentation_PresentationBuilder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../presentation/PresentationBuilder */ "../../packages/presentation2/src/components/presentation/PresentationBuilder.ts");
+/* harmony import */ var _compilePresentation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../compilePresentation */ "../../packages/presentation2/src/components/compilePresentation.ts");
+/* harmony import */ var _loadSection__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadSection */ "../../packages/presentation2/src/components/loadFromXML/loadSection.ts");
+
+
+
+async function loadPresentation(options) {
+    const presentationBuilder = new _presentation_PresentationBuilder__WEBPACK_IMPORTED_MODULE_0__.PresentationBuilder();
+    if (!options.dom.firstChild ||
+        options.dom.firstChild.nodeName !== "presentation") {
+        throw new Error("Presentation XML must have a root <presentation> element");
+    }
+    Array.prototype.forEach.call(options.dom.children[0].children, (child) => {
+        switch (child.tagName) {
+            case "size":
+                loadSize({ element: child, presentationBuilder });
+                return;
+            case "section":
+                (0,_loadSection__WEBPACK_IMPORTED_MODULE_2__.loadSection)({ element: child, presentationBuilder });
+                return;
+            default: // Ignore unknown tags for now
+        }
+    });
+    return (0,_compilePresentation__WEBPACK_IMPORTED_MODULE_1__.compilePresentation)(presentationBuilder);
+}
+function loadSize(options) {
+    const { element, presentationBuilder } = options;
+    const width = element.getAttribute("w");
+    const height = element.getAttribute("h");
+    if (!width || !height) {
+        throw new Error("<size> must have both w and h attributes");
+    }
+    presentationBuilder.basisDimensions.width = Number(width);
+    presentationBuilder.basisDimensions.height = Number(height);
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts"
+/*!************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts ***!
+  \************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadScrollTrigger: () => (/* binding */ loadScrollTrigger)
+/* harmony export */ });
+function loadScrollTrigger(options) {
+    const { element, builder } = options;
+    const nameAttr = element.getAttribute("name");
+    const startAttr = element.getAttribute("start");
+    const endAttr = element.getAttribute("end");
+    if (!nameAttr || nameAttr.trim() === "") {
+        throw new Error("<scroll-trigger> must have a non-empty 'name' attribute");
+    }
+    if (!startAttr || startAttr.trim() === "") {
+        throw new Error("<scroll-trigger> must have a non-empty 'start' attribute");
+    }
+    if (!endAttr || endAttr.trim() === "") {
+        throw new Error("<scroll-trigger> must have a non-empty 'end' attribute");
+    }
+    builder.name = nameAttr.trim();
+    builder.start = startAttr;
+    builder.end = endAttr;
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadSection.ts"
+/*!******************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadSection.ts ***!
+  \******************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadSection: () => (/* binding */ loadSection)
+/* harmony export */ });
+/* harmony import */ var _loadElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./loadElement */ "../../packages/presentation2/src/components/loadFromXML/loadElement.ts");
+/* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
+
+
+function loadSection(options) {
+    const sectionBuilder = options.presentationBuilder.addSection();
+    loadSectionProperties({ ...options, sectionBuilder });
+    loadSectionChildren({ ...options, sectionBuilder });
+}
+function loadSectionProperties(options) {
+    const { element, sectionBuilder } = options;
+    const nameAttr = element.getAttribute("name");
+    if (nameAttr && nameAttr.trim() !== "") {
+        sectionBuilder.name = nameAttr;
+    }
+    const h = element.getAttribute("h");
+    const b = element.getAttribute("b");
+    // Set whichever is non-empty
+    if (h && h.trim() !== "") {
+        sectionBuilder.sectionHeight = h;
+    }
+    if (b && b.trim() !== "") {
+        sectionBuilder.sectionBottom = b;
+    }
+}
+function loadSectionChildren(options) {
+    const { element, sectionBuilder } = options;
+    Array.prototype.forEach.call(element.children, (child) => {
+        switch (child.tagName) {
+            case "image":
+            case "textbox":
+                (0,_loadElement__WEBPACK_IMPORTED_MODULE_0__.loadElement)({ element: child, sectionBuilder });
+                break;
+            case "scroll-trigger": {
+                const triggerBuilder = sectionBuilder.addScrollTrigger();
+                (0,_loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__.loadScrollTrigger)({ element: child, builder: triggerBuilder });
+                break;
+            }
+            default:
+                // Unknown child elements are ignored for now. Consider tightening this
+                break;
+        }
+    });
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadTextBoxElement.ts"
+/*!*************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadTextBoxElement.ts ***!
+  \*************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadTextBoxElement: () => (/* binding */ loadTextBoxElement)
+/* harmony export */ });
+/* harmony import */ var _rippledoc_markdown__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @rippledoc/markdown */ "../../packages/markdown/src/index.ts");
+/* harmony import */ var _loadImageElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadImageElement */ "../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts");
+/* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
+/* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
+
+
+
+
+function loadTextBoxElement(options) {
+    const { element, sectionBuilder } = options;
+    const builder = sectionBuilder.addTextBox();
+    (0,_loadImageElement__WEBPACK_IMPORTED_MODULE_1__.applyCommonElementAttributes)({ element, builder });
+    const markdown = (element.textContent ?? "").trim();
+    const contentNode = (0,_rippledoc_markdown__WEBPACK_IMPORTED_MODULE_0__.parseMarkdown)(markdown);
+    builder.htmlContent = contentNode;
+    Array.prototype.forEach.call(element.children, (child) => {
+        const tag = child.tagName.toLowerCase();
+        if (tag === "scroll-trigger") {
+            const triggerBuilder = builder.addScrollTrigger();
+            (0,_loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__.loadScrollTrigger)({ element: child, builder: triggerBuilder });
+            return;
+        }
+        if (tag === "pin") {
+            const pinBuilder = builder.addPin();
+            (0,_loadPin__WEBPACK_IMPORTED_MODULE_3__.loadPin)({ element: child, builder: pinBuilder });
+            return;
+        }
+    });
+}
+
+
+/***/ },
+
 /***/ "../../packages/presentation2/src/components/pin/Pin.ts"
 /*!**************************************************************!*\
   !*** ../../packages/presentation2/src/components/pin/Pin.ts ***!
@@ -4992,14 +5409,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _element_ElementBuilder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/ElementBuilder */ "../../packages/presentation2/src/components/element/ElementBuilder.ts");
 /* harmony import */ var _element_textBoxElement_TextBoxElementBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../element/textBoxElement/TextBoxElementBuilder */ "../../packages/presentation2/src/components/element/textBoxElement/TextBoxElementBuilder.ts");
 /* harmony import */ var _element_imageElement_ImageElementBuilder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../element/imageElement/ImageElementBuilder */ "../../packages/presentation2/src/components/element/imageElement/ImageElementBuilder.ts");
+/* harmony import */ var _scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../scrollTrigger/ScrollTriggerBuilder */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerBuilder.ts");
+
 
 
 
 class SectionBuilder {
     presentation_;
     elements_ = [];
+    scrollTriggers_ = [];
     name_ = "";
     sectionHeight_ = "";
+    sectionBottom_ = "";
     constructor(options) {
         this.presentation_ = options.presentation;
     }
@@ -5024,8 +5445,16 @@ class SectionBuilder {
         this.elements_.push(elementBuilder);
         return elementBuilder;
     }
+    addScrollTrigger() {
+        const scrollTriggerBuilder = new _scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_3__.ScrollTriggerBuilder({ section: this });
+        this.scrollTriggers_.push(scrollTriggerBuilder);
+        return scrollTriggerBuilder;
+    }
     get elements() {
         return this.elements_;
+    }
+    get scrollTriggers() {
+        return this.scrollTriggers_;
     }
     // ----------------------------------------------------------------------------------------------
     // Owned properties
@@ -5037,6 +5466,18 @@ class SectionBuilder {
     }
     set sectionHeight(value) {
         this.sectionHeight_ = value;
+    }
+    get hasSectionHeight() {
+        return this.sectionHeight_.trim().length > 0;
+    }
+    get sectionBottom() {
+        return this.sectionBottom_;
+    }
+    set sectionBottom(value) {
+        this.sectionBottom_ = value;
+    }
+    get hasSectionBottom() {
+        return this.sectionBottom_.trim().length > 0;
     }
     get name() {
         return this.name_;
@@ -5119,10 +5560,20 @@ class SectionCompiler {
         //
         //
         this.sectionTop_ = this.module.addExpression("sectionTop", this.prevSection_ ? "prevSection.sectionBottom" : "0");
-        this.sectionHeight_ = this.module.addExpression("sectionHeight", this.builder_.sectionHeight);
-        this.sectionBottom_ = this.module.addExpression("sectionBottom", this.prevSection_
-            ? "prevSection.sectionBottom + sectionHeight"
-            : "sectionHeight");
+        if (this.builder.hasSectionHeight && !this.builder.hasSectionBottom) {
+            this.sectionHeight_ = this.module.addExpression("sectionHeight", this.builder_.sectionHeight);
+            this.sectionBottom_ = this.module.addExpression("sectionBottom", this.prevSection_
+                ? "prevSection.sectionBottom + sectionHeight"
+                : "sectionHeight");
+        }
+        else if (!this.builder.hasSectionHeight &&
+            this.builder.hasSectionBottom) {
+            this.sectionBottom_ = this.module.addExpression("sectionBottom", this.builder_.sectionBottom);
+            this.sectionHeight_ = this.module.addExpression("sectionHeight", "sectionBottom - sectionTop");
+        }
+        else {
+            throw new Error(`Section must specify exactly one of 'sectionHeight' or 'sectionBottom'`);
+        }
         // Create a the 'elements' namespace: this enables expressions on sections and elements (they
         // inherit the parent section's namespace) to refer to elements by name, e.g.
         // "elements.Element1.bottom"
@@ -5301,7 +5752,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ScrollTriggerBuilder: () => (/* reexport safe */ _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_7__.ScrollTriggerBuilder),
 /* harmony export */   Section: () => (/* reexport safe */ _components_section_Section__WEBPACK_IMPORTED_MODULE_2__.Section),
 /* harmony export */   SectionBuilder: () => (/* reexport safe */ _components_section_SectionBuilder__WEBPACK_IMPORTED_MODULE_3__.SectionBuilder),
-/* harmony export */   compilePresentation: () => (/* reexport safe */ _components_compilePresentation__WEBPACK_IMPORTED_MODULE_8__.compilePresentation)
+/* harmony export */   compilePresentation: () => (/* reexport safe */ _components_compilePresentation__WEBPACK_IMPORTED_MODULE_8__.compilePresentation),
+/* harmony export */   loadFromXML: () => (/* reexport safe */ _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_10__.loadFromXML)
 /* harmony export */ });
 /* harmony import */ var _components_presentation_Presentation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/presentation/Presentation */ "../../packages/presentation2/src/components/presentation/Presentation.ts");
 /* harmony import */ var _components_presentation_PresentationBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/presentation/PresentationBuilder */ "../../packages/presentation2/src/components/presentation/PresentationBuilder.ts");
@@ -5313,6 +5765,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/scrollTrigger/ScrollTriggerBuilder */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerBuilder.ts");
 /* harmony import */ var _components_compilePresentation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/compilePresentation */ "../../packages/presentation2/src/components/compilePresentation.ts");
 /* harmony import */ var _components_presentation_htmlView_HTMLPresentationView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/presentation/htmlView/HTMLPresentationView */ "../../packages/presentation2/src/components/presentation/htmlView/HTMLPresentationView.ts");
+/* harmony import */ var _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/loadFromXML/loadFromXML */ "../../packages/presentation2/src/components/loadFromXML/loadFromXML.ts");
+
 
 
 
@@ -5386,62 +5840,13 @@ function sanitizeSVG(dirty) {
 __webpack_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _css_styles_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../css/styles.css */ "./src/css/styles.css");
-/* harmony import */ var _rippledoc_markdown__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @rippledoc/markdown */ "../../packages/markdown/src/index.ts");
-/* harmony import */ var _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @rippledoc/presentation2 */ "../../packages/presentation2/src/index.ts");
+/* harmony import */ var _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @rippledoc/presentation2 */ "../../packages/presentation2/src/index.ts");
 
 
-
-const pb = new _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_2__.PresentationBuilder();
-pb.setBasisDimensions(640, 480);
-const s1 = pb.addSection();
-s1.sectionHeight = "slideHeight/2";
-const s2 = pb.addSection();
-s2.name = "Section 2";
-s2.sectionHeight = "slideHeight";
-const s3 = pb.addSection();
-s3.name = "Section 3";
-s3.sectionHeight = "slideHeight";
-const e1 = s1.addElement();
-e1.name = "Element1";
-e1.xAxis.set("left", "10");
-e1.xAxis.set("right", "basisWidth-10");
-e1.yAxis.set("top", "10");
-e1.yAxis.set("height", "100");
-const e2 = s1.addTextBox();
-e2.name = "Element2";
-e2.xAxis.set("left", "10");
-e2.xAxis.set("width", "basisWidth-20");
-e2.yAxis.set("top", "elements.Element1.bottom+10");
-e2.yAxis.set("height", "content");
-const fragment = (0,_rippledoc_markdown__WEBPACK_IMPORTED_MODULE_1__.parseMarkdown)("# Hello, world!\n\nThis is a paragraph with some slightly longer text.\n" +
-    "- And a list item\n- And another one\n\nAnd some more text at the end.");
-e2.htmlContent = fragment;
-const e5 = s1.addImageElement();
-e5.name = "Element5";
-e5.xAxis.set("left", "20");
-e5.xAxis.set("width", "50");
-e5.yAxis.set("bottom", "sectionBottom-20");
-e5.yAxis.set("height", "content");
-e5.source = "img/test.svg";
-const p1 = e5.addPin();
-p1.scrollTrigger = "ScrollTrigger1";
-const st1 = e5.addScrollTrigger();
-st1.name = "ScrollTrigger1";
-st1.start = "top";
-st1.end = "start + slideHeight";
-const e4 = s2.addElement();
-e4.xAxis.set("left", "10");
-e4.xAxis.set("right", "basisWidth-10");
-e4.yAxis.set("top", "sectionTop+10");
-e4.yAxis.set("bottom", "sectionBottom-10");
-const e3 = s2.addElement();
-e3.xAxis.set("left", "basisWidth/2 - width/2");
-e3.xAxis.set("width", "basisWidth*0.5");
-e3.yAxis.set("top", "sectionTop+sectionHeight/2-height/2");
-e3.yAxis.set("height", "100");
 try {
-    const p = await (0,_rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_2__.compilePresentation)(pb);
-    const htmlView = new _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_2__.HTMLPresentationView({
+    const p = await (0,_rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.loadFromXML)({ url: "presentations/demo1.xml" });
+    console.log(p);
+    const htmlView = new _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.HTMLPresentationView({
         presentation: p,
         container: "#theContainer",
     });
