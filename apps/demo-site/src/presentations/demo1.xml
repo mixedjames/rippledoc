@@ -8,7 +8,7 @@
 </textbox>
 </section>
 
-<section name="s1" b="slideHeight">
+<section name="s1" b="elements.tb1.bottom+20">
 
   <image
     name="img1"
@@ -40,7 +40,7 @@
   </textbox>
 </section>
 
-<section h="slideHeight" name="s2">
+<section h="800" name="s2">
 
   <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
   # Another slide

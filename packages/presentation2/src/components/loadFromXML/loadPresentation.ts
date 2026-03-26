@@ -15,19 +15,22 @@ export async function loadPresentation(options: {
     throw new Error("Presentation XML must have a root <presentation> element");
   }
 
-  Array.prototype.forEach.call(options.dom.children[0]!.children, (child: Element) => {
-    switch (child.tagName) {
-      case "size":
-        loadSize({ element: child, presentationBuilder });
-        return;
+  Array.prototype.forEach.call(
+    options.dom.children[0]!.children,
+    (child: Element) => {
+      switch (child.tagName) {
+        case "size":
+          loadSize({ element: child, presentationBuilder });
+          return;
 
-      case "section":
-        loadSection({ element: child, presentationBuilder });
-        return;
+        case "section":
+          loadSection({ element: child, presentationBuilder });
+          return;
 
-      default: // Ignore unknown tags for now
-    }
-  });
+        default: // Ignore unknown tags for now
+      }
+    },
+  );
 
   return compilePresentation(presentationBuilder);
 }
