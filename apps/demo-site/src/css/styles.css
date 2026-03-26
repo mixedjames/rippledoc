@@ -1,0 +1,44 @@
+body {
+}
+
+.rdoc-root {
+  font-size: calc(var(--presentation-scale) * 12pt);
+  font-family: "Trebuchet MS", sans-serif;
+}
+
+.rdoc-root * {
+  box-sizing: border-box;
+}
+
+.rdoc-root .rdoc-viewport {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
+  border: solid red 2px;
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {
+  border: solid black 2px;
+  background: palegoldenrod;
+
+  padding: 10px;
+}
+
+.rdoc-root .rdoc-overlay {
+}
+
+.rdoc-root .rdoc-overlay .rdoc-pin-clone {
+  border: solid blue 2px;
+  background: palegoldenrod;
+
+  padding: 10px;
+}
