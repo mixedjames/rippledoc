@@ -21,11 +21,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, `body {
-}
-
-.rdoc-root {
-  font-size: calc(var(--presentation-scale) * 14pt);
+___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
+  font-size: calc(var(--presentation-scale) * 12pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 
@@ -40,7 +37,6 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 }
 
 .rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
-  border: solid red 2px;
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements {
@@ -50,22 +46,20 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body {
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {
-  border: solid black 2px;
-  background: palegoldenrod;
-
-  padding: 10px;
 }
 
 .rdoc-root .rdoc-overlay {
 }
 
-.rdoc-root .rdoc-overlay .rdoc-pin-clone {
-  border: solid blue 2px;
-  background: palegoldenrod;
+/*
+ */
 
-  padding: 10px;
+.rdoc-root .rdoc-elements .rdoc-text-box-element {
 }
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;AACA;;AAEA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,qBAAqB;AACvB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,uBAAuB;EACvB,yBAAyB;;EAEzB,aAAa;AACf;;AAEA;AACA;;AAEA;EACE,sBAAsB;EACtB,yBAAyB;;EAEzB,aAAa;AACf","sourcesContent":["body {\n}\n\n.rdoc-root {\n  font-size: calc(var(--presentation-scale) * 14pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  border: solid red 2px;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n  border: solid black 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n.rdoc-root .rdoc-overlay .rdoc-pin-clone {\n  border: solid blue 2px;\n  background: palegoldenrod;\n\n  padding: 10px;\n}\n"],"sourceRoot":""}]);
+
+.rdoc-root .rdoc-elements .rdoc-image-element {
+}
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(var(--presentation-scale) * 12pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -2957,8 +2951,11 @@ class HTMLElementView {
     // ----------------------------------------------------------------------------------------------
     createDOM() {
         this.htmlElement_ = document.createElement("div");
-        this.htmlElement_.classList.add("rdoc-element");
         this.htmlElement_.style.position = "absolute";
+        this.htmlElement_.classList.add("rdoc-element");
+        if (this.element.name.length > 0) {
+            this.htmlElement_.classList.add(`rdoc-element-${this.element.name}`);
+        }
         this.sectionView.htmlContentElement.appendChild(this.htmlElement_);
         this.subclassCreateDOM();
     }
@@ -3183,6 +3180,7 @@ class HTMLImageElementView extends _htmlView_HTMLElementView__WEBPACK_IMPORTED_M
         }
         img.style.width = "100%";
         img.style.height = "100%";
+        this.htmlElement.classList.add("rdoc-image-element");
         this.htmlElement.appendChild(img);
     }
     subclassLayout() { }
@@ -3323,6 +3321,7 @@ class HTMLTextBoxElementView extends _htmlView_HTMLElementView__WEBPACK_IMPORTED
         return super.element;
     }
     subclassCreateDOM() {
+        this.htmlElement.classList.add("rdoc-text-box-element");
         this.htmlElement.appendChild(this.element.content);
     }
     subclassLayout() { }
@@ -4469,7 +4468,7 @@ class HTMLPresentationDOM {
     // ----------------------------------------------------------------------------------------------
     // Construction
     // ----------------------------------------------------------------------------------------------
-    constructor(htmlPresentationView, presentation) {
+    constructor(htmlPresentationView, presentation, debugMode) {
         this.htmlPresentationView_ = htmlPresentationView;
         // Connect DOM elements:
         //
@@ -4483,11 +4482,14 @@ class HTMLPresentationDOM {
         // FIXME: these should be defined as constants somewhere
         //
         this.root_.classList.add("rdoc-root");
+        if (debugMode) {
+            this.root_.classList.add("rdoc-debug-mode");
+        }
         this.viewport_.classList.add("rdoc-viewport");
         this.overlay_.classList.add("rdoc-overlay");
         this.backgrounds_.classList.add("rdoc-backgrounds");
         this.elements_.classList.add("rdoc-elements");
-        this.pins_.classList.add("rdoc-pins");
+        this.pins_.classList.add("rdoc-pins", "rdoc-elements");
         // The client will provide a container element and will append the fragment to it.
         // We must fill the container.
         //
@@ -4619,6 +4621,7 @@ class HTMLPresentationView {
                 this.pImpl_ = new _HTMLPresentationViewRoot__WEBPACK_IMPORTED_MODULE_0__.HTMLPresentationViewRoot({
                     presentation: options.presentation,
                     container: options.container,
+                    debugMode: options.debugMode,
                     sortedContentDependentElements: connectionData.sortedContentDependentElements,
                 });
                 // We can trigger a first layout here because we know that, after HTMLPresentationViewRoot
@@ -4695,7 +4698,7 @@ class HTMLPresentationViewRoot {
         //    Do this last so that resisze events don't trigger before we're fully constructed.
         //
         // (1)
-        this.dom_ = new _HTMLPresentationDOM__WEBPACK_IMPORTED_MODULE_0__.HTMLPresentationDOM(this, options.presentation);
+        this.dom_ = new _HTMLPresentationDOM__WEBPACK_IMPORTED_MODULE_0__.HTMLPresentationDOM(this, options.presentation, options.debugMode);
         // (2)
         this.sections_ = this.presentation_.sections.map((section) => {
             return new _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_1__.HTMLSectionView({ presentationView: this, section: section });
@@ -5224,6 +5227,9 @@ class HTMLScrollTriggerManager {
         // FIXME: We need a better way to collate scroll triggers from the presentation. This is a bit
         // hacky, since it depends on a cast which is brittle in the face of future refactors.
         this.htmlPresentationRoot_.sections.forEach((section) => {
+            section.section.scrollTriggers.forEach((trigger) => {
+                this.cachedTriggers_.push(trigger);
+            });
             section.elementViews.forEach((elementView) => {
                 elementView.element.scrollTriggers.forEach((trigger) => {
                     this.cachedTriggers_.push(trigger);
@@ -5329,6 +5335,10 @@ class Section {
             this.elements_ = elements;
             return this.phase2Constructor_;
         },
+        setScrollTriggers: (scrollTriggers) => {
+            this.scrollTriggers_ = scrollTriggers;
+            return this.phase2Constructor_;
+        },
         complete: () => {
             this.phase2Constructor_ = null;
         },
@@ -5339,9 +5349,11 @@ class Section {
     elements_ = null;
     // Owned properties ------------------------------------------------------------------------------
     //
+    name_ = "";
     sectionTop_;
     sectionHeight_;
     sectionBottom_;
+    scrollTriggers_ = [];
     // ----------------------------------------------------------------------------------------------
     // Construction
     // ----------------------------------------------------------------------------------------------
@@ -5353,6 +5365,7 @@ class Section {
         this.sectionTop_ = options.sectionTop;
         this.sectionHeight_ = options.sectionHeight;
         this.sectionBottom_ = options.sectionBottom;
+        this.name_ = options.name;
     }
     get phase2Constructor() {
         if (this.phase2Constructor_ === null) {
@@ -5379,9 +5392,15 @@ class Section {
         }
         return this.elements_;
     }
+    get scrollTriggers() {
+        return this.scrollTriggers_;
+    }
     // ----------------------------------------------------------------------------------------------
     // Geometry
     // ----------------------------------------------------------------------------------------------
+    get name() {
+        return this.name_;
+    }
     get sectionTop() {
         return this.sectionTop_.evaluate();
     }
@@ -5504,6 +5523,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   SectionCompiler: () => (/* binding */ SectionCompiler)
 /* harmony export */ });
 /* harmony import */ var _Section__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Section */ "../../packages/presentation2/src/components/section/Section.ts");
+/* harmony import */ var _scrollTrigger_ScrollTriggerCompiler__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scrollTrigger/ScrollTriggerCompiler */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerCompiler.ts");
+
 
 class SectionCompiler {
     // Structural relationships
@@ -5519,11 +5540,16 @@ class SectionCompiler {
     sectionTop_ = null;
     sectionBottom_ = null;
     sectionHeight_ = null;
+    scrollTriggers_ = [];
     constructor(options) {
         this.builder_ = options.sectionBuilder;
         this.presentationCompiler_ = options.presentationCompiler;
         this.module_ = this.presentationCompiler_.module.addSubModule();
         this.elements_ = options.sectionBuilder.elements.map((elementBuilder) => elementBuilder.makeCompiler(this));
+        this.scrollTriggers_ = options.sectionBuilder.scrollTriggers.map((scrollTriggerBuilder) => new _scrollTrigger_ScrollTriggerCompiler__WEBPACK_IMPORTED_MODULE_1__.ScrollTriggerCompiler({
+            scrollTriggerBuilder,
+            sectionCompiler: this,
+        }));
     }
     // ----------------------------------------------------------------------------------------------
     // Property accessors
@@ -5554,6 +5580,7 @@ class SectionCompiler {
      */
     beforeCompile() {
         this.validateAndDerive();
+        this.scrollTriggers_.forEach((scrollTrigger) => scrollTrigger.beforeCompile());
         this.elements_.forEach((element) => element.beforeCompile());
     }
     validateAndDerive() {
@@ -5605,10 +5632,12 @@ class SectionCompiler {
             sectionTop: this.sectionTop_(),
             sectionHeight: this.sectionHeight_(),
             sectionBottom: this.sectionBottom_(),
+            name: this.builder_.name,
         });
         s.phase2Constructor.setElements(this.elements_.map((ec) => {
             return ec.compile(s.section);
         }));
+        s.phase2Constructor.setScrollTriggers(this.scrollTriggers_.map((st) => st.compile(s.section)));
         s.phase2Constructor.complete();
         return s.section;
     }
@@ -5703,6 +5732,9 @@ class HTMLSectionView {
         // (2) Content element
         //
         this.contentElement_.classList.add("rdoc-section-content");
+        if (this.section.name.length > 0) {
+            this.contentElement_.classList.add(`rdoc-section-${this.section.name}`);
+        }
         this.presentationView.htmlElements.appendChild(this.contentElement_);
     }
     layout() {
