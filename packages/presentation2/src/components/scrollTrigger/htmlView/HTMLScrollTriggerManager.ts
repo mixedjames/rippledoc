@@ -49,6 +49,10 @@ export class HTMLScrollTriggerManager {
     // FIXME: We need a better way to collate scroll triggers from the presentation. This is a bit
     // hacky, since it depends on a cast which is brittle in the face of future refactors.
     this.htmlPresentationRoot_.sections.forEach((section) => {
+      section.section.scrollTriggers.forEach((trigger) => {
+        this.cachedTriggers_.push(trigger as DefaultScrollTrigger);
+      });
+
       section.elementViews.forEach((elementView) => {
         elementView.element.scrollTriggers.forEach((trigger) => {
           this.cachedTriggers_.push(trigger as DefaultScrollTrigger);

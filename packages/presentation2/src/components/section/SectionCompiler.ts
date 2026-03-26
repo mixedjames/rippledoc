@@ -7,6 +7,7 @@ import { PresentationCompiler } from "../presentation/PresentationCompiler";
 import { ElementCompiler } from "../element/ElementCompiler";
 
 import { Module, Expression } from "@rippledoc/expressions";
+import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
 
 export class SectionCompiler {
   // Structural relationships
@@ -26,6 +27,8 @@ export class SectionCompiler {
   private sectionBottom_: (() => Expression) | null = null;
   private sectionHeight_: (() => Expression) | null = null;
 
+  private scrollTriggers_: ScrollTriggerCompiler[] = [];
+
   constructor(options: {
     sectionBuilder: SectionBuilder;
     presentationCompiler: PresentationCompiler;
@@ -36,6 +39,14 @@ export class SectionCompiler {
 
     this.elements_ = options.sectionBuilder.elements.map((elementBuilder) =>
       elementBuilder.makeCompiler(this),
+    );
+
+    this.scrollTriggers_ = options.sectionBuilder.scrollTriggers.map(
+      (scrollTriggerBuilder) =>
+        new ScrollTriggerCompiler({
+          scrollTriggerBuilder,
+          sectionCompiler: this,
+        }),
     );
   }
 
@@ -75,6 +86,9 @@ export class SectionCompiler {
    */
   beforeCompile() {
     this.validateAndDerive();
+    this.scrollTriggers_.forEach((scrollTrigger) =>
+      scrollTrigger.beforeCompile(),
+    );
     this.elements_.forEach((element) => element.beforeCompile());
   }
 
@@ -155,6 +169,10 @@ export class SectionCompiler {
       this.elements_.map((ec: ElementCompiler) => {
         return ec.compile(s.section);
       }),
+    );
+
+    s.phase2Constructor.setScrollTriggers(
+      this.scrollTriggers_.map((st) => st.compile(s.section)),
     );
 
     s.phase2Constructor.complete();

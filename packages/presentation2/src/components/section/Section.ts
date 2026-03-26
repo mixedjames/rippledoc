@@ -1,9 +1,10 @@
 import { Element } from "../element/Element";
-import { Presentation } from "../..";
+import { Presentation, ScrollTrigger } from "../..";
 import { Expression } from "packages/expressions/dist";
 
 interface SectionPhase2Constructor {
   setElements(elements: Element[]): SectionPhase2Constructor;
+  setScrollTriggers(scrollTriggers: ScrollTrigger[]): SectionPhase2Constructor;
 
   complete(): void;
 }
@@ -30,6 +31,11 @@ export class Section {
       return this.phase2Constructor_!;
     },
 
+    setScrollTriggers: (scrollTriggers: ScrollTrigger[]) => {
+      this.scrollTriggers_ = scrollTriggers;
+      return this.phase2Constructor_!;
+    },
+
     complete: () => {
       this.phase2Constructor_ = null;
     },
@@ -46,6 +52,8 @@ export class Section {
   private sectionTop_: Expression;
   private sectionHeight_: Expression;
   private sectionBottom_: Expression;
+
+  private scrollTriggers_: ScrollTrigger[] = [];
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -99,6 +107,10 @@ export class Section {
     }
 
     return this.elements_;
+  }
+
+  get scrollTriggers(): readonly ScrollTrigger[] {
+    return this.scrollTriggers_;
   }
 
   // ----------------------------------------------------------------------------------------------
