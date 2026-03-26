@@ -8,6 +8,9 @@
       "path": "./packages/sanitizer"
     },
     {
+      "path": "./packages/markdown"
+    },
+    {
       "path": "./packages/presentation"
     },
     {

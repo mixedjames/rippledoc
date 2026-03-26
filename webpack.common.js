@@ -14,6 +14,7 @@ module.exports = {
         __dirname,
         "./packages/sanitizer/src",
       ),
+      "@rippledoc/markdown": path.resolve(__dirname, "./packages/markdown/src"),
       "@rippledoc/presentation": path.resolve(
         __dirname,
         "./packages/presentation/src",

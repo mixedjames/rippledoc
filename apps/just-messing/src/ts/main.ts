@@ -1,4 +1,5 @@
 import "../css/styles.css";
+import { parseMarkdown } from "@rippledoc/markdown";
 
 import {
   PresentationBuilder,
@@ -35,15 +36,16 @@ e2.xAxis.set("width", "basisWidth-20");
 e2.yAxis.set("top", "elements.Element1.bottom+10");
 e2.yAxis.set("height", "content");
 
-const fragment = document.createElement("div");
-fragment.innerHTML =
-  "<h1>Hello, world!</h1><p>This is a paragraph with some slightly longer text.</p>";
+const fragment = parseMarkdown(
+  "# Hello, world!\n\nThis is a paragraph with some slightly longer text.\n" +
+    "- And a list item\n- And another one\n\nAnd some more text at the end.",
+);
 e2.htmlContent = fragment;
 
 const e5 = s1.addImageElement();
 e5.name = "Element5";
 e5.xAxis.set("left", "20");
-e5.xAxis.set("width", "250");
+e5.xAxis.set("width", "50");
 e5.yAxis.set("bottom", "sectionBottom-20");
 e5.yAxis.set("height", "content");
 e5.source = "img/test.svg";
