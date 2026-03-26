@@ -5,20 +5,25 @@ on:
     branches: [main]
     paths:
       - "apps/demo-site/**"
+      - ".github/workflows/pages.yml"  # redeploy if workflow changes
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Check out the repo
       - uses: actions/checkout@v4
 
+      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      - name: Build site
-        run: npm run build --workspace=apps/demo-site
+      # Build the demo-site using the root-level script
+      - name: Build demo-site
+        run: npm run build:demo-site
 
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
