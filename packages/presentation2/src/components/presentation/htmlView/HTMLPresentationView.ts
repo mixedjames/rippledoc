@@ -33,8 +33,6 @@ export class HTMLPresentationView {
     const self = this;
 
     options.presentation.attachView({
-      // We will use connectionData in the future to pass information
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       connect: (connectionData: ConnectionData) => {
         if (this.pImpl_) {
           throw new Error("Already connected");
@@ -43,6 +41,8 @@ export class HTMLPresentationView {
         this.pImpl_ = new HTMLPresentationViewRoot({
           presentation: options.presentation,
           container: options.container,
+          sortedContentDependentElements:
+            connectionData.sortedContentDependentElements,
         });
 
         // We can trigger a first layout here because we know that, after HTMLPresentationViewRoot

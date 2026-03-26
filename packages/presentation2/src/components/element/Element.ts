@@ -3,14 +3,17 @@ import { Expression } from "@rippledoc/expressions";
 import { Section } from "../section/Section";
 import { Presentation } from "../presentation/Presentation";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+import { Pin } from "../pin/Pin";
 
-interface ElementPhase2Constructor {
+export interface ElementPhase2Constructor {
   setScrollTriggers(scrollTriggers: ScrollTrigger[]): ElementPhase2Constructor;
+
+  setPins(pins: Pin[]): ElementPhase2Constructor;
 
   complete(): void;
 }
 
-type ElementOptions = {
+export type ElementOptions = {
   section: Section;
   name: string;
   contentDependentDimension: ContentDependentDimension;
@@ -35,13 +38,18 @@ export class Element {
   // Construction-related data ---------------------------------------------------------------------
   //
 
-  private static constructionToken_: symbol = Symbol(
+  protected static constructionToken_: symbol = Symbol(
     "Element.ConstructorProtector",
   );
 
   private phase2Constructor_: ElementPhase2Constructor | null = {
     setScrollTriggers: (scrollTriggers: ScrollTrigger[]) => {
       this.scrollTriggers_ = scrollTriggers;
+      return this.phase2Constructor_!;
+    },
+
+    setPins: (pins: Pin[]) => {
+      this.pins_ = pins;
       return this.phase2Constructor_!;
     },
 
@@ -54,6 +62,7 @@ export class Element {
   //
   private section_: Section;
   private scrollTriggers_: ScrollTrigger[] = [];
+  private pins_: Pin[] = [];
 
   // Owned properties ------------------------------------------------------------------------------
   //
@@ -91,14 +100,14 @@ export class Element {
     this.height_ = options.height;
   }
 
-  private get phase2Constructor(): ElementPhase2Constructor {
+  protected get phase2Constructor(): ElementPhase2Constructor {
     if (this.phase2Constructor_ === null) {
       throw new Error("Phase 2 construction already complete");
     }
     return this.phase2Constructor_;
   }
 
-  static create(options: ElementOptions): {
+  static createElement(options: ElementOptions): {
     element: Element;
     phase2Constructor: ElementPhase2Constructor;
   } {
@@ -127,6 +136,14 @@ export class Element {
 
   get name(): string {
     return this.name_;
+  }
+
+  scrollTriggerByName(name: string): ScrollTrigger {
+    const scrollTrigger = this.scrollTriggers_.find((st) => st.name === name);
+    if (!scrollTrigger) {
+      throw new Error(`ScrollTrigger with name "${name}" not found.`);
+    }
+    return scrollTrigger;
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -163,5 +180,9 @@ export class Element {
 
   get scrollTriggers(): readonly ScrollTrigger[] {
     return this.scrollTriggers_;
+  }
+
+  get pins(): readonly Pin[] {
+    return this.pins_;
   }
 }

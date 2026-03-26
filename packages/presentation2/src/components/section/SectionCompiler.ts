@@ -34,12 +34,8 @@ export class SectionCompiler {
     this.presentationCompiler_ = options.presentationCompiler;
     this.module_ = this.presentationCompiler_.module.addSubModule();
 
-    this.elements_ = options.sectionBuilder.elements.map(
-      (elementBuilder) =>
-        new ElementCompiler({
-          elementBuilder,
-          sectionCompiler: this,
-        }),
+    this.elements_ = options.sectionBuilder.elements.map((elementBuilder) =>
+      elementBuilder.makeCompiler(this),
     );
   }
 

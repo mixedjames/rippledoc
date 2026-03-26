@@ -2,6 +2,9 @@ import { SectionBuilder } from "../section/SectionBuilder";
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { AxisBuilder } from "../common/AxisBuilder";
 import { ScrollTriggerBuilder } from "../scrollTrigger/ScrollTriggerBuilder";
+import { PinBuilder } from "../pin/PinBuilder";
+import { SectionCompiler } from "../section/SectionCompiler";
+import { ElementCompiler } from "./ElementCompiler";
 
 /**
  *
@@ -22,6 +25,7 @@ export class ElementBuilder {
 
   private name_: string = "";
   private scrollTriggers_: ScrollTriggerBuilder[] = [];
+  private pins_: PinBuilder[] = [];
 
   // Order of axis components is key here: AxisBuilder.deriveExpressions depends on it
   // DO NOT CHANGE
@@ -30,6 +34,13 @@ export class ElementBuilder {
 
   constructor(options: { section: SectionBuilder }) {
     this.section_ = options.section;
+  }
+
+  makeCompiler(sectionCompiler: SectionCompiler): ElementCompiler {
+    return new ElementCompiler({
+      elementBuilder: this,
+      sectionCompiler: sectionCompiler,
+    });
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -50,8 +61,18 @@ export class ElementBuilder {
     return scrollTrigger;
   }
 
+  addPin(): PinBuilder {
+    const pin = new PinBuilder({ element: this });
+    this.pins_.push(pin);
+    return pin;
+  }
+
   get scrollTriggers(): readonly ScrollTriggerBuilder[] {
     return this.scrollTriggers_;
+  }
+
+  get pins(): readonly PinBuilder[] {
+    return this.pins_;
   }
 
   // ----------------------------------------------------------------------------------------------

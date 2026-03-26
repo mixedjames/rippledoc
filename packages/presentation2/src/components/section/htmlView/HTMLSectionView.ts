@@ -1,6 +1,10 @@
 import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
 import { Section } from "../Section";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
+import { TextBoxElement } from "../../element/textBoxElement/TextBoxElement";
+import { HTMLTextBoxElementView } from "../../element/textBoxElement/htmlView/HTMLTextBoxElementView";
+import { ImageElement } from "../../element/imageElement/ImageElement";
+import { HTMLImageElementView } from "../../element/imageElement/htmlView/HTMLImageElementView";
 
 export class HTMLSectionView {
   // Structural relationships ----------------------------------------------------------------------
@@ -33,9 +37,19 @@ export class HTMLSectionView {
     this.createDOM();
 
     this.section_.elements.forEach((element) => {
-      this.elementViews_.push(
-        new HTMLElementView({ sectionView: this, element }),
-      );
+      if (element instanceof TextBoxElement) {
+        this.elementViews_.push(
+          new HTMLTextBoxElementView({ sectionView: this, element }),
+        );
+      } else if (element instanceof ImageElement) {
+        this.elementViews_.push(
+          new HTMLImageElementView({ sectionView: this, element }),
+        );
+      } else {
+        this.elementViews_.push(
+          new HTMLElementView({ sectionView: this, element }),
+        );
+      }
     });
   }
 

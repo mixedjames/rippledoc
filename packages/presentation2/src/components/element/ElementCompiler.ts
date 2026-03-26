@@ -1,4 +1,9 @@
-import { ContentDependentDimension, Element } from "./Element";
+import {
+  ContentDependentDimension,
+  Element,
+  ElementOptions,
+  ElementPhase2Constructor,
+} from "./Element";
 import { ElementBuilder } from "./ElementBuilder";
 
 import { Section } from "../section/Section";
@@ -8,6 +13,7 @@ import { containsIsolatedToken } from "../common/StringBoundaryHelper";
 
 import { Module, Expression } from "@rippledoc/expressions";
 import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
+import { PinCompiler } from "../pin/PinCompiler";
 
 export class ElementCompiler {
   // Structural relationships
@@ -32,6 +38,7 @@ export class ElementCompiler {
   private contentDependentDimensionHolder_ = { value: 42 };
 
   private scrollTriggers_: ScrollTriggerCompiler[] = [];
+  private pins_: PinCompiler[] = [];
 
   constructor(options: {
     elementBuilder: ElementBuilder;
@@ -46,6 +53,14 @@ export class ElementCompiler {
       (scrollTriggerBuilder) =>
         new ScrollTriggerCompiler({
           scrollTriggerBuilder,
+          elementCompiler: this,
+        }),
+    );
+
+    this.pins_ = this.builder_.pins.map(
+      (pinBuilder) =>
+        new PinCompiler({
+          pinBuilder,
           elementCompiler: this,
         }),
     );
@@ -73,10 +88,16 @@ export class ElementCompiler {
    */
   beforeCompile() {
     this.validateAndDerive();
+
     this.scrollTriggers_.forEach((scrollTrigger) =>
       scrollTrigger.beforeCompile(),
     );
+    this.pins_.forEach((pin) => pin.beforeCompile());
+
+    this.subclassValidateAndDerive();
   }
+
+  protected subclassValidateAndDerive() {}
 
   private validateAndDerive() {
     const xAxisStrings = this.builder_.xAxis.deriveExpressions();
@@ -118,7 +139,17 @@ export class ElementCompiler {
    * Do not duplicate that comment here - single point of truth.
    */
   compile(section: Section): Element {
-    const { element, phase2Constructor } = Element.create({
+    const { element, phase2Constructor } = Element.createElement(
+      this.buildElementOptions(section),
+    );
+
+    this.defaultPhase2Construction(element, phase2Constructor);
+
+    return element;
+  }
+
+  protected buildElementOptions(section: Section): ElementOptions {
+    return {
       section,
       name: this.builder_.name,
       contentDependentDimension: this.contentDependentDimension_,
@@ -128,8 +159,13 @@ export class ElementCompiler {
       top: this.top_!(),
       height: this.height_!(),
       bottom: this.bottom_!(),
-    });
+    };
+  }
 
+  protected defaultPhase2Construction(
+    element: Element,
+    p2c: ElementPhase2Constructor,
+  ) {
     // If we have a content-dependent dimension we must report this to the underlying
     // PresentationCompiler
     //
@@ -149,12 +185,15 @@ export class ElementCompiler {
       );
     }
 
-    phase2Constructor.setScrollTriggers(
+    // Compile & attach scroll triggers and pins
+    //
+
+    p2c.setScrollTriggers(
       this.scrollTriggers_.map((st) => st.compile(element)),
     );
 
-    phase2Constructor.complete();
+    p2c.setPins(this.pins_.map((pin) => pin.compile(element)));
 
-    return element;
+    p2c.complete();
   }
 }

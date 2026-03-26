@@ -15,9 +15,10 @@ export class HTMLPresentationDOM {
   private fragment_: DocumentFragment = document.createDocumentFragment();
   private root_: HTMLElement = document.createElement("div");
   private viewport_: HTMLElement = document.createElement("div");
-  private overlay_: HTMLElement = document.createElement("div");
   private backgrounds_: HTMLElement = document.createElement("div");
   private elements_: HTMLElement = document.createElement("div");
+  private overlay_: HTMLElement = document.createElement("div");
+  private pins_: HTMLElement = document.createElement("div");
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -36,6 +37,8 @@ export class HTMLPresentationDOM {
     this.viewport_.appendChild(this.elements_);
 
     this.root_.appendChild(this.overlay_);
+    this.overlay_.appendChild(this.pins_);
+
     this.fragment_.appendChild(this.root_);
 
     // Setup standard class names:
@@ -46,6 +49,7 @@ export class HTMLPresentationDOM {
     this.overlay_.classList.add("rdoc-overlay");
     this.backgrounds_.classList.add("rdoc-backgrounds");
     this.elements_.classList.add("rdoc-elements");
+    this.pins_.classList.add("rdoc-pins");
 
     // The client will provide a container element and will append the fragment to it.
     // We must fill the container.
@@ -56,6 +60,7 @@ export class HTMLPresentationDOM {
       this.overlay_,
       this.backgrounds_,
       this.elements_,
+      this.pins_,
     ].forEach((element) => {
       element.style.position = "absolute";
       element.style.left = "0";
@@ -138,5 +143,9 @@ export class HTMLPresentationDOM {
 
   get htmlElements(): HTMLElement {
     return this.elements_;
+  }
+
+  get htmlPins(): HTMLElement {
+    return this.pins_;
   }
 }

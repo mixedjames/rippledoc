@@ -1,5 +1,7 @@
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { ElementBuilder } from "../element/ElementBuilder";
+import { TextBoxBuilder } from "../element/textBoxElement/TextBoxElementBuilder";
+import { ImageElementBuilder } from "../element/imageElement/ImageElementBuilder";
 
 export class SectionBuilder {
   private presentation_: PresentationBuilder;
@@ -23,6 +25,18 @@ export class SectionBuilder {
 
   addElement(): ElementBuilder {
     const elementBuilder = new ElementBuilder({ section: this });
+    this.elements_.push(elementBuilder);
+    return elementBuilder;
+  }
+
+  addTextBox(): TextBoxBuilder {
+    const textBoxBuilder = new TextBoxBuilder({ section: this });
+    this.elements_.push(textBoxBuilder);
+    return textBoxBuilder;
+  }
+
+  addImageElement(): ImageElementBuilder {
+    const elementBuilder = new ImageElementBuilder({ section: this });
     this.elements_.push(elementBuilder);
     return elementBuilder;
   }
