@@ -14,6 +14,7 @@ import { containsIsolatedToken } from "../common/StringBoundaryHelper";
 import { Module, Expression } from "@rippledoc/expressions";
 import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
 import { PinCompiler } from "../pin/PinCompiler";
+import { AnimationCompiler } from "../animation/AnimationCompiler";
 
 export class ElementCompiler {
   // Structural relationships
@@ -39,6 +40,7 @@ export class ElementCompiler {
 
   private scrollTriggers_: ScrollTriggerCompiler[] = [];
   private pins_: PinCompiler[] = [];
+  private animations_: AnimationCompiler[] = [];
 
   constructor(options: {
     elementBuilder: ElementBuilder;
@@ -61,6 +63,14 @@ export class ElementCompiler {
       (pinBuilder) =>
         new PinCompiler({
           pinBuilder,
+          elementCompiler: this,
+        }),
+    );
+
+    this.animations_ = this.builder_.animations.map(
+      (animationBuilder) =>
+        new AnimationCompiler({
+          animationBuilder,
           elementCompiler: this,
         }),
     );
@@ -93,11 +103,12 @@ export class ElementCompiler {
       scrollTrigger.beforeCompile(),
     );
     this.pins_.forEach((pin) => pin.beforeCompile());
+    this.animations_.forEach((animation) => animation.beforeCompile());
 
     this.subclassValidateAndDerive();
   }
 
-  protected subclassValidateAndDerive() {}
+  protected subclassValidateAndDerive() { }
 
   private validateAndDerive() {
     const xAxisStrings = this.builder_.xAxis.deriveExpressions();
@@ -185,7 +196,7 @@ export class ElementCompiler {
       );
     }
 
-    // Compile & attach scroll triggers and pins
+    // Compile & attach scroll triggers, pins, and animations
     //
 
     p2c.setScrollTriggers(
@@ -193,6 +204,10 @@ export class ElementCompiler {
     );
 
     p2c.setPins(this.pins_.map((pin) => pin.compile(element)));
+
+    p2c.setAnimations(
+      this.animations_.map((animation) => animation.compile(element)),
+    );
 
     p2c.complete();
   }

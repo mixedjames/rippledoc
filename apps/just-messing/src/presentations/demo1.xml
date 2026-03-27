@@ -20,6 +20,8 @@
     <pin trigger="st1"/>
   </image>
 
+  <scroll-trigger name="st2" start="sectionBottom-elements.img1.height-40" end="start+50"/>
+
   <textbox l="elements.img1.right+20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb1">
   # Just messing around
   This is a presentation created to test out the XML loading functionality of the presentation

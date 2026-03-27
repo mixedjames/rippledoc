@@ -47,8 +47,6 @@ function loadSize(options: {
     throw new Error("<size> must have both w and h attributes");
   }
 
-  console.log(`Presentation size: ${width}x${height}`);
-
   presentationBuilder.basisDimensions.width = Number(width);
   presentationBuilder.basisDimensions.height = Number(height);
 }

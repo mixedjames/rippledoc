@@ -4,11 +4,14 @@ import { Section } from "../section/Section";
 import { Presentation } from "../presentation/Presentation";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { Pin } from "../pin/Pin";
+import { Animation } from "../animation/Animation";
 
 export interface ElementPhase2Constructor {
   setScrollTriggers(scrollTriggers: ScrollTrigger[]): ElementPhase2Constructor;
 
   setPins(pins: Pin[]): ElementPhase2Constructor;
+
+  setAnimations(animations: Animation[]): ElementPhase2Constructor;
 
   complete(): void;
 }
@@ -53,6 +56,11 @@ export class Element {
       return this.phase2Constructor_!;
     },
 
+    setAnimations: (animations: Animation[]) => {
+      this.animations_ = animations;
+      return this.phase2Constructor_!;
+    },
+
     complete: () => {
       this.phase2Constructor_ = null;
     },
@@ -63,6 +71,7 @@ export class Element {
   private section_: Section;
   private scrollTriggers_: ScrollTrigger[] = [];
   private pins_: Pin[] = [];
+  private animations_: Animation[] = [];
 
   // Owned properties ------------------------------------------------------------------------------
   //
@@ -146,6 +155,18 @@ export class Element {
     return scrollTrigger;
   }
 
+  get scrollTriggers(): readonly ScrollTrigger[] {
+    return this.scrollTriggers_;
+  }
+
+  get pins(): readonly Pin[] {
+    return this.pins_;
+  }
+
+  get animations(): readonly Animation[] {
+    return this.animations_;
+  }
+
   // ----------------------------------------------------------------------------------------------
   // Geometry
   // ----------------------------------------------------------------------------------------------
@@ -176,13 +197,5 @@ export class Element {
 
   get contentDependentDimension(): ContentDependentDimension {
     return this.contentDependentDimension_;
-  }
-
-  get scrollTriggers(): readonly ScrollTrigger[] {
-    return this.scrollTriggers_;
-  }
-
-  get pins(): readonly Pin[] {
-    return this.pins_;
   }
 }
