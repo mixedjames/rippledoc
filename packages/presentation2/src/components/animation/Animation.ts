@@ -30,7 +30,7 @@ export class Animation {
     return this.element_;
   }
 
-  get trigger(): ScrollTrigger {
+  get scrollTrigger(): ScrollTrigger {
     return this.trigger_;
   }
 

@@ -108,7 +108,7 @@ export class ElementCompiler {
     this.subclassValidateAndDerive();
   }
 
-  protected subclassValidateAndDerive() { }
+  protected subclassValidateAndDerive() {}
 
   private validateAndDerive() {
     const xAxisStrings = this.builder_.xAxis.deriveExpressions();

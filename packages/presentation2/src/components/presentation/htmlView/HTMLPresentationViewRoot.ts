@@ -10,6 +10,7 @@ import { HTMLScrollTriggerManager } from "../../scrollTrigger/htmlView/HTMLScrol
 import { HTMLPinManager } from "../../pin/htmlView/HTMLPinManager";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 import { Element } from "../../element/Element";
+import { HTMLAnimationManager } from "../../animation/htmlView/HTMLAnimationManager";
 
 type HTMLContentDependentElement = {
   elementView: HTMLElementView;
@@ -32,6 +33,7 @@ export class HTMLPresentationViewRoot {
   private sections_: HTMLSectionView[];
   private scrollTriggerManager_: HTMLScrollTriggerManager;
   private pinManager_: HTMLPinManager;
+  private animationManager_: HTMLAnimationManager;
 
   private sortedContentDependentElements_: HTMLContentDependentElement[];
 
@@ -86,6 +88,9 @@ export class HTMLPresentationViewRoot {
       htmlPresentationRoot: this,
     });
     this.pinManager_ = new HTMLPinManager({ htmlPresentationRoot: this });
+    this.animationManager_ = new HTMLAnimationManager({
+      htmlPresentationRoot: this,
+    });
 
     this.resizeObserver_ = new ResizeObserver(() => {
       this.layout();

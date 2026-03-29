@@ -3,6 +3,7 @@ import { ImageElementBuilder } from "../element/imageElement/ImageElementBuilder
 import { ImageFit } from "../element/imageElement/ImageElement";
 import { loadScrollTrigger } from "./loadScrollTrigger";
 import { loadPin } from "./loadPin";
+import { loadAnimation } from "./loadAnimation";
 
 export function loadImageElement(options: {
   element: Element;
@@ -52,6 +53,12 @@ export function loadImageElement(options: {
     if (tag === "pin") {
       const pinBuilder = builder.addPin();
       loadPin({ element: child, builder: pinBuilder });
+      return;
+    }
+
+    if (tag === "animation") {
+      const animationBuilder = builder.addAnimation();
+      loadAnimation({ element: child, builder: animationBuilder });
       return;
     }
   });

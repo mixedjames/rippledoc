@@ -4,6 +4,7 @@ import { parseMarkdown } from "@rippledoc/markdown";
 import { applyCommonElementAttributes } from "./loadImageElement";
 import { loadScrollTrigger } from "./loadScrollTrigger";
 import { loadPin } from "./loadPin";
+import { loadAnimation } from "./loadAnimation";
 
 export function loadTextBoxElement(options: {
   element: Element;
@@ -32,6 +33,12 @@ export function loadTextBoxElement(options: {
     if (tag === "pin") {
       const pinBuilder = builder.addPin();
       loadPin({ element: child, builder: pinBuilder });
+      return;
+    }
+
+    if (tag === "animation") {
+      const animationBuilder = builder.addAnimation();
+      loadAnimation({ element: child, builder: animationBuilder });
       return;
     }
   });
