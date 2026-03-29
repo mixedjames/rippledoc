@@ -13,8 +13,8 @@ import { containsIsolatedToken } from "../common/StringBoundaryHelper";
 
 import { Module, Expression } from "@rippledoc/expressions";
 import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
-import { PinCompiler } from "../pin/PinCompiler";
-import { AnimationCompiler } from "../animation/AnimationCompiler";
+import { PinCompiler } from "../animation/pin/PinCompiler";
+import { AnimationCompiler } from "../animation/keyFrameAnimation/AnimationCompiler";
 
 export class ElementCompiler {
   // Structural relationships

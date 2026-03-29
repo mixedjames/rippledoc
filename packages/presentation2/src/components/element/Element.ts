@@ -3,8 +3,8 @@ import { Expression } from "@rippledoc/expressions";
 import { Section } from "../section/Section";
 import { Presentation } from "../presentation/Presentation";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
-import { Pin } from "../pin/Pin";
-import { Animation } from "../animation/Animation";
+import { Pin } from "../animation/pin/Pin";
+import { Animation } from "../animation/keyFrameAnimation/Animation";
 
 export interface ElementPhase2Constructor {
   setScrollTriggers(scrollTriggers: ScrollTrigger[]): ElementPhase2Constructor;

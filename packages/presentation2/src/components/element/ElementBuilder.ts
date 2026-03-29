@@ -2,10 +2,10 @@ import { SectionBuilder } from "../section/SectionBuilder";
 import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { AxisBuilder } from "../common/AxisBuilder";
 import { ScrollTriggerBuilder } from "../scrollTrigger/ScrollTriggerBuilder";
-import { PinBuilder } from "../pin/PinBuilder";
+import { PinBuilder } from "../animation/pin/PinBuilder";
 import { SectionCompiler } from "../section/SectionCompiler";
 import { ElementCompiler } from "./ElementCompiler";
-import { AnimationBuilder } from "../animation/AnimationBuilder";
+import { AnimationBuilder } from "../animation/keyFrameAnimation/AnimationBuilder";
 
 /**
  *

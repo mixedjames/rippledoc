@@ -1,5 +1,5 @@
-import { Element } from "../element/Element";
-import { ElementCompiler } from "../element/ElementCompiler";
+import { Element } from "../../element/Element";
+import { ElementCompiler } from "../../element/ElementCompiler";
 import { Pin } from "./Pin";
 import { PinBuilder } from "./PinBuilder";
 

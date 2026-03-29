@@ -7,10 +7,10 @@ import { HTMLPresentationDOM } from "./HTMLPresentationDOM";
 import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { ScaleHelper } from "./ScaleHelper";
 import { HTMLScrollTriggerManager } from "../../scrollTrigger/htmlView/HTMLScrollTriggerManager";
-import { HTMLPinManager } from "../../pin/htmlView/HTMLPinManager";
+import { HTMLPinManager } from "../../animation/pin/htmlView/HTMLPinManager";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 import { Element } from "../../element/Element";
-import { HTMLAnimationManager } from "../../animation/htmlView/HTMLAnimationManager";
+import { HTMLAnimationManager } from "../../animation/keyFrameAnimation/htmlView/HTMLAnimationManager";
 
 type HTMLContentDependentElement = {
   elementView: HTMLElementView;

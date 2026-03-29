@@ -1,5 +1,5 @@
 import { KeyFrame } from "./KeyFrame";
-import { ElementBuilder } from "../element/ElementBuilder";
+import { ElementBuilder } from "../../element/ElementBuilder";
 
 export class AnimationBuilder {
   // Structural relationships ----------------------------------------------------------------------

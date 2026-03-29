@@ -1,7 +1,7 @@
 import { AnimationBuilder } from "./AnimationBuilder";
 import { Animation } from "./Animation";
-import { ElementCompiler } from "../element/ElementCompiler";
-import { Element } from "../element/Element";
+import { ElementCompiler } from "../../element/ElementCompiler";
+import { Element } from "../../element/Element";
 
 export class AnimationCompiler {
   // Structural relationships

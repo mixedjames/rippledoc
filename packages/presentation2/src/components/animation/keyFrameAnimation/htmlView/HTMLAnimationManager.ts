@@ -1,7 +1,7 @@
-import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
-import { Animation } from "../../animation/Animation";
-import { HTMLAnimationView } from "./HTMLAnimationView";
-import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
+import { HTMLPresentationViewRoot } from "../../../presentation/htmlView/HTMLPresentationViewRoot";
+import { Animation } from "../Animation";
+import { HTMLAnimationView } from "../htmlView/HTMLAnimationView";
+import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
 
 type AnimationPair = {
   animation: Animation;

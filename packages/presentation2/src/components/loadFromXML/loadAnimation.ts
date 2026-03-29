@@ -6,8 +6,8 @@
  *   <keyFrame position="1000" opacity="1" />
  * </animation>
  */
-import { AnimationBuilder } from "../animation/AnimationBuilder";
-import { KeyFrame } from "../animation/KeyFrame";
+import { AnimationBuilder } from "../animation/keyFrameAnimation/AnimationBuilder";
+import { KeyFrame } from "../animation/keyFrameAnimation/KeyFrame";
 
 export function loadAnimation(options: {
   element: Element;

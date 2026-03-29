@@ -1,7 +1,7 @@
-import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
+import { HTMLPresentationViewRoot } from "../../../presentation/htmlView/HTMLPresentationViewRoot";
 import { Pin } from "../../pin/Pin";
 import { HTMLPinView } from "./HTMLPinView";
-import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
+import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
 
 type PinPair = {
   pin: Pin;

@@ -1,6 +1,6 @@
 import { Animation as Presentation2Animation } from "../Animation";
 import { KeyFrame } from "../KeyFrame";
-import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
+import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
 
 const STYLE_PRECISION = 2;
 

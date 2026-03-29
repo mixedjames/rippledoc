@@ -1,4 +1,4 @@
-import { ElementBuilder } from "../element/ElementBuilder";
+import { ElementBuilder } from "../../element/ElementBuilder";
 
 /**
  *

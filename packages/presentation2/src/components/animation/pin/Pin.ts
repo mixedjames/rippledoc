@@ -1,5 +1,5 @@
-import { Element } from "../element/Element";
-import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
+import { Element } from "../../element/Element";
+import { ScrollTrigger } from "../../scrollTrigger/ScrollTrigger";
 
 export class Pin {
   private element_: Element;

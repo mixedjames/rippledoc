@@ -1,5 +1,5 @@
 import { Pin } from "../Pin";
-import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
+import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
 
 const STYLE_PRECISION = 2;
 

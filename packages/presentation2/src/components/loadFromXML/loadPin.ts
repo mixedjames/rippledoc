@@ -1,4 +1,4 @@
-import { PinBuilder } from "../pin/PinBuilder";
+import { PinBuilder } from "../animation/pin/PinBuilder";
 
 export function loadPin(options: {
   element: Element;
