@@ -9,6 +9,27 @@
 import { KeyFrameAnimationBuilder } from "../animation/keyFrameAnimation/KeyFrameAnimationBuilder";
 import { KeyFrame } from "../animation/keyFrameAnimation/KeyFrame";
 
+function getOptionalNumericKeyFrameAttribute(options: {
+  element: Element;
+  attributeName: string;
+}): number | undefined {
+  const { element, attributeName } = options;
+
+  const raw = element.getAttribute(attributeName);
+  if (raw == null || raw.trim() === "") {
+    return undefined;
+  }
+
+  const value = Number(raw);
+  if (Number.isNaN(value)) {
+    throw new Error(
+      `<keyFrame> has invalid '${attributeName}' value '${raw}'; expected a number`,
+    );
+  }
+
+  return value;
+}
+
 export function loadAnimation(options: {
   element: Element;
   builder: KeyFrameAnimationBuilder;
@@ -34,6 +55,20 @@ export function loadAnimation(options: {
   }
   builder.duration = duration;
 
+  const scrollDrivenAttr = element.getAttribute("scroll-driven");
+  if (scrollDrivenAttr != null && scrollDrivenAttr.trim() !== "") {
+    const value = scrollDrivenAttr.trim().toLowerCase();
+    if (value === "true") {
+      builder.scrollDriven = true;
+    } else if (value === "false") {
+      builder.scrollDriven = false;
+    } else {
+      throw new Error(
+        `<animation> has invalid 'scroll-driven' value '${scrollDrivenAttr}'; expected 'true' or 'false'`,
+      );
+    }
+  }
+
   let keyFrameCount = 0;
 
   Array.prototype.forEach.call(element.children, (child: Element) => {
@@ -57,22 +92,26 @@ export function loadAnimation(options: {
       );
     }
 
-    const opacityAttr = child.getAttribute("opacity");
-    let opacity: number | undefined;
+    const opacity = getOptionalNumericKeyFrameAttribute({
+      element: child,
+      attributeName: "opacity",
+    });
 
-    if (opacityAttr != null && opacityAttr.trim() !== "") {
-      const parsedOpacity = Number(opacityAttr);
-      if (Number.isNaN(parsedOpacity)) {
-        throw new Error(
-          `<keyFrame> has invalid 'opacity' value '${opacityAttr}'; expected a number`,
-        );
-      }
-      opacity = parsedOpacity;
-    }
+    const backgroundPositionX = getOptionalNumericKeyFrameAttribute({
+      element: child,
+      attributeName: "backgroundPositionX",
+    });
+
+    const backgroundPositionY = getOptionalNumericKeyFrameAttribute({
+      element: child,
+      attributeName: "backgroundPositionY",
+    });
 
     const keyFrame: KeyFrame = {
       position,
       ...(opacity !== undefined ? { opacity } : {}),
+      ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
+      ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
     };
 
     builder.addKeyFrame(keyFrame);

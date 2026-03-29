@@ -3,11 +3,11 @@ import { KeyFrame } from "../KeyFrame";
 import { HTMLAnimationView } from "../../htmlView/HTMLAnimationView";
 import { HTMLAnimationManager } from "../../htmlView/HTMLAnimationManager";
 
-const STYLE_PRECISION = 2;
-
 type CSSKeyFrame = {
   offset?: number;
   opacity?: number;
+  backgroundPositionX?: string;
+  backgroundPositionY?: string;
 };
 
 /**
@@ -54,23 +54,32 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
     this.cssAnimation_ = this.animationManager_.animationTargets.map(
       (target) => {
         const animation = target.animate(cssKeyFrames, animationConfig);
+        animation.pause();
         return animation;
       },
     );
-
-    this.pauseAnimation("start");
   }
 
   private buildKeyFrame(keyFrame: KeyFrame): CSSKeyFrame {
     const cssKeyFrame: CSSKeyFrame = {};
 
     if (keyFrame.opacity !== undefined) {
-      cssKeyFrame.opacity = Number(keyFrame.opacity.toFixed(STYLE_PRECISION));
+      cssKeyFrame.opacity = keyFrame.opacity;
+    }
+
+    if (keyFrame.backgroundPositionX !== undefined) {
+      cssKeyFrame.backgroundPositionX = `${keyFrame.backgroundPositionX}%`;
+    }
+
+    if (keyFrame.backgroundPositionY !== undefined) {
+      cssKeyFrame.backgroundPositionY = `${keyFrame.backgroundPositionY}%`;
     }
 
     if (keyFrame.position !== undefined) {
       cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
     }
+
+    console.log("Built CSS keyframe:", cssKeyFrame);
     return cssKeyFrame;
   }
 
@@ -79,6 +88,7 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
 
     this.unsubscribe_.push(
       scrollTrigger.on("start", () => {
+        console.log("Playing animation forward");
         this.playAnimation("start");
       }),
       scrollTrigger.on("reverseStart", () => {
@@ -86,17 +96,23 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       }),
       scrollTrigger.on("end", () => {
         //this.pauseAnimation("end");
+        this.playAnimation("end");
       }),
       scrollTrigger.on("reverseEnd", () => {
         //this.pauseAnimation("start");
+        this.playAnimation("start");
       }),
-      scrollTrigger.on("scroll", (/*progress: number*/) => {
-        //
+      scrollTrigger.on("scroll", (e) => {
+        this.driveAnimationToProgress(e.progress);
       }),
     );
   }
 
   private playAnimation(from: "start" | "end"): void {
+    if (this.animation_.isScrollDriven) {
+      return;
+    }
+
     this.cssAnimation_.forEach((animation) => {
       if (from === "start") {
         animation.playbackRate = 1;
@@ -109,6 +125,10 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
   }
 
   private pauseAnimation(at: "start" | "end"): void {
+    if (this.animation_.isScrollDriven) {
+      return;
+    }
+
     this.cssAnimation_.forEach((animation) => {
       animation.pause();
       if (at === "start") {
@@ -117,6 +137,18 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
         animation.currentTime = animation.effect!.getComputedTiming()
           .duration! as number;
       }
+    });
+  }
+
+  private driveAnimationToProgress(progress: number): void {
+    if (!this.animation_.isScrollDriven) {
+      return;
+    }
+
+    this.cssAnimation_.forEach((animation) => {
+      const duration = animation.effect!.getComputedTiming()
+        .duration! as number;
+      animation.currentTime = progress * duration;
     });
   }
 }

@@ -13,7 +13,7 @@ try {
     container: "#theContainer",
   });
 
-  console.log(htmlView);
+  console.log(Date.now());
 } catch (e) {
   console.error("Compilation error:", e);
 }

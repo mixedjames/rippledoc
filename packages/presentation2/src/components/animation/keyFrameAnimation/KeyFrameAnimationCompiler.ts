@@ -36,6 +36,7 @@ export class KeyFrameAnimationCompiler {
       trigger: element.scrollTriggerByName(this.builder_.scrollTrigger),
       keyFrames: this.builder_.keyFrames.map((keyFrame) => ({ ...keyFrame })),
       duration: this.builder_.duration,
+      scrollDriven: this.builder_.scrollDriven,
     });
   }
 }

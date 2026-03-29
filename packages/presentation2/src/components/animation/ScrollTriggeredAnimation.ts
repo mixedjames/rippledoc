@@ -2,8 +2,6 @@ import { Element } from "../element/Element";
 import { Section } from "../section/Section";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 
-const IS_SCROLL_DRIVEN = -1;
-
 export class ScrollTriggeredAnimation {
   // Structural relations --
   //
@@ -13,15 +11,18 @@ export class ScrollTriggeredAnimation {
   // Owned properties --
   //
   private duration_: number = 0;
+  private scrollDriven_: boolean = false;
 
   constructor(options: {
     elementOrSection: Element | Section;
     trigger: ScrollTrigger;
     duration?: number;
+    scrollDriven?: boolean;
   }) {
     this.elementOrSection_ = options.elementOrSection;
     this.trigger_ = options.trigger;
-    this.duration_ = options.duration ?? IS_SCROLL_DRIVEN;
+    this.duration_ = options.duration ?? 0;
+    this.scrollDriven_ = options.scrollDriven ?? false;
   }
 
   get element(): Element {
@@ -46,7 +47,7 @@ export class ScrollTriggeredAnimation {
   }
 
   get isScrollDriven(): boolean {
-    return this.duration_ === IS_SCROLL_DRIVEN;
+    return this.scrollDriven_;
   }
 
   get duration(): number {

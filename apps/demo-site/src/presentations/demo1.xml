@@ -1,18 +1,14 @@
 <presentation>
 
-<size w="720" h="1000" />
+<size w="600" h="800" />
 
-<section name="title" h="slideHeight">
-<textbox
-  l="20"
-  r="basisWidth-20"
-  t="sectionTop + sectionHeight/2-height/2"
-  h="100" name="tb0">
+<section name="title" b="elements.tb0.bottom+20">
+<textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
 # A RippleDoc presentation
 </textbox>
 </section>
 
-<section name="s1" h="slideHeight">
+<section name="s1" b="slideHeight">
 
   <image
     name="img1"
@@ -22,29 +18,49 @@
     >
     <scroll-trigger name="st1" start="sectionTop" end="sectionBottom-height-40"/>
     <pin trigger="st1"/>
+
+    <scroll-trigger name="st2" start="sectionBottom-height-40" end="start+150"/>
+    <animation trigger="st2" duration="2000">
+      <keyFrame position="0" opacity="1" />
+      <keyFrame position="2000" opacity="1" />
+    </animation>
+
   </image>
+
+  <scroll-trigger name="st2" start="sectionBottom-elements.img1.height-40" end="start+50"/>
 
   <textbox l="elements.img1.right+20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb1">
   # Just messing around
   This is a presentation created to test out the XML loading functionality of the presentation
   library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
-  ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-  qui officia deserunt mollit anim id est laborum.
+  ut labore et dolore magna aliqua.
 
   - Lorem ipsum dolor sit amet
     - Consectetur adipiscing elit
   - Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
 
-  > Blockquotes are also supported, and they look pretty good!
 
   1. Option 1
-  2. Option 2
+  1. Option 2
   </textbox>
 </section>
 
+<section h="slideHeight" name="s3">
+  <textbox l="0" r="basisWidth" t="sectionTop" h="slideHeight" name="fancyBG">
+    <scroll-trigger
+      name="parallaxTrigger"
+      start="sectionTop - slideHeight"
+      end="start+sectionHeight*2"/>
+    <animation trigger="parallaxTrigger" duration="2000" scroll-driven="true">
+      <keyFrame position="0" backgroundPositionX="0" />
+      <keyFrame position="2000" backgroundPositionX="50" />
+    </animation>
+  </textbox>
+
+</section>
+
 <section h="slideHeight" name="s2">
+
   <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
   # Another slide
   This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt

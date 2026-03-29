@@ -1,5 +1,5 @@
 .rdoc-root {
-  font-size: calc(var(--presentation-scale) * 18pt);
+  font-size: calc(var(--presentation-scale) * 16pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 
@@ -32,6 +32,12 @@
  */
 
 .rdoc-root .rdoc-elements .rdoc-text-box-element {
+}
+
+.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+  background-image: url("../img/stars.jpg");
+  background-size: cover;
+  background-position-x: left;
 }
 
 .rdoc-root .rdoc-elements .rdoc-image-element {

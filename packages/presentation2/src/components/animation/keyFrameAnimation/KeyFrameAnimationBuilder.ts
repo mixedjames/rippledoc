@@ -11,6 +11,7 @@ export class KeyFrameAnimationBuilder {
   // Owned properties ------------------------------------------------------------------------------
   //
   private duration_: number = 0;
+  private scrollDriven_: boolean = false;
   private keyFrames_: KeyFrame[] = [];
 
   constructor(options: { element: ElementBuilder | SectionBuilder }) {
@@ -52,5 +53,13 @@ export class KeyFrameAnimationBuilder {
 
   set duration(value: number) {
     this.duration_ = value;
+  }
+
+  get scrollDriven(): boolean {
+    return this.scrollDriven_;
+  }
+
+  set scrollDriven(value: boolean) {
+    this.scrollDriven_ = value;
   }
 }
