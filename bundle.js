@@ -16,13 +16,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/getUrl.js */ "../../node_modules/css-loader/dist/runtime/getUrl.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2__);
 // Imports
 
 
+
+var ___CSS_LOADER_URL_IMPORT_0___ = new URL(/* asset import */ __webpack_require__(/*! ../img/stars.jpg */ "./src/img/stars.jpg"), __webpack_require__.b);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+var ___CSS_LOADER_URL_REPLACEMENT_0___ = _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(___CSS_LOADER_URL_IMPORT_0___);
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
-  font-size: calc(var(--presentation-scale) * 18pt);
+  font-size: calc(var(--presentation-scale) * 16pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 
@@ -57,9 +62,15 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
 .rdoc-root .rdoc-elements .rdoc-text-box-element {
 }
 
+.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+  background-image: url(${___CSS_LOADER_URL_REPLACEMENT_0___});
+  background-size: cover;
+  background-position-x: left;
+}
+
 .rdoc-root .rdoc-elements .rdoc-image-element {
 }
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(var(--presentation-scale) * 18pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;EACE,yDAAyC;EACzC,sBAAsB;EACtB,2BAA2B;AAC7B;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(var(--presentation-scale) * 16pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {\n  background-image: url(\"../img/stars.jpg\");\n  background-size: cover;\n  background-position-x: left;\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -156,6 +167,41 @@ module.exports = function (cssWithMappingToString) {
     }
   };
   return list;
+};
+
+/***/ },
+
+/***/ "../../node_modules/css-loader/dist/runtime/getUrl.js"
+/*!************************************************************!*\
+  !*** ../../node_modules/css-loader/dist/runtime/getUrl.js ***!
+  \************************************************************/
+(module) {
+
+
+
+module.exports = function (url, options) {
+  if (!options) {
+    options = {};
+  }
+  if (!url) {
+    return url;
+  }
+  url = String(url.__esModule ? url.default : url);
+
+  // If url is already wrapped in quotes, remove them
+  if (/^['"].*['"]$/.test(url)) {
+    url = url.slice(1, -1);
+  }
+  if (options.hash) {
+    url += options.hash;
+  }
+
+  // Should url be wrapped?
+  // See https://drafts.csswg.org/css-values-3/#urls
+  if (/["'() \t\n]|(%20)/.test(url) || options.needQuotes) {
+    return "\"".concat(url.replace(/"/g, '\\"').replace(/\n/g, "\\n"), "\"");
+  }
+  return url;
 };
 
 /***/ },
@@ -2221,6 +2267,671 @@ function parseMarkdown(markdown) {
 
 /***/ },
 
+/***/ "../../packages/presentation2/src/components/animation/ScrollTriggeredAnimation.ts"
+/*!*****************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/ScrollTriggeredAnimation.ts ***!
+  \*****************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ScrollTriggeredAnimation: () => (/* binding */ ScrollTriggeredAnimation)
+/* harmony export */ });
+/* harmony import */ var _element_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/Element */ "../../packages/presentation2/src/components/element/Element.ts");
+
+class ScrollTriggeredAnimation {
+    // Structural relations --
+    //
+    elementOrSection_;
+    trigger_;
+    // Owned properties --
+    //
+    duration_ = 0;
+    scrollDriven_ = false;
+    constructor(options) {
+        this.elementOrSection_ = options.elementOrSection;
+        this.trigger_ = options.trigger;
+        this.duration_ = options.duration ?? 0;
+        this.scrollDriven_ = options.scrollDriven ?? false;
+    }
+    get element() {
+        if (!(this.elementOrSection_ instanceof _element_Element__WEBPACK_IMPORTED_MODULE_0__.Element)) {
+            throw new Error("ScrollTriggeredAnimation.element only valid for Elements but is a Section.");
+        }
+        return this.elementOrSection_;
+    }
+    get section() {
+        if (this.elementOrSection_ instanceof _element_Element__WEBPACK_IMPORTED_MODULE_0__.Element) {
+            return this.elementOrSection_.section;
+        }
+        return this.elementOrSection_;
+    }
+    get scrollTrigger() {
+        return this.trigger_;
+    }
+    get isScrollDriven() {
+        return this.scrollDriven_;
+    }
+    get duration() {
+        return this.duration_;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/htmlView/HTMLAnimationManager.ts"
+/*!**********************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/htmlView/HTMLAnimationManager.ts ***!
+  \**********************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   HTMLAnimationManager: () => (/* binding */ HTMLAnimationManager)
+/* harmony export */ });
+/* harmony import */ var _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../section/htmlView/HTMLSectionView */ "../../packages/presentation2/src/components/section/htmlView/HTMLSectionView.ts");
+/* harmony import */ var _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../element/htmlView/HTMLElementView */ "../../packages/presentation2/src/components/element/htmlView/HTMLElementView.ts");
+/* harmony import */ var _keyFrameAnimation_htmlView_HTMLKeyFrameAnimationView__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView.ts");
+/* harmony import */ var _pin_htmlView_HTMLPinView__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pin/htmlView/HTMLPinView */ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts");
+/* harmony import */ var _keyFrameAnimation_KeyFrameAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../keyFrameAnimation/KeyFrameAnimation */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimation.ts");
+
+
+
+
+
+class HTMLAnimationManager {
+    parent_;
+    pinViews_ = [];
+    animationViews_ = [];
+    constructor(options) {
+        this.parent_ = options.parent;
+        this.buildPins();
+        this.buildAnimations();
+    }
+    buildPins() {
+        this.pinViews_.length = 0;
+        const pins = this.getPinsFromParent();
+        pins.forEach((pin) => {
+            // We know that the parent must be an HTMLElementView if it has pins, so we can safely cast
+            // here.
+            this.pinViews_.push(new _pin_htmlView_HTMLPinView__WEBPACK_IMPORTED_MODULE_3__.HTMLPinView({ pin, elementView: this.parent_ }));
+        });
+    }
+    getPinsFromParent() {
+        if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
+            // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
+            // null checks in the caller.
+            return [];
+        }
+        else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
+            return this.parent_.element.pins;
+        }
+        else {
+            throw new Error("Unsupported parent type for HTMLAnimationManager");
+        }
+    }
+    buildAnimations() {
+        const animationViews = this.animationViews_;
+        animationViews.length = 0;
+        const animations = this.getAnimationsFromParent();
+        animations.forEach((animation) => {
+            // FIXME: We need a better way to determine the type of animation here
+            //        Possible some sort of typesafe visitor pattern on the ScrollTriggeredAnimation class?
+            if (animation instanceof _keyFrameAnimation_KeyFrameAnimation__WEBPACK_IMPORTED_MODULE_4__.KeyFrameAnimation) {
+                animationViews.push(new _keyFrameAnimation_htmlView_HTMLKeyFrameAnimationView__WEBPACK_IMPORTED_MODULE_2__.HTMLKeyFrameAnimationView({ animation, animationManager: this }));
+            }
+            else {
+                throw new Error("Unsupported animation type in HTMLAnimationManager");
+            }
+        });
+    }
+    getAnimationsFromParent() {
+        if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
+            // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
+            // null checks in the caller.
+            return this.parent_.section.animations;
+        }
+        else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
+            return this.parent_.element.animations;
+        }
+        else {
+            throw new Error("Unsupported parent type for HTMLAnimationManager");
+        }
+    }
+    layout() {
+        this.pinViews_.forEach((pinView) => {
+            pinView.layout();
+        });
+        this.animationViews_.forEach((animationView) => {
+            animationView.layout();
+        });
+    }
+    disconnect() {
+        this.pinViews_.forEach((pinView) => {
+            pinView.disconnect();
+        });
+        this.pinViews_.length = 0;
+        this.animationViews_.forEach((animationView) => {
+            animationView.disconnect();
+        });
+        this.animationViews_.length = 0;
+    }
+    /**
+     * Gets the list of HTMLElements that should be targets for animations.
+     *
+     * This solves two problems:
+     * 1. Sections vs Elements
+     * 2. Pinned Elements
+     *
+     * Sections:
+     * - Are never pinned
+     * - Are animated via their background element, not their content element
+     *
+     * Elements:
+     * - Can be pinned, in which case we need to animate the clone, and the original element
+     * - Are animated via their content element
+     */
+    get animationTargets() {
+        if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
+            return [this.parent_.htmlBackgroundElement];
+        }
+        return [
+            this.parent_.htmlElement,
+            ...this.pinViews_.map((pinView) => pinView.clonedElement),
+        ];
+    }
+    get animatableParent() {
+        return this.parent_;
+    }
+    get pinViews() {
+        return this.pinViews_;
+    }
+    get animationViews() {
+        return this.animationViews_;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimation.ts"
+/*!****************************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimation.ts ***!
+  \****************************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   KeyFrameAnimation: () => (/* binding */ KeyFrameAnimation)
+/* harmony export */ });
+/* harmony import */ var _ScrollTriggeredAnimation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ScrollTriggeredAnimation */ "../../packages/presentation2/src/components/animation/ScrollTriggeredAnimation.ts");
+
+class KeyFrameAnimation extends _ScrollTriggeredAnimation__WEBPACK_IMPORTED_MODULE_0__.ScrollTriggeredAnimation {
+    // Owned properties --
+    //
+    keyFrames_ = [];
+    constructor(options) {
+        super(options);
+        this.keyFrames_ = options.keyFrames;
+    }
+    get keyFrames() {
+        return this.keyFrames_;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationBuilder.ts"
+/*!***********************************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationBuilder.ts ***!
+  \***********************************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   KeyFrameAnimationBuilder: () => (/* binding */ KeyFrameAnimationBuilder)
+/* harmony export */ });
+class KeyFrameAnimationBuilder {
+    // Structural relationships ----------------------------------------------------------------------
+    //
+    element_;
+    scrollTrigger_ = "";
+    // Owned properties ------------------------------------------------------------------------------
+    //
+    duration_ = 0;
+    scrollDriven_ = false;
+    keyFrames_ = [];
+    constructor(options) {
+        this.element_ = options.element;
+    }
+    // ----------------------------------------------------------------------------------------------
+    // Structural relationships
+    // ----------------------------------------------------------------------------------------------
+    get elementOrSection() {
+        return this.element_;
+    }
+    get scrollTrigger() {
+        return this.scrollTrigger_;
+    }
+    set scrollTrigger(value) {
+        this.scrollTrigger_ = value;
+    }
+    // ----------------------------------------------------------------------------------------------
+    // Owned properties
+    // ----------------------------------------------------------------------------------------------
+    addKeyFrame(keyFrame) {
+        this.keyFrames_.push({ ...keyFrame });
+        return this;
+    }
+    get keyFrames() {
+        return this.keyFrames_;
+    }
+    get duration() {
+        return this.duration_;
+    }
+    set duration(value) {
+        this.duration_ = value;
+    }
+    get scrollDriven() {
+        return this.scrollDriven_;
+    }
+    set scrollDriven(value) {
+        this.scrollDriven_ = value;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationCompiler.ts"
+/*!************************************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationCompiler.ts ***!
+  \************************************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   KeyFrameAnimationCompiler: () => (/* binding */ KeyFrameAnimationCompiler)
+/* harmony export */ });
+/* harmony import */ var _KeyFrameAnimation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./KeyFrameAnimation */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimation.ts");
+
+class KeyFrameAnimationCompiler {
+    // Structural relationships
+    //
+    builder_;
+    elementOrSectionCompiler_;
+    // Owned properties
+    //
+    constructor(options) {
+        this.builder_ = options.animationBuilder;
+        this.elementOrSectionCompiler_ = options.elementOrSectionCompiler;
+    }
+    beforeCompile() {
+        this.validateAndDerive();
+    }
+    validateAndDerive() {
+        // No validation or derivation for now.
+    }
+    compile(element) {
+        return new _KeyFrameAnimation__WEBPACK_IMPORTED_MODULE_0__.KeyFrameAnimation({
+            elementOrSection: element,
+            trigger: element.scrollTriggerByName(this.builder_.scrollTrigger),
+            keyFrames: this.builder_.keyFrames.map((keyFrame) => ({ ...keyFrame })),
+            duration: this.builder_.duration,
+            scrollDriven: this.builder_.scrollDriven,
+        });
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView.ts"
+/*!*********************************************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView.ts ***!
+  \*********************************************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   HTMLKeyFrameAnimationView: () => (/* binding */ HTMLKeyFrameAnimationView)
+/* harmony export */ });
+/**
+ *
+ */
+class HTMLKeyFrameAnimationView {
+    animation_;
+    cssAnimation_;
+    animationManager_;
+    unsubscribe_ = [];
+    constructor(options) {
+        this.animation_ = options.animation;
+        this.animationManager_ = options.animationManager;
+        this.buildDOM();
+        this.attachEventListeners();
+    }
+    disconnect() {
+        this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
+        this.unsubscribe_.length = 0;
+    }
+    layout() {
+        // FIXME: need to react to layout changes
+    }
+    buildDOM() {
+        const cssKeyFrames = this.animation_.keyFrames.map((keyFrame) => this.buildKeyFrame(keyFrame));
+        const animationConfig = {
+            duration: this.animation_.duration,
+            fill: "forwards",
+            direction: "normal",
+        };
+        this.cssAnimation_ = this.animationManager_.animationTargets.map((target) => {
+            const animation = target.animate(cssKeyFrames, animationConfig);
+            animation.pause();
+            return animation;
+        });
+    }
+    buildKeyFrame(keyFrame) {
+        const cssKeyFrame = {};
+        if (keyFrame.opacity !== undefined) {
+            cssKeyFrame.opacity = keyFrame.opacity;
+        }
+        if (keyFrame.backgroundPositionX !== undefined) {
+            cssKeyFrame.backgroundPositionX = `${keyFrame.backgroundPositionX}%`;
+        }
+        if (keyFrame.backgroundPositionY !== undefined) {
+            cssKeyFrame.backgroundPositionY = `${keyFrame.backgroundPositionY}%`;
+        }
+        if (keyFrame.position !== undefined) {
+            cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
+        }
+        console.log("Built CSS keyframe:", cssKeyFrame);
+        return cssKeyFrame;
+    }
+    attachEventListeners() {
+        const scrollTrigger = this.animation_.scrollTrigger;
+        this.unsubscribe_.push(scrollTrigger.on("start", () => {
+            console.log("Playing animation forward");
+            this.playAnimation("start");
+        }), scrollTrigger.on("reverseStart", () => {
+            this.playAnimation("end");
+        }), scrollTrigger.on("end", () => {
+            //this.pauseAnimation("end");
+            this.playAnimation("end");
+        }), scrollTrigger.on("reverseEnd", () => {
+            //this.pauseAnimation("start");
+            this.playAnimation("start");
+        }), scrollTrigger.on("scroll", (e) => {
+            this.driveAnimationToProgress(e.progress);
+        }));
+    }
+    playAnimation(from) {
+        if (this.animation_.isScrollDriven) {
+            return;
+        }
+        this.cssAnimation_.forEach((animation) => {
+            if (from === "start") {
+                animation.playbackRate = 1;
+            }
+            else {
+                animation.playbackRate = -1;
+            }
+            animation.play();
+        });
+    }
+    pauseAnimation(at) {
+        if (this.animation_.isScrollDriven) {
+            return;
+        }
+        this.cssAnimation_.forEach((animation) => {
+            animation.pause();
+            if (at === "start") {
+                animation.currentTime = 0;
+            }
+            else {
+                animation.currentTime = animation.effect.getComputedTiming()
+                    .duration;
+            }
+        });
+    }
+    driveAnimationToProgress(progress) {
+        if (!this.animation_.isScrollDriven) {
+            return;
+        }
+        this.cssAnimation_.forEach((animation) => {
+            const duration = animation.effect.getComputedTiming()
+                .duration;
+            animation.currentTime = progress * duration;
+        });
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/pin/Pin.ts"
+/*!************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/pin/Pin.ts ***!
+  \************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Pin: () => (/* binding */ Pin)
+/* harmony export */ });
+class Pin {
+    element_;
+    scrollTrigger_;
+    constructor(options) {
+        this.element_ = options.element;
+        this.scrollTrigger_ = options.scrollTrigger;
+    }
+    get element() {
+        return this.element_;
+    }
+    get scrollTrigger() {
+        return this.scrollTrigger_;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/pin/PinBuilder.ts"
+/*!*******************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/pin/PinBuilder.ts ***!
+  \*******************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PinBuilder: () => (/* binding */ PinBuilder)
+/* harmony export */ });
+/**
+ *
+ */
+class PinBuilder {
+    element_;
+    scrollTrigger_ = null;
+    constructor(options) {
+        this.element_ = options.element;
+    }
+    get element() {
+        return this.element_;
+    }
+    get scrollTrigger() {
+        if (!this.scrollTrigger_) {
+            throw new Error("Pin must have a scroll trigger to get it.");
+        }
+        return this.scrollTrigger_;
+    }
+    set scrollTrigger(value) {
+        this.scrollTrigger_ = value;
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/pin/PinCompiler.ts"
+/*!********************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/pin/PinCompiler.ts ***!
+  \********************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PinCompiler: () => (/* binding */ PinCompiler)
+/* harmony export */ });
+/* harmony import */ var _Pin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Pin */ "../../packages/presentation2/src/components/animation/pin/Pin.ts");
+
+class PinCompiler {
+    // Structural relationships
+    //
+    builder_;
+    elementCompiler_;
+    // Owned properties
+    //
+    constructor(options) {
+        this.builder_ = options.pinBuilder;
+        this.elementCompiler_ = options.elementCompiler;
+    }
+    // ----------------------------------------------------------------------------------------------
+    // Pre-compilation steps
+    // ----------------------------------------------------------------------------------------------
+    /**
+     * See Presentation.beforeCompile() for symantics of this method & pattern of implementation
+     * Do not duplicate that comment here - single point of truth.
+     */
+    beforeCompile() {
+        this.validateAndDerive();
+    }
+    validateAndDerive() {
+        // Nothing yet
+    }
+    // ----------------------------------------------------------------------------------------------
+    // Compilation steps
+    // ----------------------------------------------------------------------------------------------
+    /**
+     * See Presentation.compile() for symantics of this method & pattern of implementation
+     * Do not duplicate that comment here - single point of truth.
+     */
+    compile(element) {
+        return new _Pin__WEBPACK_IMPORTED_MODULE_0__.Pin({
+            element,
+            scrollTrigger: element.scrollTriggerByName(this.builder_.scrollTrigger),
+        });
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts"
+/*!*****************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts ***!
+  \*****************************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   HTMLPinView: () => (/* binding */ HTMLPinView)
+/* harmony export */ });
+const STYLE_PRECISION = 2;
+/**
+ *
+ */
+class HTMLPinView {
+    pin_;
+    elementView_;
+    unsubscribe_ = [];
+    clone_;
+    target_;
+    constructor(options) {
+        this.pin_ = options.pin;
+        this.elementView_ = options.elementView;
+        this.buildDOM();
+        this.attachEventListeners();
+    }
+    disconnect() {
+        this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
+        this.unsubscribe_.length = 0;
+        this.clone_.remove();
+    }
+    layout() {
+        // FIXME: need to react to layout changes
+    }
+    get clonedElement() {
+        return this.clone_;
+    }
+    buildDOM() {
+        // Placeholder
+        //
+        this.target_ = this.elementView_.htmlElement;
+        // Clone
+        //
+        this.clone_ = this.elementView_.htmlElement.cloneNode(true);
+        this.clone_.style.position = "absolute";
+        this.clone_.style.visibility = "hidden";
+        this.clone_.classList.add("rdoc-pin-clone");
+        this.elementView_.presentationView.htmlPins.appendChild(this.clone_);
+    }
+    attachEventListeners() {
+        const scrollTrigger = this.pin_.scrollTrigger;
+        this.unsubscribe_.push(scrollTrigger.on("start", () => {
+            this.pinForward();
+        }), scrollTrigger.on("reverseStart", () => {
+            this.pinReverse();
+        }), scrollTrigger.on("end", () => {
+            this.unpinForward();
+        }), scrollTrigger.on("reverseEnd", () => {
+            this.unpinReverse();
+        }));
+    }
+    pinForward() {
+        this.positionClone();
+        this.clone_.style.visibility = "visible";
+        this.target_.style.visibility = "hidden";
+    }
+    pinReverse() {
+        this.positionClone();
+        this.clone_.style.visibility = "visible";
+        this.target_.style.visibility = "hidden";
+    }
+    unpinForward() {
+        // We're carefull to position the target element based on the perfect position as per the scroll
+        // trigger, rather than the current scroll position. Scrolling at speed might have caused the
+        // end trigger to have been missed.
+        //
+        const scale = this.elementView_.presentationView.physicalDimensions.scale;
+        const dy = scale * (this.pin_.scrollTrigger.end - this.pin_.scrollTrigger.start);
+        this.target_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+        this.target_.style.zIndex = "1000";
+        this.target_.style.visibility = "visible";
+        this.clone_.style.visibility = "hidden";
+    }
+    unpinReverse() {
+        this.target_.style.transform = `translateY(0px)`;
+        this.target_.style.visibility = "visible";
+        this.clone_.style.visibility = "hidden";
+    }
+    positionClone() {
+        const targetRect = this.target_.getBoundingClientRect();
+        //const top = targetRect.top - presentationRect.top;
+        const scale = this.elementView_.presentationView.physicalDimensions.scale;
+        const top = scale * (this.elementView_.element.top - this.pin_.scrollTrigger.start);
+        const left = targetRect.left;
+        this.clone_.style.top = `${top.toFixed(STYLE_PRECISION)}px`;
+        this.clone_.style.left = `${left.toFixed(STYLE_PRECISION)}px`;
+        this.clone_.style.width = `${targetRect.width.toFixed(STYLE_PRECISION)}px`;
+        this.clone_.style.height = `${targetRect.height.toFixed(STYLE_PRECISION)}px`;
+    }
+}
+
+
+/***/ },
+
 /***/ "../../packages/presentation2/src/components/common/AxisBuilder.ts"
 /*!*************************************************************************!*\
   !*** ../../packages/presentation2/src/components/common/AxisBuilder.ts ***!
@@ -2545,6 +3256,10 @@ class Element {
             this.pins_ = pins;
             return this.phase2Constructor_;
         },
+        setAnimations: (animations) => {
+            this.animations_ = animations;
+            return this.phase2Constructor_;
+        },
         complete: () => {
             this.phase2Constructor_ = null;
         },
@@ -2554,6 +3269,7 @@ class Element {
     section_;
     scrollTriggers_ = [];
     pins_ = [];
+    animations_ = [];
     // Owned properties ------------------------------------------------------------------------------
     //
     name_;
@@ -2613,6 +3329,15 @@ class Element {
         }
         return scrollTrigger;
     }
+    get scrollTriggers() {
+        return this.scrollTriggers_;
+    }
+    get pins() {
+        return this.pins_;
+    }
+    get animations() {
+        return this.animations_;
+    }
     // ----------------------------------------------------------------------------------------------
     // Geometry
     // ----------------------------------------------------------------------------------------------
@@ -2637,12 +3362,6 @@ class Element {
     get contentDependentDimension() {
         return this.contentDependentDimension_;
     }
-    get scrollTriggers() {
-        return this.scrollTriggers_;
-    }
-    get pins() {
-        return this.pins_;
-    }
 }
 
 
@@ -2660,8 +3379,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _common_AxisBuilder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/AxisBuilder */ "../../packages/presentation2/src/components/common/AxisBuilder.ts");
 /* harmony import */ var _scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scrollTrigger/ScrollTriggerBuilder */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerBuilder.ts");
-/* harmony import */ var _pin_PinBuilder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../pin/PinBuilder */ "../../packages/presentation2/src/components/pin/PinBuilder.ts");
+/* harmony import */ var _animation_pin_PinBuilder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../animation/pin/PinBuilder */ "../../packages/presentation2/src/components/animation/pin/PinBuilder.ts");
 /* harmony import */ var _ElementCompiler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ElementCompiler */ "../../packages/presentation2/src/components/element/ElementCompiler.ts");
+/* harmony import */ var _animation_keyFrameAnimation_KeyFrameAnimationBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../animation/keyFrameAnimation/KeyFrameAnimationBuilder */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationBuilder.ts");
+
 
 
 
@@ -2684,6 +3405,7 @@ class ElementBuilder {
     name_ = "";
     scrollTriggers_ = [];
     pins_ = [];
+    animations_ = [];
     // Order of axis components is key here: AxisBuilder.deriveExpressions depends on it
     // DO NOT CHANGE
     xAxis_ = new _common_AxisBuilder__WEBPACK_IMPORTED_MODULE_0__.AxisBuilder(["left", "width", "right"]);
@@ -2711,16 +3433,24 @@ class ElementBuilder {
         this.scrollTriggers_.push(scrollTrigger);
         return scrollTrigger;
     }
-    addPin() {
-        const pin = new _pin_PinBuilder__WEBPACK_IMPORTED_MODULE_2__.PinBuilder({ element: this });
-        this.pins_.push(pin);
-        return pin;
-    }
     get scrollTriggers() {
         return this.scrollTriggers_;
     }
+    addPin() {
+        const pin = new _animation_pin_PinBuilder__WEBPACK_IMPORTED_MODULE_2__.PinBuilder({ element: this });
+        this.pins_.push(pin);
+        return pin;
+    }
     get pins() {
         return this.pins_;
+    }
+    addAnimation() {
+        const animation = new _animation_keyFrameAnimation_KeyFrameAnimationBuilder__WEBPACK_IMPORTED_MODULE_4__.KeyFrameAnimationBuilder({ element: this });
+        this.animations_.push(animation);
+        return animation;
+    }
+    get animations() {
+        return this.animations_;
     }
     // ----------------------------------------------------------------------------------------------
     // Owned properties
@@ -2762,7 +3492,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Element */ "../../packages/presentation2/src/components/element/Element.ts");
 /* harmony import */ var _common_StringBoundaryHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/StringBoundaryHelper */ "../../packages/presentation2/src/components/common/StringBoundaryHelper.ts");
 /* harmony import */ var _scrollTrigger_ScrollTriggerCompiler__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../scrollTrigger/ScrollTriggerCompiler */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerCompiler.ts");
-/* harmony import */ var _pin_PinCompiler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pin/PinCompiler */ "../../packages/presentation2/src/components/pin/PinCompiler.ts");
+/* harmony import */ var _animation_pin_PinCompiler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../animation/pin/PinCompiler */ "../../packages/presentation2/src/components/animation/pin/PinCompiler.ts");
+/* harmony import */ var _animation_keyFrameAnimation_KeyFrameAnimationCompiler__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../animation/keyFrameAnimation/KeyFrameAnimationCompiler */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimationCompiler.ts");
+
 
 
 
@@ -2785,6 +3517,7 @@ class ElementCompiler {
     contentDependentDimensionHolder_ = { value: 42 };
     scrollTriggers_ = [];
     pins_ = [];
+    animations_ = [];
     constructor(options) {
         this.builder_ = options.elementBuilder;
         this.sectionCompiler_ = options.sectionCompiler;
@@ -2793,9 +3526,13 @@ class ElementCompiler {
             scrollTriggerBuilder,
             elementCompiler: this,
         }));
-        this.pins_ = this.builder_.pins.map((pinBuilder) => new _pin_PinCompiler__WEBPACK_IMPORTED_MODULE_3__.PinCompiler({
+        this.pins_ = this.builder_.pins.map((pinBuilder) => new _animation_pin_PinCompiler__WEBPACK_IMPORTED_MODULE_3__.PinCompiler({
             pinBuilder,
             elementCompiler: this,
+        }));
+        this.animations_ = this.builder_.animations.map((animationBuilder) => new _animation_keyFrameAnimation_KeyFrameAnimationCompiler__WEBPACK_IMPORTED_MODULE_4__.KeyFrameAnimationCompiler({
+            animationBuilder,
+            elementOrSectionCompiler: this,
         }));
     }
     // ----------------------------------------------------------------------------------------------
@@ -2818,6 +3555,7 @@ class ElementCompiler {
         this.validateAndDerive();
         this.scrollTriggers_.forEach((scrollTrigger) => scrollTrigger.beforeCompile());
         this.pins_.forEach((pin) => pin.beforeCompile());
+        this.animations_.forEach((animation) => animation.beforeCompile());
         this.subclassValidateAndDerive();
     }
     subclassValidateAndDerive() { }
@@ -2876,10 +3614,11 @@ class ElementCompiler {
         else if (this.contentDependentDimension_ === _Element__WEBPACK_IMPORTED_MODULE_0__.ContentDependentDimension.Height) {
             this.sectionCompiler_.presentationCompiler.declareContentDependentElement(element, this.height_(), this.contentDependentDimensionHolder_);
         }
-        // Compile & attach scroll triggers and pins
+        // Compile & attach scroll triggers, pins, and animations
         //
         p2c.setScrollTriggers(this.scrollTriggers_.map((st) => st.compile(element)));
         p2c.setPins(this.pins_.map((pin) => pin.compile(element)));
+        p2c.setAnimations(this.animations_.map((animation) => animation.compile(element)));
         p2c.complete();
     }
 }
@@ -2897,7 +3636,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   HTMLElementView: () => (/* binding */ HTMLElementView)
 /* harmony export */ });
-/* harmony import */ var _Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Element */ "../../packages/presentation2/src/components/element/Element.ts");
+/* harmony import */ var _animation_htmlView_HTMLAnimationManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../animation/htmlView/HTMLAnimationManager */ "../../packages/presentation2/src/components/animation/htmlView/HTMLAnimationManager.ts");
+/* harmony import */ var _Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Element */ "../../packages/presentation2/src/components/element/Element.ts");
+
 
 /**
  *
@@ -2922,6 +3663,7 @@ class HTMLElementView {
     element_;
     sectionView_;
     htmlElement_;
+    animationManager_;
     constructor(options) {
         this.sectionView_ = options.sectionView;
         this.element_ = options.element;
@@ -2930,7 +3672,9 @@ class HTMLElementView {
             this.createDOM();
         }
     }
-    disconnect() { }
+    disconnect() {
+        this.animationManager_.disconnect();
+    }
     // ----------------------------------------------------------------------------------------------
     // Structural relationships
     // ----------------------------------------------------------------------------------------------
@@ -2938,6 +3682,12 @@ class HTMLElementView {
         return this.element_;
     }
     get htmlElement() {
+        return this.htmlElement_;
+    }
+    get foregroundHTMLElement() {
+        return this.htmlElement_;
+    }
+    get backgroundHTMLElement() {
         return this.htmlElement_;
     }
     get sectionView() {
@@ -2958,6 +3708,7 @@ class HTMLElementView {
         }
         this.sectionView.htmlContentElement.appendChild(this.htmlElement_);
         this.subclassCreateDOM();
+        this.animationManager_ = new _animation_htmlView_HTMLAnimationManager__WEBPACK_IMPORTED_MODULE_0__.HTMLAnimationManager({ parent: this });
     }
     subclassCreateDOM() { }
     /**
@@ -2969,11 +3720,11 @@ class HTMLElementView {
      */
     applyContentDependentSize() {
         const scale = this.presentationView.physicalDimensions.scale;
-        if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_0__.ContentDependentDimension.Width) {
+        if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_1__.ContentDependentDimension.Width) {
             this.htmlElement_.style.width = "";
             this.htmlElement_.style.height = `${this.element.height * scale}px`;
         }
-        else if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_0__.ContentDependentDimension.Height) {
+        else if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_1__.ContentDependentDimension.Height) {
             this.htmlElement_.style.width = `${this.element.width * scale}px`;
             this.htmlElement_.style.height = "";
         }
@@ -2987,10 +3738,10 @@ class HTMLElementView {
     measureContentDependentSize() {
         const scale = this.presentationView.physicalDimensions.scale;
         const size = this.htmlElement_.getBoundingClientRect();
-        if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_0__.ContentDependentDimension.Width) {
+        if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_1__.ContentDependentDimension.Width) {
             return size.width / scale;
         }
-        else if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_0__.ContentDependentDimension.Height) {
+        else if (this.element.contentDependentDimension == _Element__WEBPACK_IMPORTED_MODULE_1__.ContentDependentDimension.Height) {
             return size.height / scale;
         }
         throw new Error("Element does not have a content dependent dimension");
@@ -3002,6 +3753,7 @@ class HTMLElementView {
         this.htmlElement_.style.width = `${this.element.width * scale}px`;
         this.htmlElement_.style.height = `${this.element.height * scale}px`;
         this.subclassLayout();
+        this.animationManager_.layout();
     }
     subclassLayout() { }
 }
@@ -3392,6 +4144,102 @@ function parseXMLDocument(xmlText) {
 
 /***/ },
 
+/***/ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts"
+/*!********************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts ***!
+  \********************************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadAnimation: () => (/* binding */ loadAnimation)
+/* harmony export */ });
+function getOptionalNumericKeyFrameAttribute(options) {
+    const { element, attributeName } = options;
+    const raw = element.getAttribute(attributeName);
+    if (raw == null || raw.trim() === "") {
+        return undefined;
+    }
+    const value = Number(raw);
+    if (Number.isNaN(value)) {
+        throw new Error(`<keyFrame> has invalid '${attributeName}' value '${raw}'; expected a number`);
+    }
+    return value;
+}
+function loadAnimation(options) {
+    const { element, builder } = options;
+    const triggerAttr = element.getAttribute("trigger");
+    if (!triggerAttr || triggerAttr.trim() === "") {
+        throw new Error("<animation> must have a non-empty 'trigger' attribute");
+    }
+    builder.scrollTrigger = triggerAttr.trim();
+    const durationAttr = element.getAttribute("duration");
+    if (!durationAttr || durationAttr.trim() === "") {
+        throw new Error("<animation> must have a non-empty 'duration' attribute");
+    }
+    const duration = Number(durationAttr);
+    if (Number.isNaN(duration)) {
+        throw new Error(`<animation> has invalid 'duration' value '${durationAttr}'; expected a number`);
+    }
+    builder.duration = duration;
+    const scrollDrivenAttr = element.getAttribute("scroll-driven");
+    if (scrollDrivenAttr != null && scrollDrivenAttr.trim() !== "") {
+        const value = scrollDrivenAttr.trim().toLowerCase();
+        if (value === "true") {
+            builder.scrollDriven = true;
+        }
+        else if (value === "false") {
+            builder.scrollDriven = false;
+        }
+        else {
+            throw new Error(`<animation> has invalid 'scroll-driven' value '${scrollDrivenAttr}'; expected 'true' or 'false'`);
+        }
+    }
+    let keyFrameCount = 0;
+    Array.prototype.forEach.call(element.children, (child) => {
+        const tag = child.tagName.toLowerCase();
+        if (tag !== "keyframe") {
+            // Unknown child elements are ignored for now. Consider tightening this
+            // behaviour once the XML schema is stable.
+            return;
+        }
+        const positionAttr = child.getAttribute("position");
+        if (!positionAttr || positionAttr.trim() === "") {
+            throw new Error("<keyFrame> must have a non-empty 'position' attribute");
+        }
+        const position = Number(positionAttr);
+        if (Number.isNaN(position)) {
+            throw new Error(`<keyFrame> has invalid 'position' value '${positionAttr}'; expected a number`);
+        }
+        const opacity = getOptionalNumericKeyFrameAttribute({
+            element: child,
+            attributeName: "opacity",
+        });
+        const backgroundPositionX = getOptionalNumericKeyFrameAttribute({
+            element: child,
+            attributeName: "backgroundPositionX",
+        });
+        const backgroundPositionY = getOptionalNumericKeyFrameAttribute({
+            element: child,
+            attributeName: "backgroundPositionY",
+        });
+        const keyFrame = {
+            position,
+            ...(opacity !== undefined ? { opacity } : {}),
+            ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
+            ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
+        };
+        builder.addKeyFrame(keyFrame);
+        keyFrameCount += 1;
+    });
+    if (keyFrameCount === 0) {
+        throw new Error("<animation> must have at least one <keyFrame> child");
+    }
+}
+
+
+/***/ },
+
 /***/ "../../packages/presentation2/src/components/loadFromXML/loadElement.ts"
 /*!******************************************************************************!*\
   !*** ../../packages/presentation2/src/components/loadFromXML/loadElement.ts ***!
@@ -3465,6 +4313,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/imageElement/ImageElement */ "../../packages/presentation2/src/components/element/imageElement/ImageElement.ts");
 /* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
 /* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
+/* harmony import */ var _loadAnimation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadAnimation */ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts");
+
 
 
 
@@ -3504,6 +4354,11 @@ function loadImageElement(options) {
         if (tag === "pin") {
             const pinBuilder = builder.addPin();
             (0,_loadPin__WEBPACK_IMPORTED_MODULE_2__.loadPin)({ element: child, builder: pinBuilder });
+            return;
+        }
+        if (tag === "animation") {
+            const animationBuilder = builder.addAnimation();
+            (0,_loadAnimation__WEBPACK_IMPORTED_MODULE_3__.loadAnimation)({ element: child, builder: animationBuilder });
             return;
         }
     });
@@ -3607,7 +4462,6 @@ function loadSize(options) {
     if (!width || !height) {
         throw new Error("<size> must have both w and h attributes");
     }
-    console.log(`Presentation size: ${width}x${height}`);
     presentationBuilder.basisDimensions.width = Number(width);
     presentationBuilder.basisDimensions.height = Number(height);
 }
@@ -3719,6 +4573,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _loadImageElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadImageElement */ "../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts");
 /* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
 /* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
+/* harmony import */ var _loadAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./loadAnimation */ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts");
+
 
 
 
@@ -3742,265 +4598,12 @@ function loadTextBoxElement(options) {
             (0,_loadPin__WEBPACK_IMPORTED_MODULE_3__.loadPin)({ element: child, builder: pinBuilder });
             return;
         }
-    });
-}
-
-
-/***/ },
-
-/***/ "../../packages/presentation2/src/components/pin/Pin.ts"
-/*!**************************************************************!*\
-  !*** ../../packages/presentation2/src/components/pin/Pin.ts ***!
-  \**************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Pin: () => (/* binding */ Pin)
-/* harmony export */ });
-class Pin {
-    element_;
-    scrollTrigger_;
-    constructor(options) {
-        this.element_ = options.element;
-        this.scrollTrigger_ = options.scrollTrigger;
-    }
-    get element() {
-        return this.element_;
-    }
-    get scrollTrigger() {
-        return this.scrollTrigger_;
-    }
-}
-
-
-/***/ },
-
-/***/ "../../packages/presentation2/src/components/pin/PinBuilder.ts"
-/*!*********************************************************************!*\
-  !*** ../../packages/presentation2/src/components/pin/PinBuilder.ts ***!
-  \*********************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   PinBuilder: () => (/* binding */ PinBuilder)
-/* harmony export */ });
-/**
- *
- */
-class PinBuilder {
-    element_;
-    scrollTrigger_ = null;
-    constructor(options) {
-        this.element_ = options.element;
-    }
-    get element() {
-        return this.element_;
-    }
-    get scrollTrigger() {
-        if (!this.scrollTrigger_) {
-            throw new Error("Pin must have a scroll trigger to get it.");
+        if (tag === "animation") {
+            const animationBuilder = builder.addAnimation();
+            (0,_loadAnimation__WEBPACK_IMPORTED_MODULE_4__.loadAnimation)({ element: child, builder: animationBuilder });
+            return;
         }
-        return this.scrollTrigger_;
-    }
-    set scrollTrigger(value) {
-        this.scrollTrigger_ = value;
-    }
-}
-
-
-/***/ },
-
-/***/ "../../packages/presentation2/src/components/pin/PinCompiler.ts"
-/*!**********************************************************************!*\
-  !*** ../../packages/presentation2/src/components/pin/PinCompiler.ts ***!
-  \**********************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   PinCompiler: () => (/* binding */ PinCompiler)
-/* harmony export */ });
-/* harmony import */ var _Pin__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Pin */ "../../packages/presentation2/src/components/pin/Pin.ts");
-
-class PinCompiler {
-    // Structural relationships
-    //
-    builder_;
-    elementCompiler_;
-    // Owned properties
-    //
-    constructor(options) {
-        this.builder_ = options.pinBuilder;
-        this.elementCompiler_ = options.elementCompiler;
-    }
-    // ----------------------------------------------------------------------------------------------
-    // Pre-compilation steps
-    // ----------------------------------------------------------------------------------------------
-    /**
-     * See Presentation.beforeCompile() for symantics of this method & pattern of implementation
-     * Do not duplicate that comment here - single point of truth.
-     */
-    beforeCompile() {
-        this.validateAndDerive();
-    }
-    validateAndDerive() {
-        // Nothing yet
-    }
-    // ----------------------------------------------------------------------------------------------
-    // Compilation steps
-    // ----------------------------------------------------------------------------------------------
-    /**
-     * See Presentation.compile() for symantics of this method & pattern of implementation
-     * Do not duplicate that comment here - single point of truth.
-     */
-    compile(element) {
-        return new _Pin__WEBPACK_IMPORTED_MODULE_0__.Pin({
-            element,
-            scrollTrigger: element.scrollTriggerByName(this.builder_.scrollTrigger),
-        });
-    }
-}
-
-
-/***/ },
-
-/***/ "../../packages/presentation2/src/components/pin/htmlView/HTMLPinManager.ts"
-/*!**********************************************************************************!*\
-  !*** ../../packages/presentation2/src/components/pin/htmlView/HTMLPinManager.ts ***!
-  \**********************************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   HTMLPinManager: () => (/* binding */ HTMLPinManager)
-/* harmony export */ });
-/* harmony import */ var _HTMLPinView__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HTMLPinView */ "../../packages/presentation2/src/components/pin/htmlView/HTMLPinView.ts");
-
-class HTMLPinManager {
-    htmlPresentationRoot_;
-    cachedPins_ = [];
-    pinViews_ = [];
-    constructor(options) {
-        this.htmlPresentationRoot_ = options.htmlPresentationRoot;
-        this.buildPinCache();
-        this.attachPinViews();
-    }
-    buildPinCache() {
-        this.cachedPins_.length = 0;
-        // FIXME: We need a better way to collate pins from the presentation.
-        this.htmlPresentationRoot_.sections.forEach((section) => {
-            section.elementViews.forEach((elementView) => {
-                elementView.element.pins.forEach((pin) => {
-                    this.cachedPins_.push({ pin, elementView });
-                });
-            });
-        });
-    }
-    attachPinViews() {
-        this.cachedPins_.forEach(({ pin, elementView }) => {
-            this.pinViews_.push(new _HTMLPinView__WEBPACK_IMPORTED_MODULE_0__.HTMLPinView({ pin, elementView }));
-        });
-    }
-}
-
-
-/***/ },
-
-/***/ "../../packages/presentation2/src/components/pin/htmlView/HTMLPinView.ts"
-/*!*******************************************************************************!*\
-  !*** ../../packages/presentation2/src/components/pin/htmlView/HTMLPinView.ts ***!
-  \*******************************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   HTMLPinView: () => (/* binding */ HTMLPinView)
-/* harmony export */ });
-const STYLE_PRECISION = 2;
-/**
- *
- */
-class HTMLPinView {
-    pin_;
-    elementView_;
-    unsubscribe_ = [];
-    clone_;
-    target_;
-    constructor(options) {
-        this.pin_ = options.pin;
-        this.elementView_ = options.elementView;
-        this.buildDOM();
-        this.attachEventListeners();
-    }
-    disconnect() {
-        this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
-        this.unsubscribe_.length = 0;
-        this.clone_.remove();
-    }
-    buildDOM() {
-        // Placeholder
-        //
-        this.target_ = this.elementView_.htmlElement;
-        // Clone
-        //
-        this.clone_ = this.elementView_.htmlElement.cloneNode(true);
-        this.clone_.style.position = "absolute";
-        this.clone_.style.visibility = "hidden";
-        this.clone_.classList.add("rdoc-pin-clone");
-        this.elementView_.presentationView.htmlPins.appendChild(this.clone_);
-    }
-    attachEventListeners() {
-        const scrollTrigger = this.pin_.scrollTrigger;
-        this.unsubscribe_.push(scrollTrigger.on("start", () => {
-            this.pinForward();
-        }), scrollTrigger.on("reverseStart", () => {
-            this.pinReverse();
-        }), scrollTrigger.on("end", () => {
-            this.unpinForward();
-        }), scrollTrigger.on("reverseEnd", () => {
-            this.unpinReverse();
-        }));
-    }
-    pinForward() {
-        this.positionClone();
-        this.clone_.style.visibility = "visible";
-        this.target_.style.visibility = "hidden";
-    }
-    pinReverse() {
-        this.positionClone();
-        this.clone_.style.visibility = "visible";
-        this.target_.style.visibility = "hidden";
-    }
-    unpinForward() {
-        // We're carefull to position the target element based on the perfect position as per the scroll
-        // trigger, rather than the current scroll position. Scrolling at speed might have caused the
-        // end trigger to have been missed.
-        //
-        const scale = this.elementView_.presentationView.physicalDimensions.scale;
-        const dy = scale * (this.pin_.scrollTrigger.end - this.pin_.scrollTrigger.start);
-        this.target_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
-        this.target_.style.zIndex = "1000";
-        this.target_.style.visibility = "visible";
-        this.clone_.style.visibility = "hidden";
-    }
-    unpinReverse() {
-        this.target_.style.transform = `translateY(0px)`;
-        this.target_.style.visibility = "visible";
-        this.clone_.style.visibility = "hidden";
-    }
-    positionClone() {
-        const targetRect = this.target_.getBoundingClientRect();
-        //const top = targetRect.top - presentationRect.top;
-        const scale = this.elementView_.presentationView.physicalDimensions.scale;
-        const top = scale * (this.elementView_.element.top - this.pin_.scrollTrigger.start);
-        const left = targetRect.left;
-        this.clone_.style.top = `${top.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.left = `${left.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.width = `${targetRect.width.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.height = `${targetRect.height.toFixed(STYLE_PRECISION)}px`;
-    }
+    });
 }
 
 
@@ -4660,8 +5263,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../section/htmlView/HTMLSectionView */ "../../packages/presentation2/src/components/section/htmlView/HTMLSectionView.ts");
 /* harmony import */ var _ScaleHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ScaleHelper */ "../../packages/presentation2/src/components/presentation/htmlView/ScaleHelper.ts");
 /* harmony import */ var _scrollTrigger_htmlView_HTMLScrollTriggerManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../scrollTrigger/htmlView/HTMLScrollTriggerManager */ "../../packages/presentation2/src/components/scrollTrigger/htmlView/HTMLScrollTriggerManager.ts");
-/* harmony import */ var _pin_htmlView_HTMLPinManager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../pin/htmlView/HTMLPinManager */ "../../packages/presentation2/src/components/pin/htmlView/HTMLPinManager.ts");
-
 
 
 
@@ -4677,7 +5278,6 @@ class HTMLPresentationViewRoot {
     resizeObserver_;
     sections_;
     scrollTriggerManager_;
-    pinManager_;
     sortedContentDependentElements_;
     // ----------------------------------------------------------------------------------------------
     // Construction
@@ -4710,7 +5310,6 @@ class HTMLPresentationViewRoot {
         this.scrollTriggerManager_ = new _scrollTrigger_htmlView_HTMLScrollTriggerManager__WEBPACK_IMPORTED_MODULE_3__.HTMLScrollTriggerManager({
             htmlPresentationRoot: this,
         });
-        this.pinManager_ = new _pin_htmlView_HTMLPinManager__WEBPACK_IMPORTED_MODULE_4__.HTMLPinManager({ htmlPresentationRoot: this });
         this.resizeObserver_ = new ResizeObserver(() => {
             this.layout();
         });
@@ -5393,6 +5992,16 @@ class Section {
     get scrollTriggers() {
         return this.scrollTriggers_;
     }
+    scrollTriggerByName(name) {
+        const scrollTrigger = this.scrollTriggers_.find((st) => st.name === name);
+        if (!scrollTrigger) {
+            throw new Error(`ScrollTrigger with name "${name}" not found.`);
+        }
+        return scrollTrigger;
+    }
+    get animations() {
+        return [];
+    }
     // ----------------------------------------------------------------------------------------------
     // Geometry
     // ----------------------------------------------------------------------------------------------
@@ -5880,7 +6489,7 @@ try {
         presentation: p,
         container: "#theContainer",
     });
-    console.log(htmlView);
+    console.log(Date.now());
 }
 catch (e) {
     console.error("Compilation error:", e);
@@ -5888,6 +6497,16 @@ catch (e) {
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ },
+
+/***/ "./src/img/stars.jpg"
+/*!***************************!*\
+  !*** ./src/img/stars.jpg ***!
+  \***************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "8e11314bdd8d7b66bad7.jpg";
 
 /***/ },
 
@@ -7437,6 +8056,9 @@ Please report this to https://github.com/markedjs/marked.`,e){let r="<p>An error
 /******/ 		return module.exports;
 /******/ 	}
 /******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/async module */
 /******/ 	(() => {
@@ -7538,6 +8160,18 @@ Please report this to https://github.com/markedjs/marked.`,e){let r="<p>An error
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
@@ -7552,6 +8186,55 @@ Please report this to https://github.com/markedjs/marked.`,e){let r="<p>An error
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		var scriptUrl;
+/******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
+/******/ 		var document = __webpack_require__.g.document;
+/******/ 		if (!scriptUrl && document) {
+/******/ 			if (document.currentScript && document.currentScript.tagName.toUpperCase() === 'SCRIPT')
+/******/ 				scriptUrl = document.currentScript.src;
+/******/ 			if (!scriptUrl) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
+/******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
+/******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
+/******/ 		scriptUrl = scriptUrl.replace(/^blob:/, "").replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		__webpack_require__.p = scriptUrl;
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		__webpack_require__.b = (typeof document !== 'undefined' && document.baseURI) || self.location.href;
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"main": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		// no on chunks loaded
+/******/ 		
+/******/ 		// no jsonp function
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/nonce */
