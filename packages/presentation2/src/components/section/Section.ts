@@ -1,6 +1,7 @@
 import { Element } from "../element/Element";
 import { Presentation, ScrollTrigger } from "../..";
 import { Expression } from "packages/expressions/dist";
+import { ScrollTriggeredAnimation } from "../animation/ScrollTriggeredAnimation";
 
 interface SectionPhase2Constructor {
   setElements(elements: Element[]): SectionPhase2Constructor;
@@ -115,6 +116,18 @@ export class Section {
 
   get scrollTriggers(): readonly ScrollTrigger[] {
     return this.scrollTriggers_;
+  }
+
+  scrollTriggerByName(name: string): ScrollTrigger {
+    const scrollTrigger = this.scrollTriggers_.find((st) => st.name === name);
+    if (!scrollTrigger) {
+      throw new Error(`ScrollTrigger with name "${name}" not found.`);
+    }
+    return scrollTrigger;
+  }
+
+  get animations(): readonly ScrollTriggeredAnimation[] {
+    return [];
   }
 
   // ----------------------------------------------------------------------------------------------

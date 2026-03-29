@@ -4,14 +4,16 @@ import { Section } from "../section/Section";
 import { Presentation } from "../presentation/Presentation";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 import { Pin } from "../animation/pin/Pin";
-import { Animation } from "../animation/keyFrameAnimation/Animation";
+import { ScrollTriggeredAnimation } from "../animation/ScrollTriggeredAnimation";
 
 export interface ElementPhase2Constructor {
   setScrollTriggers(scrollTriggers: ScrollTrigger[]): ElementPhase2Constructor;
 
   setPins(pins: Pin[]): ElementPhase2Constructor;
 
-  setAnimations(animations: Animation[]): ElementPhase2Constructor;
+  setAnimations(
+    animations: ScrollTriggeredAnimation[],
+  ): ElementPhase2Constructor;
 
   complete(): void;
 }
@@ -56,7 +58,7 @@ export class Element {
       return this.phase2Constructor_!;
     },
 
-    setAnimations: (animations: Animation[]) => {
+    setAnimations: (animations: ScrollTriggeredAnimation[]) => {
       this.animations_ = animations;
       return this.phase2Constructor_!;
     },
@@ -71,7 +73,7 @@ export class Element {
   private section_: Section;
   private scrollTriggers_: ScrollTrigger[] = [];
   private pins_: Pin[] = [];
-  private animations_: Animation[] = [];
+  private animations_: ScrollTriggeredAnimation[] = [];
 
   // Owned properties ------------------------------------------------------------------------------
   //
@@ -163,7 +165,7 @@ export class Element {
     return this.pins_;
   }
 
-  get animations(): readonly Animation[] {
+  get animations(): readonly ScrollTriggeredAnimation[] {
     return this.animations_;
   }
 

@@ -1,10 +1,11 @@
 import { KeyFrame } from "./KeyFrame";
 import { ElementBuilder } from "../../element/ElementBuilder";
+import { SectionBuilder } from "../../section/SectionBuilder";
 
-export class AnimationBuilder {
+export class KeyFrameAnimationBuilder {
   // Structural relationships ----------------------------------------------------------------------
   //
-  private element_: ElementBuilder;
+  private element_: ElementBuilder | SectionBuilder;
   private scrollTrigger_: string = "";
 
   // Owned properties ------------------------------------------------------------------------------
@@ -12,7 +13,7 @@ export class AnimationBuilder {
   private duration_: number = 0;
   private keyFrames_: KeyFrame[] = [];
 
-  constructor(options: { element: ElementBuilder }) {
+  constructor(options: { element: ElementBuilder | SectionBuilder }) {
     this.element_ = options.element;
   }
 
@@ -20,7 +21,7 @@ export class AnimationBuilder {
   // Structural relationships
   // ----------------------------------------------------------------------------------------------
 
-  get element(): ElementBuilder {
+  get elementOrSection(): ElementBuilder | SectionBuilder {
     return this.element_;
   }
 

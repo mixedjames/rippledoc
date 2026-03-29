@@ -30,6 +30,14 @@ export class HTMLPinView {
     this.clone_.remove();
   }
 
+  layout(): void {
+    // FIXME: need to react to layout changes
+  }
+
+  get clonedElement(): HTMLElement {
+    return this.clone_;
+  }
+
   private buildDOM(): void {
     // Placeholder
     //

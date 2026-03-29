@@ -1,3 +1,4 @@
+import { HTMLAnimationManager } from "../../animation/htmlView/HTMLAnimationManager";
 import { HTMLPresentationViewRoot } from "../../presentation/htmlView/HTMLPresentationViewRoot";
 import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { ContentDependentDimension, Element } from "../Element";
@@ -27,6 +28,8 @@ export class HTMLElementView {
 
   private htmlElement_!: HTMLElement;
 
+  private animationManager_!: HTMLAnimationManager;
+
   constructor(options: {
     sectionView: HTMLSectionView;
     element: Element;
@@ -41,7 +44,9 @@ export class HTMLElementView {
     }
   }
 
-  disconnect(): void {}
+  disconnect(): void {
+    this.animationManager_.disconnect();
+  }
 
   // ----------------------------------------------------------------------------------------------
   // Structural relationships
@@ -52,6 +57,14 @@ export class HTMLElementView {
   }
 
   get htmlElement(): HTMLElement {
+    return this.htmlElement_;
+  }
+
+  get foregroundHTMLElement(): HTMLElement {
+    return this.htmlElement_;
+  }
+
+  get backgroundHTMLElement(): HTMLElement {
     return this.htmlElement_;
   }
 
@@ -79,6 +92,8 @@ export class HTMLElementView {
     this.sectionView.htmlContentElement.appendChild(this.htmlElement_);
 
     this.subclassCreateDOM();
+
+    this.animationManager_ = new HTMLAnimationManager({ parent: this });
   }
 
   protected subclassCreateDOM(): void {}
@@ -137,6 +152,8 @@ export class HTMLElementView {
     this.htmlElement_.style.height = `${this.element.height * scale}px`;
 
     this.subclassLayout();
+
+    this.animationManager_.layout();
   }
 
   protected subclassLayout(): void {}

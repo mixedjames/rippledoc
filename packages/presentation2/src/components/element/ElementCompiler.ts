@@ -14,7 +14,7 @@ import { containsIsolatedToken } from "../common/StringBoundaryHelper";
 import { Module, Expression } from "@rippledoc/expressions";
 import { ScrollTriggerCompiler } from "../scrollTrigger/ScrollTriggerCompiler";
 import { PinCompiler } from "../animation/pin/PinCompiler";
-import { AnimationCompiler } from "../animation/keyFrameAnimation/AnimationCompiler";
+import { KeyFrameAnimationCompiler } from "../animation/keyFrameAnimation/KeyFrameAnimationCompiler";
 
 export class ElementCompiler {
   // Structural relationships
@@ -40,7 +40,7 @@ export class ElementCompiler {
 
   private scrollTriggers_: ScrollTriggerCompiler[] = [];
   private pins_: PinCompiler[] = [];
-  private animations_: AnimationCompiler[] = [];
+  private animations_: KeyFrameAnimationCompiler[] = [];
 
   constructor(options: {
     elementBuilder: ElementBuilder;
@@ -69,9 +69,9 @@ export class ElementCompiler {
 
     this.animations_ = this.builder_.animations.map(
       (animationBuilder) =>
-        new AnimationCompiler({
+        new KeyFrameAnimationCompiler({
           animationBuilder,
-          elementCompiler: this,
+          elementOrSectionCompiler: this,
         }),
     );
   }

@@ -7,10 +7,8 @@ import { HTMLPresentationDOM } from "./HTMLPresentationDOM";
 import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { ScaleHelper } from "./ScaleHelper";
 import { HTMLScrollTriggerManager } from "../../scrollTrigger/htmlView/HTMLScrollTriggerManager";
-import { HTMLPinManager } from "../../animation/pin/htmlView/HTMLPinManager";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 import { Element } from "../../element/Element";
-import { HTMLAnimationManager } from "../../animation/keyFrameAnimation/htmlView/HTMLAnimationManager";
 
 type HTMLContentDependentElement = {
   elementView: HTMLElementView;
@@ -32,8 +30,6 @@ export class HTMLPresentationViewRoot {
 
   private sections_: HTMLSectionView[];
   private scrollTriggerManager_: HTMLScrollTriggerManager;
-  private pinManager_: HTMLPinManager;
-  private animationManager_: HTMLAnimationManager;
 
   private sortedContentDependentElements_: HTMLContentDependentElement[];
 
@@ -85,10 +81,6 @@ export class HTMLPresentationViewRoot {
     // Our hierarchy + associated DOM is now complete.
 
     this.scrollTriggerManager_ = new HTMLScrollTriggerManager({
-      htmlPresentationRoot: this,
-    });
-    this.pinManager_ = new HTMLPinManager({ htmlPresentationRoot: this });
-    this.animationManager_ = new HTMLAnimationManager({
       htmlPresentationRoot: this,
     });
 

@@ -5,7 +5,7 @@ import { ScrollTriggerBuilder } from "../scrollTrigger/ScrollTriggerBuilder";
 import { PinBuilder } from "../animation/pin/PinBuilder";
 import { SectionCompiler } from "../section/SectionCompiler";
 import { ElementCompiler } from "./ElementCompiler";
-import { AnimationBuilder } from "../animation/keyFrameAnimation/AnimationBuilder";
+import { KeyFrameAnimationBuilder } from "../animation/keyFrameAnimation/KeyFrameAnimationBuilder";
 
 /**
  *
@@ -27,7 +27,7 @@ export class ElementBuilder {
   private name_: string = "";
   private scrollTriggers_: ScrollTriggerBuilder[] = [];
   private pins_: PinBuilder[] = [];
-  private animations_: AnimationBuilder[] = [];
+  private animations_: KeyFrameAnimationBuilder[] = [];
 
   // Order of axis components is key here: AxisBuilder.deriveExpressions depends on it
   // DO NOT CHANGE
@@ -77,13 +77,13 @@ export class ElementBuilder {
     return this.pins_;
   }
 
-  addAnimation(): AnimationBuilder {
-    const animation = new AnimationBuilder({ element: this });
+  addAnimation(): KeyFrameAnimationBuilder {
+    const animation = new KeyFrameAnimationBuilder({ element: this });
     this.animations_.push(animation);
     return animation;
   }
 
-  get animations(): readonly AnimationBuilder[] {
+  get animations(): readonly KeyFrameAnimationBuilder[] {
     return this.animations_;
   }
 

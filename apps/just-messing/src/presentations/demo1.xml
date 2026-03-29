@@ -20,9 +20,9 @@
     <pin trigger="st1"/>
 
     <scroll-trigger name="st2" start="sectionBottom-height-40" end="start+150"/>
-    <animation trigger="st2" duration="500">
+    <animation trigger="st2" duration="5000">
       <keyFrame position="0" opacity="1" />
-      <keyFrame position="500" opacity="0" />
+      <keyFrame position="5000" opacity="0" />
     </animation>
   </image>
 

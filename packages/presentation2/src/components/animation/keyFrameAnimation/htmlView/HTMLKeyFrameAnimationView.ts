@@ -1,6 +1,7 @@
-import { Animation as Presentation2Animation } from "../Animation";
+import { KeyFrameAnimation } from "../KeyFrameAnimation";
 import { KeyFrame } from "../KeyFrame";
-import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
+import { HTMLAnimationView } from "../../htmlView/HTMLAnimationView";
+import { HTMLAnimationManager } from "../../htmlView/HTMLAnimationManager";
 
 const STYLE_PRECISION = 2;
 
@@ -9,27 +10,23 @@ type CSSKeyFrame = {
   opacity?: number;
 };
 
-type AnimatableView = {
-  get allForegroundHTMLElements(): HTMLElement[];
-  get allBackgroundHTMLElements(): HTMLElement[];
-};
-
 /**
  *
  */
-export class HTMLAnimationView {
-  private readonly animation_: Presentation2Animation;
+export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
+  private readonly animation_: KeyFrameAnimation;
   private cssAnimation_!: Animation[];
-  private readonly elementView_: HTMLElementView;
+
+  private readonly animationManager_: HTMLAnimationManager;
 
   private readonly unsubscribe_: Array<() => void> = [];
 
   constructor(options: {
-    animation: Presentation2Animation;
-    elementView: HTMLElementView;
+    animation: KeyFrameAnimation;
+    animationManager: HTMLAnimationManager;
   }) {
     this.animation_ = options.animation;
-    this.elementView_ = options.elementView;
+    this.animationManager_ = options.animationManager;
 
     this.buildDOM();
     this.attachEventListeners();
@@ -38,6 +35,10 @@ export class HTMLAnimationView {
   disconnect(): void {
     this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
     this.unsubscribe_.length = 0;
+  }
+
+  layout(): void {
+    // FIXME: need to react to layout changes
   }
 
   private buildDOM(): void {
@@ -50,9 +51,13 @@ export class HTMLAnimationView {
       direction: "normal",
     };
 
-    this.cssAnimation_ = [
-      this.elementView_.htmlElement.animate(cssKeyFrames, animationConfig),
-    ];
+    this.cssAnimation_ = this.animationManager_.animationTargets.map(
+      (target) => {
+        const animation = target.animate(cssKeyFrames, animationConfig);
+        return animation;
+      },
+    );
+
     this.pauseAnimation("start");
   }
 
@@ -71,24 +76,19 @@ export class HTMLAnimationView {
 
   private attachEventListeners(): void {
     const scrollTrigger = this.animation_.scrollTrigger;
-    const cssAnimation = this.cssAnimation_;
 
     this.unsubscribe_.push(
       scrollTrigger.on("start", () => {
-        console.log("Animation start");
         this.playAnimation("start");
       }),
       scrollTrigger.on("reverseStart", () => {
-        console.log("Animation reverse start");
         this.playAnimation("end");
       }),
       scrollTrigger.on("end", () => {
-        console.log("Animation end");
-        this.pauseAnimation("end");
+        //this.pauseAnimation("end");
       }),
       scrollTrigger.on("reverseEnd", () => {
-        console.log("Animation reverse end");
-        this.pauseAnimation("start");
+        //this.pauseAnimation("start");
       }),
       scrollTrigger.on("scroll", (/*progress: number*/) => {
         //

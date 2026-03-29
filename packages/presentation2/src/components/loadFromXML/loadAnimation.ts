@@ -6,12 +6,12 @@
  *   <keyFrame position="1000" opacity="1" />
  * </animation>
  */
-import { AnimationBuilder } from "../animation/keyFrameAnimation/AnimationBuilder";
+import { KeyFrameAnimationBuilder } from "../animation/keyFrameAnimation/KeyFrameAnimationBuilder";
 import { KeyFrame } from "../animation/keyFrameAnimation/KeyFrame";
 
 export function loadAnimation(options: {
   element: Element;
-  builder: AnimationBuilder;
+  builder: KeyFrameAnimationBuilder;
 }): void {
   const { element, builder } = options;
 
