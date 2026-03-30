@@ -157,4 +157,18 @@ export class HTMLElementView {
   }
 
   protected subclassLayout(): void {}
+
+  /**
+   * Call this from subclasses when the structure of the Element's DOM changes in a way that might
+   * affect animations.
+   *
+   * This function exists because in 2026 pinning is a pain in the ass. In order to get visually
+   * perfect pinning we end up cloning the target object as part of the process. If the Element
+   * changes after the pin is created, then that change will get missed.
+   *
+   * This function gives the HTMLAnimationManager a change to catch up.
+   */
+  protected animatableObjectChanges(): void {
+    this.animationManager_.animatableObjectChanges();
+  }
 }

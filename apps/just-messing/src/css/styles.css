@@ -1,5 +1,5 @@
 .rdoc-root {
-  font-size: calc(var(--presentation-scale) * 16pt);
+  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);
   font-family: "Trebuchet MS", sans-serif;
 }
 

@@ -4,6 +4,9 @@ import { Section } from "../../section/Section";
 import { ScrollTriggeredAnimation } from "../ScrollTriggeredAnimation";
 import { KeyFrame } from "./KeyFrame";
 
+/**
+ *
+ */
 export class KeyFrameAnimation extends ScrollTriggeredAnimation {
   // Owned properties --
   //

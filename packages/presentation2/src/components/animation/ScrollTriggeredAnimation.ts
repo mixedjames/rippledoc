@@ -2,6 +2,18 @@ import { Element } from "../element/Element";
 import { Section } from "../section/Section";
 import { ScrollTrigger } from "../scrollTrigger/ScrollTrigger";
 
+/**
+ * A ScrollTriggeredAnimation represents some sort of dynamic visual effect that is:
+ * - Driven by scrolling the presentation (& coupled to a ScrollTrigger)
+ * - Connected to an animatable element: either an Element or Section currently
+ *
+ * ## Scroll-Driven Animation
+ * We make a distinction between two concepts:
+ * 1. What triggers an animation? (always a ScrollTrigger)
+ * 2. What drives the animation? (can be time or scrolling)
+ *
+ * This is represented by the `.isScrollDriven` property.
+ */
 export class ScrollTriggeredAnimation {
   // Structural relations --
   //

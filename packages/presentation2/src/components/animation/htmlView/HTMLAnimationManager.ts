@@ -9,6 +9,9 @@ import { HTMLAnimationView } from "./HTMLAnimationView";
 
 type HTMLAnimatableObject = HTMLSectionView | HTMLElementView;
 
+/**
+ * Manager object the the various animation views that may be attached to an Element or Section.
+ */
 export class HTMLAnimationManager {
   private parent_: HTMLSectionView | HTMLElementView;
 
@@ -100,6 +103,12 @@ export class HTMLAnimationManager {
       animationView.disconnect();
     });
     this.animationViews_.length = 0;
+  }
+
+  animatableObjectChanges(): void {
+    this.pinViews_.forEach((pinView) => {
+      pinView.elementViewModified();
+    });
   }
 
   /**

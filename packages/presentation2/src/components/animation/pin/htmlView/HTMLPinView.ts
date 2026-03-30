@@ -38,6 +38,11 @@ export class HTMLPinView {
     return this.clone_;
   }
 
+  elementViewModified(): void {
+    this.clone_.remove();
+    this.buildDOM();
+  }
+
   private buildDOM(): void {
     // Placeholder
     //
