@@ -6,4 +6,6 @@ export type KeyFrame = {
   backgroundPositionX?: number;
 
   backgroundPositionY?: number;
+
+  strokeDashoffset?: number;
 };

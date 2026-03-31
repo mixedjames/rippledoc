@@ -20,6 +20,8 @@ export class ScrollTriggeredAnimation {
   private elementOrSection_: Element | Section;
   private trigger_: ScrollTrigger;
 
+  private subComponentTarget_: string = "";
+
   // Owned properties --
   //
   private duration_: number = 0;
@@ -30,11 +32,13 @@ export class ScrollTriggeredAnimation {
     trigger: ScrollTrigger;
     duration?: number;
     scrollDriven?: boolean;
+    subComponentTarget?: string;
   }) {
     this.elementOrSection_ = options.elementOrSection;
     this.trigger_ = options.trigger;
     this.duration_ = options.duration ?? 0;
     this.scrollDriven_ = options.scrollDriven ?? false;
+    this.subComponentTarget_ = options.subComponentTarget ?? "";
   }
 
   get element(): Element {
@@ -64,5 +68,13 @@ export class ScrollTriggeredAnimation {
 
   get duration(): number {
     return this.duration_;
+  }
+
+  get subComponentTarget(): string {
+    return this.subComponentTarget_;
+  }
+
+  get hasSubComponentTarget(): boolean {
+    return this.subComponentTarget_.trim().length > 0;
   }
 }

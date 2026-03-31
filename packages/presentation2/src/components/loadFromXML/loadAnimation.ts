@@ -47,6 +47,11 @@ export function loadAnimation(options: {
     throw new Error("<animation> must have a non-empty 'duration' attribute");
   }
 
+  const subComponentTarget = element.getAttribute("target-part");
+  if (subComponentTarget && subComponentTarget.trim() !== "") {
+    builder.subComponentTarget = subComponentTarget.trim();
+  }
+
   const duration = Number(durationAttr);
   if (Number.isNaN(duration)) {
     throw new Error(
@@ -107,11 +112,17 @@ export function loadAnimation(options: {
       attributeName: "backgroundPositionY",
     });
 
+    const strokeDashoffset = getOptionalNumericKeyFrameAttribute({
+      element: child,
+      attributeName: "strokeDashoffset",
+    });
+
     const keyFrame: KeyFrame = {
       position,
       ...(opacity !== undefined ? { opacity } : {}),
       ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
       ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
+      ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
     };
 
     builder.addKeyFrame(keyFrame);

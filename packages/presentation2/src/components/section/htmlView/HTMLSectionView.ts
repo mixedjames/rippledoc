@@ -82,6 +82,26 @@ export class HTMLSectionView {
     return this.contentElement_;
   }
 
+  /**
+   * See `getSubComponentElement`.
+   *
+   * Always returns false for HTMLSectionView since currently sections do not support sub-component
+   * elements.
+   */
+  get allowsSubComponentElements(): boolean {
+    return false;
+  }
+
+  /**
+   * See `Element.getSubComponentElement`. We implement this method on HTMLSectionView for
+   * simplicity of use in animations. However, currently sections do not support sub-component
+   * elements so this method just throws.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getSubComponentElement(name: string): HTMLElement {
+    throw new Error("HTMLSectionView does not support sub-component elements.");
+  }
+
   // ----------------------------------------------------------------------------------------------
   // Rendering
   // ----------------------------------------------------------------------------------------------

@@ -37,6 +37,7 @@ export class KeyFrameAnimationCompiler {
       keyFrames: this.builder_.keyFrames.map((keyFrame) => ({ ...keyFrame })),
       duration: this.builder_.duration,
       scrollDriven: this.builder_.scrollDriven,
+      subComponentTarget: this.builder_.subComponentTarget,
     });
   }
 }

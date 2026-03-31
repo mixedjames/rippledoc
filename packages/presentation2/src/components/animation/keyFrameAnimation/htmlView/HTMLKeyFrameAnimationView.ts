@@ -8,6 +8,7 @@ type CSSKeyFrame = {
   opacity?: number;
   backgroundPositionX?: string;
   backgroundPositionY?: string;
+  strokeDashoffset?: number;
 };
 
 /**
@@ -41,6 +42,10 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
     // FIXME: need to react to layout changes
   }
 
+  animatableObjectModified(): void {
+    this.buildDOM();
+  }
+
   private buildDOM(): void {
     const cssKeyFrames: CSSKeyFrame[] = this.animation_.keyFrames.map(
       (keyFrame: KeyFrame) => this.buildKeyFrame(keyFrame),
@@ -53,6 +58,21 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
 
     this.cssAnimation_ = this.animationManager_.animationTargets.map(
       (target) => {
+        if (this.animation_.hasSubComponentTarget) {
+          // FIXME:
+          //
+          if (
+            !this.animationManager_.animatableParent.allowsSubComponentElements
+          ) {
+            throw new Error(
+              "Animatable parent does not allow sub-component elements",
+            );
+          }
+
+          const e = this.animationManager_.animatableParent;
+          target = e.getSubComponentElement(this.animation_.subComponentTarget);
+        }
+
         const animation = target.animate(cssKeyFrames, animationConfig);
         animation.pause();
         return animation;
@@ -79,6 +99,10 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
     }
 
+    if (keyFrame.strokeDashoffset !== undefined) {
+      cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+    }
+
     console.log("Built CSS keyframe:", cssKeyFrame);
     return cssKeyFrame;
   }
@@ -95,12 +119,12 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
         this.playAnimation("end");
       }),
       scrollTrigger.on("end", () => {
-        //this.pauseAnimation("end");
-        this.playAnimation("end");
+        this.pauseAnimation("end");
+        //this.playAnimation("end");
       }),
       scrollTrigger.on("reverseEnd", () => {
-        //this.pauseAnimation("start");
-        this.playAnimation("start");
+        this.pauseAnimation("start");
+        //this.playAnimation("start");
       }),
       scrollTrigger.on("scroll", (e) => {
         this.driveAnimationToProgress(e.progress);

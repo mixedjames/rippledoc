@@ -4,6 +4,14 @@ import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { ContentDependentDimension, Element } from "../Element";
 
 /**
+ * Represents the browsers basic Element type.
+ *
+ * Exists because I made an error in naming elements on my custom DOM and we now have two different
+ * Element types in this codebase - the browser's native Element, and our custom Element class.
+ */
+type DOMElement = globalThis.Element;
+
+/**
  *
  * # Pattern for subclassing
  * This is *not* a limitless extension point. We expect a strict pattern:
@@ -96,7 +104,7 @@ export class HTMLElementView {
     this.animationManager_ = new HTMLAnimationManager({ parent: this });
   }
 
-  protected subclassCreateDOM(): void {}
+  protected subclassCreateDOM(): void { }
 
   /**
    * Content dependent sizing calculations are a two step process to minimise layout thrashing:
@@ -156,7 +164,7 @@ export class HTMLElementView {
     this.animationManager_.layout();
   }
 
-  protected subclassLayout(): void {}
+  protected subclassLayout(): void { }
 
   /**
    * Call this from subclasses when the structure of the Element's DOM changes in a way that might
@@ -170,5 +178,32 @@ export class HTMLElementView {
    */
   protected animatableObjectChanges(): void {
     this.animationManager_.animatableObjectChanges();
+  }
+
+  /**
+   * Reports whether sub-component elements are supported by this Element type.
+   *
+   * The default implementation returns false. Subclasses should override this property if they
+   * support sub-component elements.
+   *
+   * See HTMLElementView.getSubComponentElement
+   */
+  get allowsSubComponentElements(): boolean {
+    return false;
+  }
+
+  /**
+   * Some Element types (for example SVG images) support accessing specific named
+   * subcomponents within the top level Element object. In the SVG example you can access individual
+   * SVG DOM elements for the purposes of animation, without needing to create a separate Element
+   * for each one.
+   *
+   * The default implementation does not support sub-component elements, and will throw an error.
+   * Subclasses that do support sub-component elements should override this method to return the
+   * appropriate DOMElement for the given sub-component name.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getSubComponentElement(name: string): DOMElement {
+    throw new Error("HTMLElementView does not support sub-component elements.");
   }
 }

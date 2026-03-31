@@ -18,6 +18,7 @@ export class KeyFrameAnimation extends ScrollTriggeredAnimation {
     keyFrames: KeyFrame[];
     duration: number;
     scrollDriven?: boolean;
+    subComponentTarget?: string;
   }) {
     super(options);
 

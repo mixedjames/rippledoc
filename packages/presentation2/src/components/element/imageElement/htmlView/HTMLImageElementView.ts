@@ -3,13 +3,25 @@ import { ImageElement, ImageFit } from "../ImageElement";
 import { HTMLSectionView } from "../../../section/htmlView/HTMLSectionView";
 import { sanitizeSVG } from "@rippledoc/sanitizer";
 
+enum ImageType {
+  Bitmap,
+  SVG,
+}
+
 export class HTMLImageElementView extends HTMLElementView {
+  private type_: ImageType;
+  private svgElement_: SVGElement | null = null;
+
   constructor(options: {
     sectionView: HTMLSectionView;
     element: ImageElement;
   }) {
     super({ ...options, subclass: true });
 
+    this.type_ =
+      this.getFileExtension(this.element.source) === "svg"
+        ? ImageType.SVG
+        : ImageType.Bitmap;
     this.createDOM();
   }
 
@@ -21,7 +33,7 @@ export class HTMLImageElementView extends HTMLElementView {
   protected subclassCreateDOM(): void {
     this.htmlElement.classList.add("rdoc-image-element");
 
-    if (this.getFileExtension(this.element.source) === "svg") {
+    if (this.type_ === ImageType.SVG) {
       this.createSVG();
     } else {
       this.createBitmap();
@@ -51,6 +63,12 @@ export class HTMLImageElementView extends HTMLElementView {
   }
 
   private createSVG(): void {
+    this.svgElement_ = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg",
+    );
+    this.svgElement_.setAttribute("temporaryElement", "true");
+
     fetch(this.element.source)
       .then((response) => {
         if (!response.ok) {
@@ -75,6 +93,8 @@ export class HTMLImageElementView extends HTMLElementView {
           true,
         ) as unknown as SVGElement;
 
+        this.svgElement_ = imported;
+
         imported.setAttribute("data-image-source", this.element.source);
         imported.setAttribute("width", "100%");
         imported.setAttribute("height", "100%");
@@ -84,6 +104,7 @@ export class HTMLImageElementView extends HTMLElementView {
         imported.style.top = "0";
 
         this.htmlElement.appendChild(imported);
+
         this.animatableObjectChanges();
       })
       .catch((error) => {
@@ -119,5 +140,37 @@ export class HTMLImageElementView extends HTMLElementView {
     }
 
     return match[1];
+  }
+
+  get allowsSubComponentElements(): boolean {
+    return this.type_ === ImageType.SVG;
+  }
+
+  /**
+   *
+   */
+  getSubComponentElement(name: string): SVGElement {
+    if (this.type_ === ImageType.SVG) {
+      if (this.svgElement_!.hasAttribute("temporaryElement")) {
+        const tmp = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        this.svgElement_?.appendChild(tmp);
+        return tmp;
+      }
+
+      const element = this.svgElement_!.querySelector<SVGElement>(
+        `[id="${name}"]`,
+      );
+      if (element) {
+        return element;
+      }
+
+      throw new Error(
+        `HTMLImageElementView: no sub-component element with name "${name}" found in SVG image.`,
+      );
+    }
+
+    throw new Error(
+      "HTMLImageElementView: bitmap images do not support sub-component elements.",
+    );
   }
 }

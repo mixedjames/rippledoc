@@ -7,6 +7,14 @@ import { Pin } from "../pin/Pin";
 import { KeyFrameAnimation } from "../keyFrameAnimation/KeyFrameAnimation";
 import { HTMLAnimationView } from "./HTMLAnimationView";
 
+/**
+ * Represents the browsers basic Element type.
+ *
+ * Exists because I made an error in naming elements on my custom DOM and we now have two different
+ * Element types in this codebase - the browser's native Element, and our custom Element class.
+ */
+type DOMElement = globalThis.Element;
+
 type HTMLAnimatableObject = HTMLSectionView | HTMLElementView;
 
 /**
@@ -109,6 +117,10 @@ export class HTMLAnimationManager {
     this.pinViews_.forEach((pinView) => {
       pinView.elementViewModified();
     });
+
+    this.animationViews_.forEach((animationView) => {
+      animationView.animatableObjectModified();
+    });
   }
 
   /**
@@ -126,7 +138,8 @@ export class HTMLAnimationManager {
    * - Can be pinned, in which case we need to animate the clone, and the original element
    * - Are animated via their content element
    */
-  get animationTargets(): readonly HTMLElement[] {
+  //get animationTargets(): readonly HTMLElement[] {
+  get animationTargets(): readonly DOMElement[] {
     if (this.parent_ instanceof HTMLSectionView) {
       return [this.parent_.htmlBackgroundElement];
     }

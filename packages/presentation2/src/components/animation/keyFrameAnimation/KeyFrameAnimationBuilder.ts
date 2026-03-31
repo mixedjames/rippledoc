@@ -8,6 +8,8 @@ export class KeyFrameAnimationBuilder {
   private element_: ElementBuilder | SectionBuilder;
   private scrollTrigger_: string = "";
 
+  private subComponentTarget_: string = "";
+
   // Owned properties ------------------------------------------------------------------------------
   //
   private duration_: number = 0;
@@ -61,5 +63,13 @@ export class KeyFrameAnimationBuilder {
 
   set scrollDriven(value: boolean) {
     this.scrollDriven_ = value;
+  }
+
+  get subComponentTarget(): string {
+    return this.subComponentTarget_;
+  }
+
+  set subComponentTarget(value: string) {
+    this.subComponentTarget_ = value;
   }
 }
