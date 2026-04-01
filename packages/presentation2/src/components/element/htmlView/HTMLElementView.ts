@@ -178,7 +178,7 @@ export class HTMLElementView {
     this.animationManager_ = new HTMLAnimationManager({ parent: this });
   }
 
-  protected subclassCreateDOM(): void { }
+  protected subclassCreateDOM(): void {}
 
   /**
    * Content dependent sizing calculations are a two step process to minimise layout thrashing:
@@ -238,7 +238,7 @@ export class HTMLElementView {
     this.animationManager_.layout();
   }
 
-  protected subclassLayout(): void { }
+  protected subclassLayout(): void {}
 
   /**
    * Call this from subclasses when the structure of the Element's DOM changes in a way that might

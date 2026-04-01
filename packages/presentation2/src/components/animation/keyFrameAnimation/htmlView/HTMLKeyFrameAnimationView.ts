@@ -59,6 +59,14 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
     this.cssAnimation_ = this.animationManager_
       .getAnimationTargets(this.animation_)
       .map((target: Element): Animation => {
+        if (cssKeyFrames[0]!.strokeDashoffset !== undefined) {
+          if (target instanceof SVGPathElement) {
+            console.log(target.getTotalLength());
+            target.setAttribute("pathLength", "100");
+            target.style.strokeDasharray = "100";
+          }
+        }
+
         const animation = target.animate(cssKeyFrames, animationConfig);
         animation.pause();
         return animation;

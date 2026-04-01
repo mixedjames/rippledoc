@@ -1,6 +1,8 @@
 .rdoc-root {
-  font-size: calc(var(--presentation-scale) * 16pt);
+  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);
   font-family: "Trebuchet MS", sans-serif;
+
+  background: black;
 }
 
 .rdoc-root * {
@@ -14,6 +16,7 @@
 }
 
 .rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
+  background: white;
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements {
