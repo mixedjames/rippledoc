@@ -27,8 +27,10 @@ var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBP
 var ___CSS_LOADER_URL_REPLACEMENT_0___ = _node_modules_css_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_2___default()(___CSS_LOADER_URL_IMPORT_0___);
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
-  font-size: calc(var(--presentation-scale) * 16pt);
+  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);
   font-family: "Trebuchet MS", sans-serif;
+
+  background: black;
 }
 
 .rdoc-root * {
@@ -42,6 +44,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
 }
 
 .rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
+  background: white;
 }
 
 .rdoc-root .rdoc-viewport .rdoc-elements {
@@ -70,7 +73,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
 
 .rdoc-root .rdoc-elements .rdoc-image-element {
 }
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,iDAAiD;EACjD,uCAAuC;AACzC;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;EACE,yDAAyC;EACzC,sBAAsB;EACtB,2BAA2B;AAC7B;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(var(--presentation-scale) * 16pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {\n  background-image: url(\"../img/stars.jpg\");\n  background-size: cover;\n  background-position-x: left;\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,6DAA6D;EAC7D,uCAAuC;;EAEvC,iBAAiB;AACnB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,iBAAiB;AACnB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;EACE,yDAAyC;EACzC,sBAAsB;EACtB,2BAA2B;AAC7B;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n\n  background: black;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  background: white;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {\n  background-image: url(\"../img/stars.jpg\");\n  background-size: cover;\n  background-position-x: left;\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -2279,11 +2282,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _element_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/Element */ "../../packages/presentation2/src/components/element/Element.ts");
 
+/**
+ * A ScrollTriggeredAnimation represents some sort of dynamic visual effect that is:
+ * - Driven by scrolling the presentation (& coupled to a ScrollTrigger)
+ * - Connected to an animatable element: either an Element or Section currently
+ *
+ * ## Scroll-Driven Animation
+ * We make a distinction between two concepts:
+ * 1. What triggers an animation? (always a ScrollTrigger)
+ * 2. What drives the animation? (can be time or scrolling)
+ *
+ * This is represented by the `.isScrollDriven` property.
+ */
 class ScrollTriggeredAnimation {
     // Structural relations --
     //
     elementOrSection_;
     trigger_;
+    subComponentTarget_ = "";
     // Owned properties --
     //
     duration_ = 0;
@@ -2293,6 +2309,7 @@ class ScrollTriggeredAnimation {
         this.trigger_ = options.trigger;
         this.duration_ = options.duration ?? 0;
         this.scrollDriven_ = options.scrollDriven ?? false;
+        this.subComponentTarget_ = options.subComponentTarget ?? "";
     }
     get element() {
         if (!(this.elementOrSection_ instanceof _element_Element__WEBPACK_IMPORTED_MODULE_0__.Element)) {
@@ -2314,6 +2331,12 @@ class ScrollTriggeredAnimation {
     }
     get duration() {
         return this.duration_;
+    }
+    get subComponentTarget() {
+        return this.subComponentTarget_;
+    }
+    get hasSubComponentTarget() {
+        return this.subComponentTarget_.trim().length > 0;
     }
 }
 
@@ -2340,6 +2363,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/**
+ * Manager object the the various animation views that may be attached to an Element or Section.
+ */
 class HTMLAnimationManager {
     parent_;
     pinViews_ = [];
@@ -2418,6 +2444,22 @@ class HTMLAnimationManager {
         this.animationViews_.length = 0;
     }
     /**
+     * Called by an owning object (currently only HTMLElementView) to indicate that the DOM underlying
+     * the animatable object has changed.
+     *
+     * This is important because of pinned elements - pin views maintain a cloned version of the
+     * original element's DOM, and if the original DOM changes then the clones need to be updated to
+     * match.
+     */
+    animatableObjectChanges() {
+        this.pinViews_.forEach((pinView) => {
+            pinView.elementViewModified();
+        });
+        this.animationViews_.forEach((animationView) => {
+            animationView.animatableObjectModified();
+        });
+    }
+    /**
      * Gets the list of HTMLElements that should be targets for animations.
      *
      * This solves two problems:
@@ -2432,14 +2474,41 @@ class HTMLAnimationManager {
      * - Can be pinned, in which case we need to animate the clone, and the original element
      * - Are animated via their content element
      */
-    get animationTargets() {
+    getAnimationTargets(animation) {
         if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
+            // (1) Path 1: Sections
+            // These are easy because Sections are never pinned. The only complexity is that
+            // HTMLSectionViews have a visual background element and a purely structural content element.
+            // Animations only apply to the former.
+            // Quick sanity check - Section animations cannot have sub-component targets, so if we see one
+            // then something has gone very wrong upstream.
+            if (animation.hasSubComponentTarget) {
+                throw new Error("Sub-component targets are not supported for Section animations");
+            }
             return [this.parent_.htmlBackgroundElement];
         }
-        return [
-            this.parent_.htmlElement,
-            ...this.pinViews_.map((pinView) => pinView.clonedElement),
-        ];
+        else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
+            // (2) Path 2: Elements
+            if (animation.hasSubComponentTarget) {
+                // If the animation has a sub-component target, then we need to get the relevant sub-component
+                // element from the parent, and all pinned clones of the parent.
+                return [
+                    this.parent_.getSubComponentElement(animation.subComponentTarget),
+                    ...this.pinViews_.map((pinView) => pinView.getSubComponentElement(animation.subComponentTarget)),
+                ];
+            }
+            else {
+                // If there is no sub-component target, then the animation applies to the whole element
+                // and all pinned clones of the element.
+                return [
+                    this.parent_.htmlElement,
+                    ...this.pinViews_.map((pinView) => pinView.clonedElement),
+                ];
+            }
+        }
+        else {
+            throw new Error("Unsupported parent type for HTMLAnimationManager");
+        }
     }
     get animatableParent() {
         return this.parent_;
@@ -2467,6 +2536,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _ScrollTriggeredAnimation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ScrollTriggeredAnimation */ "../../packages/presentation2/src/components/animation/ScrollTriggeredAnimation.ts");
 
+/**
+ *
+ */
 class KeyFrameAnimation extends _ScrollTriggeredAnimation__WEBPACK_IMPORTED_MODULE_0__.ScrollTriggeredAnimation {
     // Owned properties --
     //
@@ -2498,6 +2570,7 @@ class KeyFrameAnimationBuilder {
     //
     element_;
     scrollTrigger_ = "";
+    subComponentTarget_ = "";
     // Owned properties ------------------------------------------------------------------------------
     //
     duration_ = 0;
@@ -2540,6 +2613,12 @@ class KeyFrameAnimationBuilder {
     set scrollDriven(value) {
         this.scrollDriven_ = value;
     }
+    get subComponentTarget() {
+        return this.subComponentTarget_;
+    }
+    set subComponentTarget(value) {
+        this.subComponentTarget_ = value;
+    }
 }
 
 
@@ -2581,6 +2660,7 @@ class KeyFrameAnimationCompiler {
             keyFrames: this.builder_.keyFrames.map((keyFrame) => ({ ...keyFrame })),
             duration: this.builder_.duration,
             scrollDriven: this.builder_.scrollDriven,
+            subComponentTarget: this.builder_.subComponentTarget,
         });
     }
 }
@@ -2619,6 +2699,9 @@ class HTMLKeyFrameAnimationView {
     layout() {
         // FIXME: need to react to layout changes
     }
+    animatableObjectModified() {
+        this.buildDOM();
+    }
     buildDOM() {
         const cssKeyFrames = this.animation_.keyFrames.map((keyFrame) => this.buildKeyFrame(keyFrame));
         const animationConfig = {
@@ -2626,7 +2709,16 @@ class HTMLKeyFrameAnimationView {
             fill: "forwards",
             direction: "normal",
         };
-        this.cssAnimation_ = this.animationManager_.animationTargets.map((target) => {
+        this.cssAnimation_ = this.animationManager_
+            .getAnimationTargets(this.animation_)
+            .map((target) => {
+            if (cssKeyFrames[0].strokeDashoffset !== undefined) {
+                if (target instanceof SVGPathElement) {
+                    console.log(target.getTotalLength());
+                    target.setAttribute("pathLength", "100");
+                    target.style.strokeDasharray = "100";
+                }
+            }
             const animation = target.animate(cssKeyFrames, animationConfig);
             animation.pause();
             return animation;
@@ -2646,7 +2738,9 @@ class HTMLKeyFrameAnimationView {
         if (keyFrame.position !== undefined) {
             cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
         }
-        console.log("Built CSS keyframe:", cssKeyFrame);
+        if (keyFrame.strokeDashoffset !== undefined) {
+            cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+        }
         return cssKeyFrame;
     }
     attachEventListeners() {
@@ -2657,11 +2751,11 @@ class HTMLKeyFrameAnimationView {
         }), scrollTrigger.on("reverseStart", () => {
             this.playAnimation("end");
         }), scrollTrigger.on("end", () => {
-            //this.pauseAnimation("end");
-            this.playAnimation("end");
+            this.pauseAnimation("end");
+            //this.playAnimation("end");
         }), scrollTrigger.on("reverseEnd", () => {
-            //this.pauseAnimation("start");
-            this.playAnimation("start");
+            this.pauseAnimation("start");
+            //this.playAnimation("start");
         }), scrollTrigger.on("scroll", (e) => {
             this.driveAnimationToProgress(e.progress);
         }));
@@ -2844,13 +2938,14 @@ const STYLE_PRECISION = 2;
  */
 class HTMLPinView {
     pin_;
-    elementView_;
+    elementViewLinkedClone_;
     unsubscribe_ = [];
     clone_;
     target_;
     constructor(options) {
         this.pin_ = options.pin;
-        this.elementView_ = options.elementView;
+        //this.elementView_ = options.elementView;
+        this.elementViewLinkedClone_ = options.elementView.makeLinkedClone();
         this.buildDOM();
         this.attachEventListeners();
     }
@@ -2865,17 +2960,33 @@ class HTMLPinView {
     get clonedElement() {
         return this.clone_;
     }
+    elementViewModified() {
+        this.clone_.remove();
+        this.buildDOM();
+    }
+    /**
+     * See Element.allowsSubComponentElements
+     */
+    get allowsSubComponentElements() {
+        return this.elementViewLinkedClone_.allowsSubComponentElements;
+    }
+    getSubComponentElement(name) {
+        return this.elementViewLinkedClone_.getSubComponentElement(name);
+    }
     buildDOM() {
+        // Make sure the linked clone is up to date, in case the target DOM has been modified since the
+        // last time we built.
+        this.elementViewLinkedClone_.update();
         // Placeholder
         //
-        this.target_ = this.elementView_.htmlElement;
+        this.target_ = this.elementViewLinkedClone_.elementView.htmlElement;
         // Clone
         //
-        this.clone_ = this.elementView_.htmlElement.cloneNode(true);
+        this.clone_ = this.elementViewLinkedClone_.htmlElement;
         this.clone_.style.position = "absolute";
         this.clone_.style.visibility = "hidden";
         this.clone_.classList.add("rdoc-pin-clone");
-        this.elementView_.presentationView.htmlPins.appendChild(this.clone_);
+        this.elementViewLinkedClone_.elementView.presentationView.htmlPins.appendChild(this.clone_);
     }
     attachEventListeners() {
         const scrollTrigger = this.pin_.scrollTrigger;
@@ -2904,7 +3015,8 @@ class HTMLPinView {
         // trigger, rather than the current scroll position. Scrolling at speed might have caused the
         // end trigger to have been missed.
         //
-        const scale = this.elementView_.presentationView.physicalDimensions.scale;
+        const scale = this.elementViewLinkedClone_.elementView.presentationView
+            .physicalDimensions.scale;
         const dy = scale * (this.pin_.scrollTrigger.end - this.pin_.scrollTrigger.start);
         this.target_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
         this.target_.style.zIndex = "1000";
@@ -2918,9 +3030,11 @@ class HTMLPinView {
     }
     positionClone() {
         const targetRect = this.target_.getBoundingClientRect();
-        //const top = targetRect.top - presentationRect.top;
-        const scale = this.elementView_.presentationView.physicalDimensions.scale;
-        const top = scale * (this.elementView_.element.top - this.pin_.scrollTrigger.start);
+        const scale = this.elementViewLinkedClone_.elementView.presentationView
+            .physicalDimensions.scale;
+        const top = scale *
+            (this.elementViewLinkedClone_.elementView.element.top -
+                this.pin_.scrollTrigger.start);
         const left = targetRect.left;
         this.clone_.style.top = `${top.toFixed(STYLE_PRECISION)}px`;
         this.clone_.style.left = `${left.toFixed(STYLE_PRECISION)}px`;
@@ -3634,12 +3748,74 @@ class ElementCompiler {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   HTMLElementView: () => (/* binding */ HTMLElementView)
+/* harmony export */   HTMLElementView: () => (/* binding */ HTMLElementView),
+/* harmony export */   HTMLElementViewLinkedClone: () => (/* binding */ HTMLElementViewLinkedClone)
 /* harmony export */ });
 /* harmony import */ var _animation_htmlView_HTMLAnimationManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../animation/htmlView/HTMLAnimationManager */ "../../packages/presentation2/src/components/animation/htmlView/HTMLAnimationManager.ts");
 /* harmony import */ var _Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Element */ "../../packages/presentation2/src/components/element/Element.ts");
 
 
+/**
+ * The problem:
+ * - Pinned needs to be able to clone the target element.
+ * - ...but Pins shouldn't need to know the details of this
+ * - We also need to support sub-component elements on the clone (i.e. if we're animating a specific
+ *   part of an SVG image, then we need to be able to support that on the clone as well).
+ * - Sometimes the clone target changes (i.e. when an image loads) and we need a mechanism to
+ *   resolve that.
+ *
+ * The solution: HTMLElementViewLinkedClone
+ *
+ * This class provides a linked clone of an HTMLElementView's htmlElement. It is linked in the sense
+ * that it knows how to clone an element and, when triggered, will update itself. (Although it cant
+ * detect this automatically)
+ */
+class HTMLElementViewLinkedClone {
+    elementView_;
+    htmlElement_;
+    constructor(elementView) {
+        this.elementView_ = elementView;
+        this.update();
+    }
+    get elementView() {
+        return this.elementView_;
+    }
+    get htmlElement() {
+        return this.htmlElement_;
+    }
+    update() {
+        if (this.htmlElement_) {
+            this.htmlElement_.remove();
+        }
+        this.htmlElement_ = this.elementView_.htmlElement.cloneNode(true);
+    }
+    /**
+     * See Element.allowsSubComponentElements
+     *
+     * Much like Element itself, we don't support sub-component elements on the linked clone, but
+     * subclasses can. Override this and `getSubComponentElement` in tandem to support sub-component
+     * elements on the linked clone.
+     */
+    get allowsSubComponentElements() {
+        return false;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getSubComponentElement(name) {
+        throw new Error("HTMLElementViewLinkedClone does not support sub-component elements.");
+    }
+    /**
+     * Subclasses can override this method to provide a custom cloning implementation if needed.
+     *
+     * The default implementation simply deep-clones the elementView's htmlElement.
+     * (`HTMLElement.cloneNode(true)`)
+     *
+     * *Note:* this method is called from the constructor and from `update()`, so it needs to be able
+     * to run before the subclass constructor. Beware!
+     */
+    subclassClone() {
+        return this.elementView_.htmlElement.cloneNode(true);
+    }
+}
 /**
  *
  * # Pattern for subclassing
@@ -3756,6 +3932,47 @@ class HTMLElementView {
         this.animationManager_.layout();
     }
     subclassLayout() { }
+    /**
+     * Call this from subclasses when the structure of the Element's DOM changes in a way that might
+     * affect animations.
+     *
+     * This function exists because in 2026 pinning is a pain in the ass. In order to get visually
+     * perfect pinning we end up cloning the target object as part of the process. If the Element
+     * changes after the pin is created, then that change will get missed.
+     *
+     * This function gives the HTMLAnimationManager a change to catch up.
+     */
+    animatableObjectChanges() {
+        this.animationManager_.animatableObjectChanges();
+    }
+    /**
+     * Reports whether sub-component elements are supported by this Element type.
+     *
+     * The default implementation returns false. Subclasses should override this property if they
+     * support sub-component elements.
+     *
+     * See HTMLElementView.getSubComponentElement
+     */
+    get allowsSubComponentElements() {
+        return false;
+    }
+    /**
+     * Some Element types (for example SVG images) support accessing specific named
+     * subcomponents within the top level Element object. In the SVG example you can access individual
+     * SVG DOM elements for the purposes of animation, without needing to create a separate Element
+     * for each one.
+     *
+     * The default implementation does not support sub-component elements, and will throw an error.
+     * Subclasses that do support sub-component elements should override this method to return the
+     * appropriate DOMElement for the given sub-component name.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getSubComponentElement(name) {
+        throw new Error("HTMLElementView does not support sub-component elements.");
+    }
+    makeLinkedClone() {
+        return new HTMLElementViewLinkedClone(this);
+    }
 }
 
 
@@ -3905,20 +4122,86 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../htmlView/HTMLElementView */ "../../packages/presentation2/src/components/element/htmlView/HTMLElementView.ts");
 /* harmony import */ var _ImageElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../ImageElement */ "../../packages/presentation2/src/components/element/imageElement/ImageElement.ts");
+/* harmony import */ var _rippledoc_sanitizer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @rippledoc/sanitizer */ "../../packages/sanitizer/src/index.ts");
 
 
+
+var ImageType;
+(function (ImageType) {
+    ImageType[ImageType["Bitmap"] = 0] = "Bitmap";
+    ImageType[ImageType["SVG"] = 1] = "SVG";
+})(ImageType || (ImageType = {}));
+class HTMLImageElementViewLinkedClone extends _htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_0__.HTMLElementViewLinkedClone {
+    get elementView() {
+        // We know that this is a HTMLImageElementView, so we can cast it here.
+        return super.elementView;
+    }
+    get allowsSubComponentElements() {
+        return this.elementView.allowsSubComponentElements;
+    }
+    get svgElement() {
+        const svgElement = this.htmlElement.querySelector("svg");
+        if (!svgElement) {
+            throw new Error("HTMLImageElementViewLinkedClone: no SVG element found in linked clone.");
+        }
+        return svgElement;
+    }
+    getSubComponentElement(name) {
+        const elementView = this.elementView;
+        const svg = this.svgElement;
+        if (elementView.type !== ImageType.SVG) {
+            throw new Error("HTMLImageElementView: bitmap images do not support sub-component elements.");
+        }
+        if (svg.hasAttribute("temporaryElement")) {
+            const tmp = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            svg.appendChild(tmp);
+            return tmp;
+        }
+        const subComponentElement = svg.querySelector(`[id="${name}"]`);
+        if (!subComponentElement) {
+            throw new Error(`HTMLImageElementView: no sub-component element with name "${name}" found in SVG image.`);
+        }
+        return subComponentElement;
+    }
+}
 class HTMLImageElementView extends _htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_0__.HTMLElementView {
+    type_;
+    svgElement_ = null;
     constructor(options) {
         super({ ...options, subclass: true });
+        this.type_ =
+            this.getFileExtension(this.element.source) === "svg"
+                ? ImageType.SVG
+                : ImageType.Bitmap;
         this.createDOM();
     }
     get element() {
         // We know that this is a ImageElement, so we can cast it here.
         return super.element;
     }
+    get type() {
+        return this.type_;
+    }
+    get svgElement() {
+        if (this.type_ !== ImageType.SVG) {
+            throw new Error("HTMLImageElementView: only SVG images have sub-component elements.");
+        }
+        return this.svgElement_;
+    }
     subclassCreateDOM() {
+        this.htmlElement.classList.add("rdoc-image-element");
+        if (this.type_ === ImageType.SVG) {
+            this.createSVG();
+        }
+        else {
+            this.createBitmap();
+        }
+    }
+    createBitmap() {
         const img = document.createElement("img");
         img.src = this.element.source;
+        img.style.width = "100%";
+        img.style.height = "100%";
         switch (this.element.fit) {
             case _ImageElement__WEBPACK_IMPORTED_MODULE_1__.ImageFit.Fill:
                 img.style.objectFit = "fill";
@@ -3930,12 +4213,95 @@ class HTMLImageElementView extends _htmlView_HTMLElementView__WEBPACK_IMPORTED_M
                 img.style.objectFit = "cover";
                 break;
         }
-        img.style.width = "100%";
-        img.style.height = "100%";
-        this.htmlElement.classList.add("rdoc-image-element");
         this.htmlElement.appendChild(img);
     }
+    createSVG() {
+        this.svgElement_ = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.svgElement_.setAttribute("temporaryElement", "true");
+        this.htmlElement.appendChild(this.svgElement_);
+        fetch(this.element.source)
+            .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTMLImageElementView: failed to fetch SVG from "${this.element.source}"`);
+            }
+            return response.text();
+        })
+            .then((svgText) => {
+            const sanitized = (0,_rippledoc_sanitizer__WEBPACK_IMPORTED_MODULE_2__.sanitizeSVG)(svgText);
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(sanitized, "image/svg+xml");
+            const svg = doc.documentElement;
+            // Fudge: we want to import the SVG into the current document, but TypeScript doesn't know
+            // that the result of importNode will be an SVGElement, so we have to assert it as unknown
+            // first.
+            const imported = document.importNode(svg, true);
+            // We know that this.svgElement_ is not null because we just created it above and haven't
+            // removed it since, so we can assert it as non-null with the ! operator.
+            this.svgElement_.remove();
+            this.svgElement_ = imported;
+            imported.setAttribute("data-image-source", this.element.source);
+            imported.setAttribute("width", "100%");
+            imported.setAttribute("height", "100%");
+            imported.style.display = "block";
+            imported.style.position = "absolute";
+            imported.style.left = "0";
+            imported.style.top = "0";
+            this.htmlElement.appendChild(imported);
+            this.animatableObjectChanges();
+        })
+            .catch((error) => {
+            // For now, fail silently except for a console diagnostic.
+            // Callers still get the label even if the image fails to load.
+            // //eslint-disable-next-line no-console
+            console.error(error);
+        });
+    }
     subclassLayout() { }
+    getFileExtension(filename) {
+        // My understanding of this fancy-pants reg-ex:
+        // /\.([a-z0-9]+)(?:[#?].*)?$/
+        //    - \. means match literal '.'
+        //    - ([a-z0-9]+) means capturing group (i.e. store) the next sequence of one or more
+        //      characters or digits.
+        //    - (?:[#?].*) means non-capturing group (i.e. forget) the next sequence of '#' or '?'
+        //      followed by any combination of characters
+        //    - $ means match the end-of-sequence marker
+        //
+        // Needed so that we can match fancy-pants urls like...
+        //  im-a-normal-filename.svg
+        //  my-pants-are-fancy.png?size=large and return 'png'
+        //  im-even-fancier.longExtension?x=1#y=2
+        const lowercase = filename.toLowerCase();
+        const match = lowercase.match(/\.([a-z0-9]+)(?:[#?].*)?$/);
+        if (!match || match.length < 2 || !match[1]) {
+            return "";
+        }
+        return match[1];
+    }
+    get allowsSubComponentElements() {
+        return this.type_ === ImageType.SVG;
+    }
+    /**
+     *
+     */
+    getSubComponentElement(name) {
+        if (this.type_ === ImageType.SVG) {
+            if (this.svgElement_.hasAttribute("temporaryElement")) {
+                const tmp = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                this.svgElement_?.appendChild(tmp);
+                return tmp;
+            }
+            const element = this.svgElement_.querySelector(`[id="${name}"]`);
+            if (element) {
+                return element;
+            }
+            throw new Error(`HTMLImageElementView: no sub-component element with name "${name}" found in SVG image.`);
+        }
+        throw new Error("HTMLImageElementView: bitmap images do not support sub-component elements.");
+    }
+    makeLinkedClone() {
+        return new HTMLImageElementViewLinkedClone(this);
+    }
 }
 
 
@@ -4177,6 +4543,10 @@ function loadAnimation(options) {
     if (!durationAttr || durationAttr.trim() === "") {
         throw new Error("<animation> must have a non-empty 'duration' attribute");
     }
+    const subComponentTarget = element.getAttribute("target-part");
+    if (subComponentTarget && subComponentTarget.trim() !== "") {
+        builder.subComponentTarget = subComponentTarget.trim();
+    }
     const duration = Number(durationAttr);
     if (Number.isNaN(duration)) {
         throw new Error(`<animation> has invalid 'duration' value '${durationAttr}'; expected a number`);
@@ -4223,11 +4593,16 @@ function loadAnimation(options) {
             element: child,
             attributeName: "backgroundPositionY",
         });
+        const strokeDashoffset = getOptionalNumericKeyFrameAttribute({
+            element: child,
+            attributeName: "strokeDashoffset",
+        });
         const keyFrame = {
             position,
             ...(opacity !== undefined ? { opacity } : {}),
             ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
             ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
+            ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
         };
         builder.addKeyFrame(keyFrame);
         keyFrameCount += 1;
@@ -6328,6 +6703,24 @@ class HTMLSectionView {
     get htmlContentElement() {
         return this.contentElement_;
     }
+    /**
+     * See `getSubComponentElement`.
+     *
+     * Always returns false for HTMLSectionView since currently sections do not support sub-component
+     * elements.
+     */
+    get allowsSubComponentElements() {
+        return false;
+    }
+    /**
+     * See `Element.getSubComponentElement`. We implement this method on HTMLSectionView for
+     * simplicity of use in animations. However, currently sections do not support sub-component
+     * elements so this method just throws.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getSubComponentElement(name) {
+        throw new Error("HTMLSectionView does not support sub-component elements.");
+    }
     // ----------------------------------------------------------------------------------------------
     // Rendering
     // ----------------------------------------------------------------------------------------------
@@ -6484,12 +6877,10 @@ __webpack_require__.r(__webpack_exports__);
 
 try {
     const p = await (0,_rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.loadFromXML)({ url: "presentations/demo1.xml" });
-    console.log(p);
     const htmlView = new _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.HTMLPresentationView({
         presentation: p,
         container: "#theContainer",
     });
-    console.log(Date.now());
 }
 catch (e) {
     console.error("Compilation error:", e);
