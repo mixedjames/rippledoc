@@ -12,6 +12,80 @@ import { ContentDependentDimension, Element } from "../Element";
 type DOMElement = globalThis.Element;
 
 /**
+ * The problem:
+ * - Pinned needs to be able to clone the target element.
+ * - ...but Pins shouldn't need to know the details of this
+ * - We also need to support sub-component elements on the clone (i.e. if we're animating a specific
+ *   part of an SVG image, then we need to be able to support that on the clone as well).
+ * - Sometimes the clone target changes (i.e. when an image loads) and we need a mechanism to
+ *   resolve that.
+ *
+ * The solution: HTMLElementViewLinkedClone
+ *
+ * This class provides a linked clone of an HTMLElementView's htmlElement. It is linked in the sense
+ * that it knows how to clone an element and, when triggered, will update itself. (Although it cant
+ * detect this automatically)
+ */
+export class HTMLElementViewLinkedClone {
+  private elementView_: HTMLElementView;
+  private htmlElement_!: HTMLElement;
+
+  constructor(elementView: HTMLElementView) {
+    this.elementView_ = elementView;
+    this.update();
+  }
+
+  get elementView(): HTMLElementView {
+    return this.elementView_;
+  }
+
+  get htmlElement(): HTMLElement {
+    return this.htmlElement_;
+  }
+
+  update(): void {
+    if (this.htmlElement_) {
+      this.htmlElement_.remove();
+    }
+
+    this.htmlElement_ = this.elementView_.htmlElement.cloneNode(
+      true,
+    ) as HTMLElement;
+  }
+
+  /**
+   * See Element.allowsSubComponentElements
+   *
+   * Much like Element itself, we don't support sub-component elements on the linked clone, but
+   * subclasses can. Override this and `getSubComponentElement` in tandem to support sub-component
+   * elements on the linked clone.
+   */
+  get allowsSubComponentElements(): boolean {
+    return false;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getSubComponentElement(name: string): DOMElement {
+    throw new Error(
+      "HTMLElementViewLinkedClone does not support sub-component elements.",
+    );
+  }
+
+  /**
+   * Subclasses can override this method to provide a custom cloning implementation if needed.
+   *
+   * The default implementation simply deep-clones the elementView's htmlElement.
+   * (`HTMLElement.cloneNode(true)`)
+   *
+   * *Note:* this method is called from the constructor and from `update()`, so it needs to be able
+   * to run before the subclass constructor. Beware!
+   */
+  protected subclassClone(): HTMLElement {
+    return this.elementView_.htmlElement.cloneNode(true) as HTMLElement;
+  }
+}
+
+/**
  *
  * # Pattern for subclassing
  * This is *not* a limitless extension point. We expect a strict pattern:
@@ -205,5 +279,9 @@ export class HTMLElementView {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getSubComponentElement(name: string): DOMElement {
     throw new Error("HTMLElementView does not support sub-component elements.");
+  }
+
+  makeLinkedClone(): HTMLElementViewLinkedClone {
+    return new HTMLElementViewLinkedClone(this);
   }
 }

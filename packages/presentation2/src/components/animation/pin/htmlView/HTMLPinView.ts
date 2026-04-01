@@ -1,5 +1,16 @@
 import { Pin } from "../Pin";
-import { HTMLElementView } from "../../../element/htmlView/HTMLElementView";
+import {
+  HTMLElementView,
+  HTMLElementViewLinkedClone,
+} from "../../../element/htmlView/HTMLElementView";
+
+/**
+ * Represents the browsers basic Element type.
+ *
+ * Exists because I made an error in naming elements on my custom DOM and we now have two different
+ * Element types in this codebase - the browser's native Element, and our custom Element class.
+ */
+type DOMElement = globalThis.Element;
 
 const STYLE_PRECISION = 2;
 
@@ -8,7 +19,7 @@ const STYLE_PRECISION = 2;
  */
 export class HTMLPinView {
   private readonly pin_: Pin;
-  private readonly elementView_: HTMLElementView;
+  private readonly elementViewLinkedClone_: HTMLElementViewLinkedClone;
 
   private readonly unsubscribe_: Array<() => void> = [];
 
@@ -17,7 +28,8 @@ export class HTMLPinView {
 
   constructor(options: { pin: Pin; elementView: HTMLElementView }) {
     this.pin_ = options.pin;
-    this.elementView_ = options.elementView;
+    //this.elementView_ = options.elementView;
+    this.elementViewLinkedClone_ = options.elementView.makeLinkedClone();
 
     this.buildDOM();
     this.attachEventListeners();
@@ -43,18 +55,35 @@ export class HTMLPinView {
     this.buildDOM();
   }
 
+  /**
+   * See Element.allowsSubComponentElements
+   */
+  get allowsSubComponentElements(): boolean {
+    return this.elementViewLinkedClone_.allowsSubComponentElements;
+  }
+
+  getSubComponentElement(name: string): DOMElement {
+    return this.elementViewLinkedClone_.getSubComponentElement(name);
+  }
+
   private buildDOM(): void {
+    // Make sure the linked clone is up to date, in case the target DOM has been modified since the
+    // last time we built.
+    this.elementViewLinkedClone_.update();
+
     // Placeholder
     //
-    this.target_ = this.elementView_.htmlElement;
+    this.target_ = this.elementViewLinkedClone_.elementView.htmlElement;
 
     // Clone
     //
-    this.clone_ = this.elementView_.htmlElement.cloneNode(true) as HTMLElement;
+    this.clone_ = this.elementViewLinkedClone_.htmlElement;
     this.clone_.style.position = "absolute";
     this.clone_.style.visibility = "hidden";
     this.clone_.classList.add("rdoc-pin-clone");
-    this.elementView_.presentationView.htmlPins.appendChild(this.clone_);
+    this.elementViewLinkedClone_.elementView.presentationView.htmlPins.appendChild(
+      this.clone_,
+    );
   }
 
   private attachEventListeners(): void {
@@ -95,7 +124,9 @@ export class HTMLPinView {
     // trigger, rather than the current scroll position. Scrolling at speed might have caused the
     // end trigger to have been missed.
     //
-    const scale = this.elementView_.presentationView.physicalDimensions.scale;
+    const scale =
+      this.elementViewLinkedClone_.elementView.presentationView
+        .physicalDimensions.scale;
     const dy =
       scale * (this.pin_.scrollTrigger.end - this.pin_.scrollTrigger.start);
 
@@ -116,10 +147,13 @@ export class HTMLPinView {
   private positionClone(): void {
     const targetRect = this.target_.getBoundingClientRect();
 
-    //const top = targetRect.top - presentationRect.top;
-    const scale = this.elementView_.presentationView.physicalDimensions.scale;
+    const scale =
+      this.elementViewLinkedClone_.elementView.presentationView
+        .physicalDimensions.scale;
     const top =
-      scale * (this.elementView_.element.top - this.pin_.scrollTrigger.start);
+      scale *
+      (this.elementViewLinkedClone_.elementView.element.top -
+        this.pin_.scrollTrigger.start);
     const left = targetRect.left;
 
     this.clone_.style.top = `${top.toFixed(STYLE_PRECISION)}px`;

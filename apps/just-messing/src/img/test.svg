@@ -97,7 +97,7 @@
      cy="320.91431"
      r="64.914291" />
   <path
-     style="fill:none;stroke-width:12.8;stroke:#000000;stroke-opacity:1;stroke-dasharray:768.00001144;stroke-dashoffset:0"
-     d="M 96.914286,109.71429 H 896"
+     style="fill:none;stroke:#000000;stroke-width:13.2037;stroke-dasharray:100;stroke-dashoffset:0;stroke-opacity:1"
+     d="M 73.142857,109.71429 H 923.42857"
      id="liney" />
 </svg>

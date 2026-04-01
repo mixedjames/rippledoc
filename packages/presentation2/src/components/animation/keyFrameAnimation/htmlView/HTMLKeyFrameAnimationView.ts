@@ -56,28 +56,13 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       direction: "normal",
     };
 
-    this.cssAnimation_ = this.animationManager_.animationTargets.map(
-      (target) => {
-        if (this.animation_.hasSubComponentTarget) {
-          // FIXME:
-          //
-          if (
-            !this.animationManager_.animatableParent.allowsSubComponentElements
-          ) {
-            throw new Error(
-              "Animatable parent does not allow sub-component elements",
-            );
-          }
-
-          const e = this.animationManager_.animatableParent;
-          target = e.getSubComponentElement(this.animation_.subComponentTarget);
-        }
-
+    this.cssAnimation_ = this.animationManager_
+      .getAnimationTargets(this.animation_)
+      .map((target: Element): Animation => {
         const animation = target.animate(cssKeyFrames, animationConfig);
         animation.pause();
         return animation;
-      },
-    );
+      });
   }
 
   private buildKeyFrame(keyFrame: KeyFrame): CSSKeyFrame {
@@ -103,7 +88,6 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
     }
 
-    console.log("Built CSS keyframe:", cssKeyFrame);
     return cssKeyFrame;
   }
 

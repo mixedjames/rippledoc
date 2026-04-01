@@ -113,6 +113,14 @@ export class HTMLAnimationManager {
     this.animationViews_.length = 0;
   }
 
+  /**
+   * Called by an owning object (currently only HTMLElementView) to indicate that the DOM underlying
+   * the animatable object has changed.
+   *
+   * This is important because of pinned elements - pin views maintain a cloned version of the
+   * original element's DOM, and if the original DOM changes then the clones need to be updated to
+   * match.
+   */
   animatableObjectChanges(): void {
     this.pinViews_.forEach((pinView) => {
       pinView.elementViewModified();
@@ -138,15 +146,46 @@ export class HTMLAnimationManager {
    * - Can be pinned, in which case we need to animate the clone, and the original element
    * - Are animated via their content element
    */
-  //get animationTargets(): readonly HTMLElement[] {
-  get animationTargets(): readonly DOMElement[] {
+  getAnimationTargets(animation: ScrollTriggeredAnimation): DOMElement[] {
     if (this.parent_ instanceof HTMLSectionView) {
+      // (1) Path 1: Sections
+      // These are easy because Sections are never pinned. The only complexity is that
+      // HTMLSectionViews have a visual background element and a purely structural content element.
+      // Animations only apply to the former.
+
+      // Quick sanity check - Section animations cannot have sub-component targets, so if we see one
+      // then something has gone very wrong upstream.
+      if (animation.hasSubComponentTarget) {
+        throw new Error(
+          "Sub-component targets are not supported for Section animations",
+        );
+      }
+
       return [this.parent_.htmlBackgroundElement];
+    } else if (this.parent_ instanceof HTMLElementView) {
+      // (2) Path 2: Elements
+      if (animation.hasSubComponentTarget) {
+        // If the animation has a sub-component target, then we need to get the relevant sub-component
+        // element from the parent, and all pinned clones of the parent.
+
+        return [
+          this.parent_.getSubComponentElement(animation.subComponentTarget),
+          ...this.pinViews_.map((pinView) =>
+            pinView.getSubComponentElement(animation.subComponentTarget),
+          ),
+        ];
+      } else {
+        // If there is no sub-component target, then the animation applies to the whole element
+        // and all pinned clones of the element.
+
+        return [
+          this.parent_.htmlElement,
+          ...this.pinViews_.map((pinView) => pinView.clonedElement),
+        ];
+      }
+    } else {
+      throw new Error("Unsupported parent type for HTMLAnimationManager");
     }
-    return [
-      this.parent_.htmlElement,
-      ...this.pinViews_.map((pinView) => pinView.clonedElement),
-    ];
   }
 
   get animatableParent(): HTMLAnimatableObject {

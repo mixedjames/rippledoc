@@ -1,11 +1,72 @@
-import { HTMLElementView } from "../../htmlView/HTMLElementView";
+import {
+  HTMLElementView,
+  HTMLElementViewLinkedClone,
+} from "../../htmlView/HTMLElementView";
 import { ImageElement, ImageFit } from "../ImageElement";
 import { HTMLSectionView } from "../../../section/htmlView/HTMLSectionView";
 import { sanitizeSVG } from "@rippledoc/sanitizer";
 
+/**
+ * Represents the browsers basic Element type.
+ *
+ * Exists because I made an error in naming elements on my custom DOM and we now have two different
+ * Element types in this codebase - the browser's native Element, and our custom Element class.
+ */
+type DOMElement = globalThis.Element;
+
 enum ImageType {
   Bitmap,
   SVG,
+}
+
+class HTMLImageElementViewLinkedClone extends HTMLElementViewLinkedClone {
+  get elementView(): HTMLImageElementView {
+    // We know that this is a HTMLImageElementView, so we can cast it here.
+    return super.elementView as HTMLImageElementView;
+  }
+
+  get allowsSubComponentElements(): boolean {
+    return this.elementView.allowsSubComponentElements;
+  }
+
+  get svgElement(): SVGElement {
+    const svgElement = this.htmlElement.querySelector("svg") as SVGElement;
+
+    if (!svgElement) {
+      throw new Error(
+        "HTMLImageElementViewLinkedClone: no SVG element found in linked clone.",
+      );
+    }
+
+    return svgElement;
+  }
+
+  getSubComponentElement(name: string): DOMElement {
+    const elementView = this.elementView;
+    const svg = this.svgElement;
+
+    if (elementView.type !== ImageType.SVG) {
+      throw new Error(
+        "HTMLImageElementView: bitmap images do not support sub-component elements.",
+      );
+    }
+
+    if (svg.hasAttribute("temporaryElement")) {
+      const tmp = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      svg.appendChild(tmp);
+      return tmp;
+    }
+
+    const subComponentElement = svg.querySelector<SVGElement>(`[id="${name}"]`);
+
+    if (!subComponentElement) {
+      throw new Error(
+        `HTMLImageElementView: no sub-component element with name "${name}" found in SVG image.`,
+      );
+    }
+
+    return subComponentElement;
+  }
 }
 
 export class HTMLImageElementView extends HTMLElementView {
@@ -28,6 +89,19 @@ export class HTMLImageElementView extends HTMLElementView {
   get element(): ImageElement {
     // We know that this is a ImageElement, so we can cast it here.
     return super.element as ImageElement;
+  }
+
+  get type(): ImageType {
+    return this.type_;
+  }
+
+  get svgElement(): SVGElement {
+    if (this.type_ !== ImageType.SVG) {
+      throw new Error(
+        "HTMLImageElementView: only SVG images have sub-component elements.",
+      );
+    }
+    return this.svgElement_!;
   }
 
   protected subclassCreateDOM(): void {
@@ -68,6 +142,7 @@ export class HTMLImageElementView extends HTMLElementView {
       "svg",
     );
     this.svgElement_.setAttribute("temporaryElement", "true");
+    this.htmlElement.appendChild(this.svgElement_);
 
     fetch(this.element.source)
       .then((response) => {
@@ -93,6 +168,9 @@ export class HTMLImageElementView extends HTMLElementView {
           true,
         ) as unknown as SVGElement;
 
+        // We know that this.svgElement_ is not null because we just created it above and haven't
+        // removed it since, so we can assert it as non-null with the ! operator.
+        this.svgElement_!.remove();
         this.svgElement_ = imported;
 
         imported.setAttribute("data-image-source", this.element.source);
@@ -172,5 +250,9 @@ export class HTMLImageElementView extends HTMLElementView {
     throw new Error(
       "HTMLImageElementView: bitmap images do not support sub-component elements.",
     );
+  }
+
+  makeLinkedClone(): HTMLElementViewLinkedClone {
+    return new HTMLImageElementViewLinkedClone(this);
   }
 }

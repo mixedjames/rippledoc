@@ -19,12 +19,20 @@
     <scroll-trigger name="st1" start="sectionTop" end="sectionBottom-height-40"/>
     <pin trigger="st1"/>
 
-    <animation trigger="st1" duration="500" target-part="moon" scroll-driven="true">
+    <scroll-trigger name="st2" start="sectionBottom-height-40" end="start+150"/>
+    <animation trigger="st2" duration="500" target-part="moon">
       <keyFrame position="0" opacity="1" />
       <keyFrame position="500" opacity="0" />
     </animation>
 
+    <animation trigger="st1" duration="500" target-part="liney">
+      <keyFrame position="0" strokeDashoffset="0" opacity="1" />
+      <keyFrame position="500" strokeDashoffset="100" opacity="0" />
+    </animation>
+
   </image>
+
+  <scroll-trigger name="st2" start="sectionBottom-elements.img1.height-40" end="start+50"/>
 
   <textbox l="elements.img1.right+20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb1">
   # Just messing around
@@ -44,6 +52,14 @@
 
 <section h="slideHeight" name="s3">
   <textbox l="0" r="basisWidth" t="sectionTop" h="slideHeight" name="fancyBG">
+    <scroll-trigger
+      name="parallaxTrigger"
+      start="sectionTop - slideHeight"
+      end="start+sectionHeight*2"/>
+    <animation trigger="parallaxTrigger" duration="2000" scroll-driven="true">
+      <keyFrame position="0" backgroundPositionX="0" />
+      <keyFrame position="2000" backgroundPositionX="50" />
+    </animation>
   </textbox>
 
 </section>
