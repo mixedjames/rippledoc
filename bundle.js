@@ -2,10 +2,10 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "../../node_modules/css-loader/dist/cjs.js!./src/css/styles.css"
-/*!**********************************************************************!*\
-  !*** ../../node_modules/css-loader/dist/cjs.js!./src/css/styles.css ***!
-  \**********************************************************************/
+/***/ "../../node_modules/css-loader/dist/cjs.js!./src/css/presentation.css"
+/*!****************************************************************************!*\
+  !*** ../../node_modules/css-loader/dist/cjs.js!./src/css/presentation.css ***!
+  \****************************************************************************/
 (module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73,7 +73,148 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.rdoc-root {
 
 .rdoc-root .rdoc-elements .rdoc-image-element {
 }
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAAA;EACE,6DAA6D;EAC7D,uCAAuC;;EAEvC,iBAAiB;AACnB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,iBAAiB;AACnB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;EACE,yDAAyC;EACzC,sBAAsB;EACtB,2BAA2B;AAC7B;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n\n  background: black;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  background: white;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {\n  background-image: url(\"../img/stars.jpg\");\n  background-size: cover;\n  background-position-x: left;\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/css/presentation.css"],"names":[],"mappings":"AAAA;EACE,6DAA6D;EAC7D,uCAAuC;;EAEvC,iBAAiB;AACnB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE,iBAAiB;AACnB;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;AACA;;AAEA;EACE;;AAEF;AACA;;AAEA;EACE,yDAAyC;EACzC,sBAAsB;EACtB,2BAA2B;AAC7B;;AAEA;AACA","sourcesContent":[".rdoc-root {\n  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);\n  font-family: \"Trebuchet MS\", sans-serif;\n\n  background: black;\n}\n\n.rdoc-root * {\n  box-sizing: border-box;\n}\n\n.rdoc-root .rdoc-viewport {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {\n  background: white;\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {\n}\n\n.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {\n}\n\n.rdoc-root .rdoc-overlay {\n}\n\n/*\n */\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element {\n}\n\n.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {\n  background-image: url(\"../img/stars.jpg\");\n  background-size: cover;\n  background-position-x: left;\n}\n\n.rdoc-root .rdoc-elements .rdoc-image-element {\n}\n"],"sourceRoot":""}]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ },
+
+/***/ "../../node_modules/css-loader/dist/cjs.js!./src/css/styles.css"
+/*!**********************************************************************!*\
+  !*** ../../node_modules/css-loader/dist/cjs.js!./src/css/styles.css ***!
+  \**********************************************************************/
+(module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "../../node_modules/css-loader/dist/runtime/sourceMaps.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_presentation_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! -!../../../../node_modules/css-loader/dist/cjs.js!./presentation.css */ "../../node_modules/css-loader/dist/cjs.js!./src/css/presentation.css");
+// Imports
+
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_presentation_css__WEBPACK_IMPORTED_MODULE_2__["default"]);
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, `.demo-menu-button {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.demo-menu-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.demo-menu-button-bars {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.demo-menu-button-bars span {
+  display: block;
+  height: 2px;
+  margin: 3px 0;
+  background: currentColor;
+}
+
+.demo-menu-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  z-index: 2100;
+}
+
+.demo-menu-overlay.is-open {
+  display: flex;
+}
+
+.demo-menu-overlay-inner {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.demo-menu-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+}
+
+.demo-menu-close-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.demo-menu-content {
+  flex: 1;
+  padding: 1.5rem 1.25rem 2rem;
+  overflow-y: auto;
+}
+
+.demo-menu-section {
+  margin-bottom: 1.75rem;
+}
+
+.demo-menu-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.demo-menu-metric-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.demo-menu-metric dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.demo-menu-metric dd {
+  margin: 0.15rem 0 0 0;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 0.9rem;
+}
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,cAAc;EACd,eAAe;EACf,oBAAoB;EACpB,YAAY;EACZ,UAAU;EACV,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,+BAA+B;EAC/B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,qBAAqB;EACrB,aAAa;EACb,cAAc;AAChB;;AAEA;EACE,cAAc;EACd,WAAW;EACX,aAAa;EACb,wBAAwB;AAC1B;;AAEA;EACE,eAAe;EACf,QAAQ;EACR,aAAa;EACb,8BAA8B;EAC9B,YAAY;EACZ,aAAa;AACf;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,OAAO;EACP,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,kBAAkB;EAClB,SAAS;EACT,WAAW;EACX,aAAa;EACb,cAAc;EACd,oBAAoB;EACpB,YAAY;EACZ,oCAAoC;EACpC,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,OAAO;EACP,4BAA4B;EAC5B,gBAAgB;AAClB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;EACE,iBAAiB;EACjB,gBAAgB;EAChB,qBAAqB;AACvB;;AAEA;EACE,SAAS;EACT,UAAU;EACV,aAAa;EACb,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,iBAAiB;EACjB,yBAAyB;EACzB,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,qBAAqB;EACrB;;4BAE0B;EAC1B,iBAAiB;AACnB","sourcesContent":["@import \"./presentation.css\";\n\n.demo-menu-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 1.25rem;\n  width: 3.25rem;\n  height: 3.25rem;\n  border-radius: 999px;\n  border: none;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.85);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-menu-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-button-bars {\n  display: inline-block;\n  width: 1.5rem;\n  height: 1.5rem;\n}\n\n.demo-menu-button-bars span {\n  display: block;\n  height: 2px;\n  margin: 3px 0;\n  background: currentColor;\n}\n\n.demo-menu-overlay {\n  position: fixed;\n  inset: 0;\n  display: none;\n  background: rgba(0, 0, 0, 0.9);\n  color: white;\n  z-index: 2100;\n}\n\n.demo-menu-overlay.is-open {\n  display: flex;\n}\n\n.demo-menu-overlay-inner {\n  position: relative;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.demo-menu-close-button {\n  position: absolute;\n  top: 1rem;\n  right: 1rem;\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 999px;\n  border: none;\n  background: rgba(255, 255, 255, 0.1);\n  color: white;\n  cursor: pointer;\n}\n\n.demo-menu-close-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-content {\n  flex: 1;\n  padding: 1.5rem 1.25rem 2rem;\n  overflow-y: auto;\n}\n\n.demo-menu-section {\n  margin-bottom: 1.75rem;\n}\n\n.demo-menu-section-title {\n  font-size: 1.1rem;\n  font-weight: 600;\n  margin: 0 0 0.75rem 0;\n}\n\n.demo-menu-metric-list {\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 0.75rem;\n}\n\n.demo-menu-metric dt {\n  font-size: 0.8rem;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  opacity: 0.8;\n}\n\n.demo-menu-metric dd {\n  margin: 0.15rem 0 0 0;\n  font-family:\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n    \"Courier New\", monospace;\n  font-size: 0.9rem;\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -6875,8 +7016,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @rippledoc/presentation2 */ "../../packages/presentation2/src/index.ts");
 
 
+let presentation = null;
 try {
     const p = await (0,_rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.loadFromXML)({ url: "presentations/demo1.xml" });
+    presentation = p;
     const htmlView = new _rippledoc_presentation2__WEBPACK_IMPORTED_MODULE_1__.HTMLPresentationView({
         presentation: p,
         container: "#theContainer",
@@ -6884,6 +7027,96 @@ try {
 }
 catch (e) {
     console.error("Compilation error:", e);
+}
+const menuButton = document.getElementById("menuButton");
+const menuOverlay = document.getElementById("menuOverlay");
+const menuCloseButton = document.getElementById("menuCloseButton");
+const deviceViewportPhysical = document.getElementById("deviceViewportPhysical");
+const deviceViewportLogical = document.getElementById("deviceViewportLogical");
+const deviceResolution = document.getElementById("deviceResolution");
+const presentationBasisSize = document.getElementById("presentationBasisSize");
+const presentationScale = document.getElementById("presentationScale");
+const presentationViewportSize = document.getElementById("presentationViewportSize");
+const updateDiagnostics = () => {
+    if (!deviceViewportPhysical ||
+        !deviceViewportLogical ||
+        !deviceResolution ||
+        !presentationBasisSize ||
+        !presentationScale ||
+        !presentationViewportSize) {
+        return;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    deviceViewportPhysical.textContent = `${Math.round(viewportWidth)} × ${Math.round(viewportHeight)}`;
+    const logicalWidth = viewportWidth * dpr;
+    const logicalHeight = viewportHeight * dpr;
+    deviceViewportLogical.textContent = `${Math.round(logicalWidth)} × ${Math.round(logicalHeight)}  (@dpr ${dpr.toFixed(2)})`;
+    deviceResolution.textContent = `${screen.width} × ${screen.height}`;
+    if (!presentation) {
+        presentationBasisSize.textContent = "—";
+        presentationScale.textContent = "—";
+        presentationViewportSize.textContent = "—";
+        return;
+    }
+    const basis = presentation.basisDimensions;
+    presentationBasisSize.textContent = `${basis.width} × ${basis.height}`;
+    let physicalDimensions;
+    try {
+        physicalDimensions = presentation.physicalDimensions;
+    }
+    catch {
+        physicalDimensions = null;
+    }
+    if (!physicalDimensions) {
+        presentationScale.textContent = "—";
+        presentationViewportSize.textContent = "—";
+        return;
+    }
+    const scale = physicalDimensions.scale;
+    presentationScale.textContent = scale.toFixed(3);
+    const viewportPhysicalWidth = basis.width * scale;
+    const viewportPhysicalHeight = basis.height * scale;
+    presentationViewportSize.textContent = `${Math.round(viewportPhysicalWidth)} × ${Math.round(viewportPhysicalHeight)}`;
+};
+if (menuButton && menuOverlay && menuCloseButton) {
+    const body = document.body;
+    const openMenu = () => {
+        menuOverlay.classList.add("is-open");
+        menuOverlay.setAttribute("aria-hidden", "false");
+        menuButton.setAttribute("aria-expanded", "true");
+        body.style.overflow = "hidden";
+        updateDiagnostics();
+    };
+    const closeMenu = () => {
+        menuOverlay.classList.remove("is-open");
+        menuOverlay.setAttribute("aria-hidden", "true");
+        menuButton.setAttribute("aria-expanded", "false");
+        body.style.overflow = "";
+    };
+    menuButton.addEventListener("click", () => {
+        const isOpen = menuOverlay.classList.contains("is-open");
+        if (isOpen) {
+            closeMenu();
+        }
+        else {
+            openMenu();
+        }
+    });
+    menuCloseButton.addEventListener("click", () => {
+        closeMenu();
+    });
+    window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && menuOverlay.classList.contains("is-open")) {
+            closeMenu();
+        }
+    });
+    window.addEventListener("resize", () => {
+        if (menuOverlay.classList.contains("is-open")) {
+            updateDiagnostics();
+        }
+    });
 }
 
 __webpack_async_result__();
