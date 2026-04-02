@@ -1,0 +1,47 @@
+.rdoc-root {
+  font-size: calc(8pt + 0.5 * var(--presentation-scale) * 16pt);
+  font-family: "Trebuchet MS", sans-serif;
+
+  background: black;
+}
+
+.rdoc-root * {
+  box-sizing: border-box;
+}
+
+.rdoc-root .rdoc-viewport {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-backgrounds .rdoc-section-background {
+  background: white;
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content {
+}
+
+.rdoc-root .rdoc-viewport .rdoc-elements .rdoc-section-content .rdoc-element {
+}
+
+.rdoc-root .rdoc-overlay {
+}
+
+/*
+ */
+
+.rdoc-root .rdoc-elements .rdoc-text-box-element {
+}
+
+.rdoc-root .rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+  background-image: url("../img/stars.jpg");
+  background-size: cover;
+  background-position-x: left;
+}
+
+.rdoc-root .rdoc-elements .rdoc-image-element {
+}
