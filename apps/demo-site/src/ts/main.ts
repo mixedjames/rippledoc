@@ -23,6 +23,8 @@ try {
 const menuButton = document.getElementById("menuButton");
 const menuOverlay = document.getElementById("menuOverlay");
 const menuCloseButton = document.getElementById("menuCloseButton");
+const fullscreenButton = document.getElementById("fullscreenButton");
+const presentationContainer = document.getElementById("theContainer");
 
 const deviceViewportPhysical = document.getElementById(
   "deviceViewportPhysical",
@@ -89,6 +91,41 @@ const updateDiagnostics = () => {
   const viewportPhysicalHeight = basis.height * scale;
   presentationViewportSize.textContent = `${Math.round(viewportPhysicalWidth)} × ${Math.round(viewportPhysicalHeight)}`;
 };
+
+if (fullscreenButton && presentationContainer) {
+  if (!document.fullscreenEnabled) {
+    (fullscreenButton as HTMLButtonElement).style.display = "none";
+  } else {
+    const updateFullscreenButtonState = () => {
+      const isFullscreen = document.fullscreenElement === presentationContainer;
+      fullscreenButton.setAttribute("aria-pressed", isFullscreen ? "true" : "false");
+      fullscreenButton.setAttribute(
+        "aria-label",
+        isFullscreen ? "Exit fullscreen" : "Enter fullscreen",
+      );
+    };
+
+    fullscreenButton.addEventListener("click", () => {
+      if (document.fullscreenElement === presentationContainer) {
+        document.exitFullscreen().catch(() => {
+          // ignore errors
+        });
+      } else {
+        (presentationContainer as HTMLElement)
+          .requestFullscreen()
+          .catch(() => {
+            // ignore errors
+          });
+      }
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      updateFullscreenButtonState();
+    });
+
+    updateFullscreenButtonState();
+  }
+}
 
 if (menuButton && menuOverlay && menuCloseButton) {
   const body = document.body;
