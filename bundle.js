@@ -125,6 +125,28 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.demo-menu-button {
   outline-offset: 3px;
 }
 
+.demo-fullscreen-button {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 4.75rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.demo-fullscreen-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
 .demo-menu-button-bars {
   display: inline-block;
   width: 1.5rem;
@@ -213,8 +235,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.demo-menu-button {
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
   font-size: 0.9rem;
-}
-`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,cAAc;EACd,eAAe;EACf,oBAAoB;EACpB,YAAY;EACZ,UAAU;EACV,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,+BAA+B;EAC/B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,qBAAqB;EACrB,aAAa;EACb,cAAc;AAChB;;AAEA;EACE,cAAc;EACd,WAAW;EACX,aAAa;EACb,wBAAwB;AAC1B;;AAEA;EACE,eAAe;EACf,QAAQ;EACR,aAAa;EACb,8BAA8B;EAC9B,YAAY;EACZ,aAAa;AACf;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,OAAO;EACP,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,kBAAkB;EAClB,SAAS;EACT,WAAW;EACX,aAAa;EACb,cAAc;EACd,oBAAoB;EACpB,YAAY;EACZ,oCAAoC;EACpC,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,OAAO;EACP,4BAA4B;EAC5B,gBAAgB;AAClB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;EACE,iBAAiB;EACjB,gBAAgB;EAChB,qBAAqB;AACvB;;AAEA;EACE,SAAS;EACT,UAAU;EACV,aAAa;EACb,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,iBAAiB;EACjB,yBAAyB;EACzB,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,qBAAqB;EACrB;;4BAE0B;EAC1B,iBAAiB;AACnB","sourcesContent":["@import \"./presentation.css\";\n\n.demo-menu-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 1.25rem;\n  width: 3.25rem;\n  height: 3.25rem;\n  border-radius: 999px;\n  border: none;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.85);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-menu-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-button-bars {\n  display: inline-block;\n  width: 1.5rem;\n  height: 1.5rem;\n}\n\n.demo-menu-button-bars span {\n  display: block;\n  height: 2px;\n  margin: 3px 0;\n  background: currentColor;\n}\n\n.demo-menu-overlay {\n  position: fixed;\n  inset: 0;\n  display: none;\n  background: rgba(0, 0, 0, 0.9);\n  color: white;\n  z-index: 2100;\n}\n\n.demo-menu-overlay.is-open {\n  display: flex;\n}\n\n.demo-menu-overlay-inner {\n  position: relative;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.demo-menu-close-button {\n  position: absolute;\n  top: 1rem;\n  right: 1rem;\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 999px;\n  border: none;\n  background: rgba(255, 255, 255, 0.1);\n  color: white;\n  cursor: pointer;\n}\n\n.demo-menu-close-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-content {\n  flex: 1;\n  padding: 1.5rem 1.25rem 2rem;\n  overflow-y: auto;\n}\n\n.demo-menu-section {\n  margin-bottom: 1.75rem;\n}\n\n.demo-menu-section-title {\n  font-size: 1.1rem;\n  font-weight: 600;\n  margin: 0 0 0.75rem 0;\n}\n\n.demo-menu-metric-list {\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 0.75rem;\n}\n\n.demo-menu-metric dt {\n  font-size: 0.8rem;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  opacity: 0.8;\n}\n\n.demo-menu-metric dd {\n  margin: 0.15rem 0 0 0;\n  font-family:\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n    \"Courier New\", monospace;\n  font-size: 0.9rem;\n}\n"],"sourceRoot":""}]);
+}`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,cAAc;EACd,eAAe;EACf,oBAAoB;EACpB,YAAY;EACZ,UAAU;EACV,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,+BAA+B;EAC/B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,WAAW;EACX,YAAY;EACZ,oBAAoB;EACpB,YAAY;EACZ,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,8BAA8B;EAC9B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,qBAAqB;EACrB,aAAa;EACb,cAAc;AAChB;;AAEA;EACE,cAAc;EACd,WAAW;EACX,aAAa;EACb,wBAAwB;AAC1B;;AAEA;EACE,eAAe;EACf,QAAQ;EACR,aAAa;EACb,8BAA8B;EAC9B,YAAY;EACZ,aAAa;AACf;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,OAAO;EACP,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,kBAAkB;EAClB,SAAS;EACT,WAAW;EACX,aAAa;EACb,cAAc;EACd,oBAAoB;EACpB,YAAY;EACZ,oCAAoC;EACpC,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,OAAO;EACP,4BAA4B;EAC5B,gBAAgB;AAClB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;EACE,iBAAiB;EACjB,gBAAgB;EAChB,qBAAqB;AACvB;;AAEA;EACE,SAAS;EACT,UAAU;EACV,aAAa;EACb,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,iBAAiB;EACjB,yBAAyB;EACzB,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,qBAAqB;EACrB;;4BAE0B;EAC1B,iBAAiB;AACnB","sourcesContent":["@import \"./presentation.css\";\n\n.demo-menu-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 1.25rem;\n  width: 3.25rem;\n  height: 3.25rem;\n  border-radius: 999px;\n  border: none;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.85);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-menu-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-fullscreen-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 4.75rem;\n  width: 3rem;\n  height: 3rem;\n  border-radius: 999px;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.7);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-fullscreen-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-button-bars {\n  display: inline-block;\n  width: 1.5rem;\n  height: 1.5rem;\n}\n\n.demo-menu-button-bars span {\n  display: block;\n  height: 2px;\n  margin: 3px 0;\n  background: currentColor;\n}\n\n.demo-menu-overlay {\n  position: fixed;\n  inset: 0;\n  display: none;\n  background: rgba(0, 0, 0, 0.9);\n  color: white;\n  z-index: 2100;\n}\n\n.demo-menu-overlay.is-open {\n  display: flex;\n}\n\n.demo-menu-overlay-inner {\n  position: relative;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.demo-menu-close-button {\n  position: absolute;\n  top: 1rem;\n  right: 1rem;\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 999px;\n  border: none;\n  background: rgba(255, 255, 255, 0.1);\n  color: white;\n  cursor: pointer;\n}\n\n.demo-menu-close-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-content {\n  flex: 1;\n  padding: 1.5rem 1.25rem 2rem;\n  overflow-y: auto;\n}\n\n.demo-menu-section {\n  margin-bottom: 1.75rem;\n}\n\n.demo-menu-section-title {\n  font-size: 1.1rem;\n  font-weight: 600;\n  margin: 0 0 0.75rem 0;\n}\n\n.demo-menu-metric-list {\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 0.75rem;\n}\n\n.demo-menu-metric dt {\n  font-size: 0.8rem;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  opacity: 0.8;\n}\n\n.demo-menu-metric dd {\n  margin: 0.15rem 0 0 0;\n  font-family:\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n    \"Courier New\", monospace;\n  font-size: 0.9rem;\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -7031,6 +7052,8 @@ catch (e) {
 const menuButton = document.getElementById("menuButton");
 const menuOverlay = document.getElementById("menuOverlay");
 const menuCloseButton = document.getElementById("menuCloseButton");
+const fullscreenButton = document.getElementById("fullscreenButton");
+const presentationContainer = document.getElementById("theContainer");
 const deviceViewportPhysical = document.getElementById("deviceViewportPhysical");
 const deviceViewportLogical = document.getElementById("deviceViewportLogical");
 const deviceResolution = document.getElementById("deviceResolution");
@@ -7080,6 +7103,36 @@ const updateDiagnostics = () => {
     const viewportPhysicalHeight = basis.height * scale;
     presentationViewportSize.textContent = `${Math.round(viewportPhysicalWidth)} × ${Math.round(viewportPhysicalHeight)}`;
 };
+if (fullscreenButton && presentationContainer) {
+    if (!document.fullscreenEnabled) {
+        fullscreenButton.style.display = "none";
+    }
+    else {
+        const updateFullscreenButtonState = () => {
+            const isFullscreen = document.fullscreenElement === presentationContainer;
+            fullscreenButton.setAttribute("aria-pressed", isFullscreen ? "true" : "false");
+            fullscreenButton.setAttribute("aria-label", isFullscreen ? "Exit fullscreen" : "Enter fullscreen");
+        };
+        fullscreenButton.addEventListener("click", () => {
+            if (document.fullscreenElement === presentationContainer) {
+                document.exitFullscreen().catch(() => {
+                    // ignore errors
+                });
+            }
+            else {
+                presentationContainer
+                    .requestFullscreen()
+                    .catch(() => {
+                    // ignore errors
+                });
+            }
+        });
+        document.addEventListener("fullscreenchange", () => {
+            updateFullscreenButtonState();
+        });
+        updateFullscreenButtonState();
+    }
+}
 if (menuButton && menuOverlay && menuCloseButton) {
     const body = document.body;
     const openMenu = () => {

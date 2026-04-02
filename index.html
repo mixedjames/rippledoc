@@ -1,97 +1,83 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Just Messing</title>
-    <link rel="stylesheet" href="style.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script defer src="bundle.js"></script></head>
 
-  <body>
-    <div
-      id="theContainer"
-      style="
+<head>
+  <meta charset="utf-8" />
+  <title>Just Messing</title>
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script defer src="bundle.js"></script></head>
+
+<body>
+  <div id="theContainer" style="
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: hidden;
-      "
-    ></div>
+      "></div>
 
-    <button
-      id="menuButton"
-      class="demo-menu-button"
-      aria-label="Open menu"
-      aria-haspopup="true"
-      aria-expanded="false"
-      type="button"
-    >
-      <span class="demo-menu-button-bars" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-      </span>
-    </button>
+  <button id="menuButton" class="demo-menu-button" aria-label="Open menu" aria-haspopup="true" aria-expanded="false"
+    type="button">
+    <span class="demo-menu-button-bars" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  </button>
 
-    <div
-      id="menuOverlay"
-      class="demo-menu-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-hidden="true"
-    >
-      <div class="demo-menu-overlay-inner">
-        <button
-          id="menuCloseButton"
-          class="demo-menu-close-button"
-          type="button"
-          aria-label="Close menu"
-        >
-          ×
-        </button>
+  <button id="fullscreenButton" class="demo-fullscreen-button" aria-label="Enter fullscreen" type="button">
+    ⤢
+  </button>
 
-        <div class="demo-menu-content">
-          <section class="demo-menu-section">
-            <h2 class="demo-menu-section-title">Device details</h2>
-            <dl class="demo-menu-metric-list">
-              <div class="demo-menu-metric">
-                <dt>Browser viewport (CSS px)</dt>
-                <dd id="deviceViewportPhysical"></dd>
-              </div>
-              <div class="demo-menu-metric">
-                <dt>Logical viewport (scaled)</dt>
-                <dd id="deviceViewportLogical"></dd>
-              </div>
-              <div class="demo-menu-metric">
-                <dt>Device resolution</dt>
-                <dd id="deviceResolution"></dd>
-              </div>
-            </dl>
-          </section>
+  <div id="menuOverlay" class="demo-menu-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="demo-menu-overlay-inner">
+      <button id="menuCloseButton" class="demo-menu-close-button" type="button" aria-label="Close menu">
+        ×
+      </button>
 
-          <section class="demo-menu-section">
-            <h2 class="demo-menu-section-title">
-              Presentation viewport details
-            </h2>
-            <dl class="demo-menu-metric-list">
-              <div class="demo-menu-metric">
-                <dt>Basis size</dt>
-                <dd id="presentationBasisSize"></dd>
-              </div>
-              <div class="demo-menu-metric">
-                <dt>Scale factor</dt>
-                <dd id="presentationScale"></dd>
-              </div>
-              <div class="demo-menu-metric">
-                <dt>Viewport size</dt>
-                <dd id="presentationViewportSize"></dd>
-              </div>
-            </dl>
-          </section>
-        </div>
+      <div class="demo-menu-content">
+        <section class="demo-menu-section">
+          <h2 class="demo-menu-section-title">Device details</h2>
+          <dl class="demo-menu-metric-list">
+            <div class="demo-menu-metric">
+              <dt>Browser viewport (CSS px)</dt>
+              <dd id="deviceViewportPhysical"></dd>
+            </div>
+            <div class="demo-menu-metric">
+              <dt>Logical viewport (scaled)</dt>
+              <dd id="deviceViewportLogical"></dd>
+            </div>
+            <div class="demo-menu-metric">
+              <dt>Device resolution</dt>
+              <dd id="deviceResolution"></dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="demo-menu-section">
+          <h2 class="demo-menu-section-title">
+            Presentation viewport details
+          </h2>
+          <dl class="demo-menu-metric-list">
+            <div class="demo-menu-metric">
+              <dt>Basis size</dt>
+              <dd id="presentationBasisSize"></dd>
+            </div>
+            <div class="demo-menu-metric">
+              <dt>Scale factor</dt>
+              <dd id="presentationScale"></dd>
+            </div>
+            <div class="demo-menu-metric">
+              <dt>Viewport size</dt>
+              <dd id="presentationViewportSize"></dd>
+            </div>
+          </dl>
+        </section>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>
