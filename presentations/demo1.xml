@@ -1,6 +1,6 @@
 <presentation>
 
-<size w="600" h="800" />
+<size w="400" h="800" />
 
 <section name="title" b="elements.tb0.bottom+20">
 <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
