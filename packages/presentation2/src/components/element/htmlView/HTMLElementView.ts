@@ -30,27 +30,35 @@ export class HTMLElementViewLinkedClone {
   private elementView_: HTMLElementView;
   private htmlElement_!: HTMLElement;
 
+  /**
+   * Creates a linked clone helper for the given HTMLElementView; constructed by HTMLElementView.makeLinkedClone
+   * and used by pin/animation infrastructure rather than application code directly.
+   */
   constructor(elementView: HTMLElementView) {
     this.elementView_ = elementView;
     this.update();
   }
 
+  /** Returns the source HTMLElementView that this linked clone mirrors; read by pin/animation views. */
   get elementView(): HTMLElementView {
     return this.elementView_;
   }
 
+  /** Returns the current cloned HTMLElement that should be inserted into the DOM by callers such as HTMLPinView. */
   get htmlElement(): HTMLElement {
     return this.htmlElement_;
   }
 
+  /**
+   * Rebuilds the cloned HTMLElement from the current state of the source HTMLElementView; called initially
+   * from the constructor and subsequently by pin/animation code when the source DOM changes.
+   */
   update(): void {
     if (this.htmlElement_) {
       this.htmlElement_.remove();
     }
 
-    this.htmlElement_ = this.elementView_.htmlElement.cloneNode(
-      true,
-    ) as HTMLElement;
+    this.htmlElement_ = this.subclassClone();
   }
 
   /**
@@ -86,6 +94,22 @@ export class HTMLElementViewLinkedClone {
 }
 
 /**
+ * HTMLElementView owns the DOM representation for a presentation Element inside a Section and
+ * coordinates layout, sizing, pinning support, and animation integration for that Element.
+ *
+ * ## Intended interactions
+ * - Constructed by section/element view factories (or subclasses) with a SectionView and Element.
+ * - Presentation layout code calls layout(), applyContentDependentSize(), and measureContentDependentSize().
+ * - Animation infrastructure (via HTMLAnimationManager) queries DOM through htmlElement / foreground/background
+ *   element getters and uses animatableObjectChanges() when subclass DOM structure changes.
+ * - Subclasses follow the strict pattern below to customise DOM structure and layout while keeping the
+ *   rest of the behaviour consistent.
+ *
+ * ## Current coupling
+ * - Tightly coupled to HTMLSectionView/HTMLPresentationViewRoot for coordinate system and DOM parenting.
+ * - Creates an HTMLAnimationManager for itself during createDOM() to manage pins and animations.
+ * - Exposes makeLinkedClone(), allowsSubComponentElements, and getSubComponentElement() as extension points
+ *   used by pin/animation views; most application code should not call these directly.
  *
  * # Pattern for subclassing
  * This is *not* a limitless extension point. We expect a strict pattern:
@@ -112,6 +136,7 @@ export class HTMLElementView {
 
   private animationManager_!: HTMLAnimationManager;
 
+  /** Constructs a view for the given Element within a SectionView; called by factories and subclass constructors. */
   constructor(options: {
     sectionView: HTMLSectionView;
     element: Element;
@@ -134,26 +159,32 @@ export class HTMLElementView {
   // Structural relationships
   // ----------------------------------------------------------------------------------------------
 
+  /** Returns the underlying presentation Element model; read by layout, animation, and subclasses. */
   get element(): Element {
     return this.element_;
   }
 
+  /** Returns the root HTMLElement for this view; used by layout and animation code as the main DOM node. */
   get htmlElement(): HTMLElement {
     return this.htmlElement_;
   }
 
+  /** Returns the HTMLElement considered to be in the foreground for this view; overridden by subclasses when needed. */
   get foregroundHTMLElement(): HTMLElement {
     return this.htmlElement_;
   }
 
+  /** Returns the HTMLElement considered to be in the background for this view; overridden by subclasses when needed. */
   get backgroundHTMLElement(): HTMLElement {
     return this.htmlElement_;
   }
 
+  /** Returns the parent HTMLSectionView that owns this element view; used by layout and animation code. */
   get sectionView(): HTMLSectionView {
     return this.sectionView_;
   }
 
+  /** Returns the root HTMLPresentationViewRoot for this element; used to access global layout/scale information. */
   get presentationView(): HTMLPresentationViewRoot {
     return this.sectionView.presentationView;
   }
@@ -162,6 +193,10 @@ export class HTMLElementView {
   // Rendering
   // ----------------------------------------------------------------------------------------------
 
+  /**
+   * Creates the base DOM structure for this element view (a positioned div) and wires it into the
+   * section's content DOM; called from the base constructor for non-subclasses.
+   */
   protected createDOM(): void {
     this.htmlElement_ = document.createElement("div");
     this.htmlElement_.style.position = "absolute";
@@ -178,6 +213,7 @@ export class HTMLElementView {
     this.animationManager_ = new HTMLAnimationManager({ parent: this });
   }
 
+  /** Subclass hook to create additional DOM for this element; called from createDOM(). */
   protected subclassCreateDOM(): void {}
 
   /**
@@ -206,7 +242,8 @@ export class HTMLElementView {
   }
 
   /**
-   * Gets the content dependent size of the element in basis coordinates.
+   * Gets the content dependent size of the element in basis coordinates; called by the layout
+   * pipeline after applyContentDependentSize() to measure the resulting DOM.
    */
   measureContentDependentSize(): number {
     const scale = this.presentationView.physicalDimensions.scale;
@@ -225,6 +262,10 @@ export class HTMLElementView {
     throw new Error("Element does not have a content dependent dimension");
   }
 
+  /**
+   * Applies the model-based position and size to the DOM and then delegates to subclassLayout()
+   * and the HTMLAnimationManager; called from the presentation layout pass.
+   */
   layout(): void {
     const scale = this.presentationView.physicalDimensions.scale;
 
@@ -238,6 +279,7 @@ export class HTMLElementView {
     this.animationManager_.layout();
   }
 
+  /** Subclass hook to perform additional layout work after the base element has been positioned/sized. */
   protected subclassLayout(): void {}
 
   /**
@@ -260,7 +302,8 @@ export class HTMLElementView {
    * The default implementation returns false. Subclasses should override this property if they
    * support sub-component elements.
    *
-   * See HTMLElementView.getSubComponentElement
+   * See HTMLElementView.getSubComponentElement. Called primarily by animation/pin infrastructure
+   * when resolving animation targets, rather than by general application code.
    */
   get allowsSubComponentElements(): boolean {
     return false;
@@ -274,13 +317,18 @@ export class HTMLElementView {
    *
    * The default implementation does not support sub-component elements, and will throw an error.
    * Subclasses that do support sub-component elements should override this method to return the
-   * appropriate DOMElement for the given sub-component name.
+   * appropriate DOMElement for the given sub-component name. This is typically called by
+   * HTMLAnimationManager/HTMLPinView when resolving animation targets.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getSubComponentElement(name: string): DOMElement {
     throw new Error("HTMLElementView does not support sub-component elements.");
   }
 
+  /**
+   * Creates a linked clone helper for this element view; used by HTMLPinView and related
+   * animation infrastructure to obtain a clone that can track changes to the original DOM.
+   */
   makeLinkedClone(): HTMLElementViewLinkedClone {
     return new HTMLElementViewLinkedClone(this);
   }

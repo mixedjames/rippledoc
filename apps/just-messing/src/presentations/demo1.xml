@@ -24,6 +24,13 @@
       <keyFrame position="500" opacity="0" />
     </animation>
 
+<!--
+    <animation trigger="st1" duration="500" scroll-driven="true">
+      <keyFrame position="0" transform="none" />
+      <keyFrame position="500" transform="none" />
+    </animation>
+    -->
+
     <animation trigger="st1" duration="500" target-part="liney" scroll-driven="true">
       <keyFrame position="0" strokeDashoffset="0" />
       <keyFrame position="500" strokeDashoffset="100" />

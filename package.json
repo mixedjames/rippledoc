@@ -20,7 +20,7 @@
     "webpack-cli": "^6.0.1"
   },
   "scripts": {
-    "tsc-watch": "tsc -b --watch",
+    "watch:tsc": "tsc -b --watch",
     "test": "vitest",
     "docs": "npm run docs --workspaces --if-present",
     "format": "prettier . --write",

@@ -18,7 +18,48 @@ type DOMElement = globalThis.Element;
 type HTMLAnimatableObject = HTMLSectionView | HTMLElementView;
 
 /**
- * Manager object the the various animation views that may be attached to an Element or Section.
+ * Coordinates pin and animation HTML views for a single "animatable" object
+ * (either a Section or an Element).
+ *
+ * Intended usage
+ * --------------
+ * - Constructed by an owning view (currently HTMLElementView, and potentially
+ *   HTMLSectionView in future) once the DOM for the animatable object exists.
+ * - Owns HTMLPinView instances for any Pin models on the underlying Element.
+ * - Owns HTMLAnimationView instances for each ScrollTriggeredAnimation
+ *   attached to the underlying model.
+ * - The owning view calls layout(), disconnect() and
+ *   animatableObjectChanges() to keep the animation views in sync with the
+ *   underlying DOM.
+ *
+ * Interaction with animations
+ * ---------------------------
+ * - During construction, reads pin and animation models from the parent
+ *   (element.pins / element.animations, section.animations) and builds the
+ *   corresponding HTMLPinView / HTMLAnimationView instances.
+ * - getAnimationTargets() is used by HTMLAnimationView implementations to
+ *   resolve which DOM elements a ScrollTriggeredAnimation should operate on:
+ *   - For sections, animations apply to HTMLSectionView.htmlBackgroundElement
+ *     and sections are never pinned.
+ *   - For elements, animations target either the element's main htmlElement or
+ *     a named sub-component, plus any pinned clones maintained by HTMLPinView.
+ *
+ * Coupling to sections and elements
+ * ---------------------------------
+ * This section describes the current state of coupling between HTMLAnimationManager and the
+ * concrete view classes. It exists as a point for future James to refer back to
+ * when thinking about refactoring.
+ *
+ * - The parent must currently be either HTMLSectionView or HTMLElementView
+ *   (HTMLAnimatableObject).
+ * - Only HTMLElementView instances can have pins; when the parent is a
+ *   HTMLSectionView, getPinsFromParent() always returns an empty array.
+ * - Both HTMLSectionView and HTMLElementView can have animations;
+ *   section.animations are section-level, element.animations are
+ *   element-level.
+ * - HTMLAnimationManager is intentionally coupled to concrete view classes
+ *   such as HTMLPinView and HTMLKeyFrameAnimationView; changes in the
+ *   animation model surface will typically require coordinated updates here.
  */
 export class HTMLAnimationManager {
   private parent_: HTMLSectionView | HTMLElementView;
@@ -26,6 +67,10 @@ export class HTMLAnimationManager {
   private readonly pinViews_: HTMLPinView[] = [];
   private readonly animationViews_: HTMLAnimationView[] = [];
 
+  /**
+   * Constructed by an owning view (Section/Element HTML view) once the underlying DOM is ready so
+   * this manager can build and coordinate pin and animation views for that parent.
+   */
   constructor(options: { parent: HTMLAnimatableObject }) {
     this.parent_ = options.parent;
 
@@ -33,6 +78,10 @@ export class HTMLAnimationManager {
     this.buildAnimations();
   }
 
+  /**
+   * Rebuilds HTMLPinView instances for the current parent; only called internally by the
+   * constructor (and potentially future reinitialisation paths) on this manager.
+   */
   private buildPins() {
     this.pinViews_.length = 0;
 
@@ -47,6 +96,10 @@ export class HTMLAnimationManager {
     });
   }
 
+  /**
+   * Returns the Pin models for the current parent; used only by buildPins() to abstract over
+   * Section vs Element parents.
+   */
   private getPinsFromParent(): readonly Pin[] {
     if (this.parent_ instanceof HTMLSectionView) {
       // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
@@ -59,6 +112,10 @@ export class HTMLAnimationManager {
     }
   }
 
+  /**
+   * Rebuilds HTMLAnimationView instances from the parent's animation models; only called
+   * internally by the constructor (and any future rebuild logic) on this manager.
+   */
   private buildAnimations() {
     const animationViews = this.animationViews_;
 
@@ -79,10 +136,15 @@ export class HTMLAnimationManager {
     });
   }
 
+  /**
+   * Returns the ScrollTriggeredAnimation models for the current parent; used only by
+   * buildAnimations() to hide the Section vs Element branching.
+   */
   private getAnimationsFromParent(): readonly ScrollTriggeredAnimation[] {
     if (this.parent_ instanceof HTMLSectionView) {
-      // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
-      // null checks in the caller.
+      // Section-level animations live on the underlying Section model.
+      // Returning the array directly avoids the need for null checks in the
+      // caller.
       return this.parent_.section.animations;
     } else if (this.parent_ instanceof HTMLElementView) {
       return this.parent_.element.animations;
@@ -91,6 +153,10 @@ export class HTMLAnimationManager {
     }
   }
 
+  /**
+   * Called by the owning HTML view during layout or resize passes so managed pin and animation
+   * views can recompute their DOM geometry.
+   */
   layout(): void {
     this.pinViews_.forEach((pinView) => {
       pinView.layout();
@@ -101,6 +167,10 @@ export class HTMLAnimationManager {
     });
   }
 
+  /**
+   * Called by the owning HTML view when it is being detached or torn down so all managed pin and
+   * animation views can release DOM references and event handlers.
+   */
   disconnect(): void {
     this.pinViews_.forEach((pinView) => {
       pinView.disconnect();
@@ -115,7 +185,8 @@ export class HTMLAnimationManager {
 
   /**
    * Called by an owning object (currently only HTMLElementView) to indicate that the DOM underlying
-   * the animatable object has changed.
+   * the animatable object has changed so pin and animation views can refresh their internal clones
+   * and cached measurements.
    *
    * This is important because of pinned elements - pin views maintain a cloned version of the
    * original element's DOM, and if the original DOM changes then the clones need to be updated to
@@ -132,7 +203,8 @@ export class HTMLAnimationManager {
   }
 
   /**
-   * Gets the list of HTMLElements that should be targets for animations.
+   * Used by HTMLAnimationView implementations to compute the concrete DOM Element targets for a
+   * given ScrollTriggeredAnimation on this manager's parent.
    *
    * This solves two problems:
    * 1. Sections vs Elements
@@ -188,14 +260,26 @@ export class HTMLAnimationManager {
     }
   }
 
+  /**
+   * Exposes the current animatable parent (Section or Element view) to callers such as animation
+   * views that need to inspect higher-level context.
+   */
   get animatableParent(): HTMLAnimatableObject {
     return this.parent_;
   }
 
+  /**
+   * Exposes the HTMLPinView instances managed for the current parent so owning views or tests can
+   * inspect or iterate over active pins.
+   */
   get pinViews(): readonly HTMLPinView[] {
     return this.pinViews_;
   }
 
+  /**
+   * Exposes the HTMLAnimationView instances managed for the current parent so owning views or
+   * tests can observe which animations are active.
+   */
   get animationViews(): readonly HTMLAnimationView[] {
     return this.animationViews_;
   }

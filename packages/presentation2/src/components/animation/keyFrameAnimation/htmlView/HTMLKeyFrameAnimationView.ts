@@ -9,6 +9,7 @@ type CSSKeyFrame = {
   backgroundPositionX?: string;
   backgroundPositionY?: string;
   strokeDashoffset?: number;
+  transform?: string;
 };
 
 /**
@@ -94,6 +95,10 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
 
     if (keyFrame.strokeDashoffset !== undefined) {
       cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+    }
+
+    if (keyFrame.transform !== undefined) {
+      cssKeyFrame.transform = keyFrame.transform;
     }
 
     return cssKeyFrame;

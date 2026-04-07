@@ -98,7 +98,10 @@ if (fullscreenButton && presentationContainer) {
   } else {
     const updateFullscreenButtonState = () => {
       const isFullscreen = document.fullscreenElement === presentationContainer;
-      fullscreenButton.setAttribute("aria-pressed", isFullscreen ? "true" : "false");
+      fullscreenButton.setAttribute(
+        "aria-pressed",
+        isFullscreen ? "true" : "false",
+      );
       fullscreenButton.setAttribute(
         "aria-label",
         isFullscreen ? "Exit fullscreen" : "Enter fullscreen",
@@ -111,11 +114,9 @@ if (fullscreenButton && presentationContainer) {
           // ignore errors
         });
       } else {
-        (presentationContainer as HTMLElement)
-          .requestFullscreen()
-          .catch(() => {
-            // ignore errors
-          });
+        (presentationContainer as HTMLElement).requestFullscreen().catch(() => {
+          // ignore errors
+        });
       }
     });
 

@@ -30,6 +30,20 @@ function getOptionalNumericKeyFrameAttribute(options: {
   return value;
 }
 
+function getOptionalStringKeyFrameAttribute(options: {
+  element: Element;
+  attributeName: string;
+}): string | undefined {
+  const { element, attributeName } = options;
+
+  const raw = element.getAttribute(attributeName);
+  if (raw == null || raw.trim() === "") {
+    return undefined;
+  }
+
+  return raw.trim();
+}
+
 export function loadAnimation(options: {
   element: Element;
   builder: KeyFrameAnimationBuilder;
@@ -117,12 +131,19 @@ export function loadAnimation(options: {
       attributeName: "strokeDashoffset",
     });
 
+    const transform = getOptionalStringKeyFrameAttribute({
+      element: child,
+      attributeName: "transform",
+    });
+    console.log("transform", transform);
+
     const keyFrame: KeyFrame = {
       position,
       ...(opacity !== undefined ? { opacity } : {}),
       ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
       ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
       ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
+      ...(transform !== undefined ? { transform } : {}),
     };
 
     builder.addKeyFrame(keyFrame);

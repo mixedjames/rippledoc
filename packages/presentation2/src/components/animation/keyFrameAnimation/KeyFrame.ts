@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export type KeyFrame = {
   position: number;
 
@@ -8,4 +11,6 @@ export type KeyFrame = {
   backgroundPositionY?: number;
 
   strokeDashoffset?: number;
+
+  transform?: string;
 };
