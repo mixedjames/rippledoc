@@ -37,6 +37,7 @@ export interface Phase2Constructor {
 type PresentationOptions = {
   basisDimensions: { width: number; height: number };
   slideHeightNativeExpression: (newFn: () => number) => void;
+  stylesheet: string;
 };
 
 export interface PhysicalDimensions {
@@ -122,6 +123,9 @@ export class Presentation {
   //
 
   private basisDimensions_: { width: number; height: number };
+
+  private stylesheet_: string;
+
   private sections_: Section[] = [];
 
   // View-dependent properties ---------------------------------------------------------------------
@@ -155,6 +159,7 @@ export class Presentation {
 
     this.basisDimensions_ = { ...options.basisDimensions };
     this.slideHeightNativeExpression_ = options.slideHeightNativeExpression;
+    this.stylesheet_ = options.stylesheet;
 
     this.installDefaultSlideHeightExpression();
   }
@@ -279,6 +284,10 @@ export class Presentation {
       return 0;
     }
     return this.sections[this.sections.length - 1]!.sectionBottom;
+  }
+
+  get stylesheet(): string {
+    return this.stylesheet_;
   }
 
   // ----------------------------------------------------------------------------------------------

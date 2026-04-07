@@ -2,6 +2,21 @@
 
 <size w="600" h="800" />
 
+<style>
+
+.rdoc-section-background {
+  background: white;
+}
+
+.rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+  background-image: url("../dist/img/stars.jpg");
+  background-size: cover;
+  background-position-x: left;
+}
+
+
+</style>
+
 <section name="title" b="elements.tb0.bottom+20">
 <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
 # A RippleDoc presentation

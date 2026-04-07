@@ -167,9 +167,20 @@ export class HTMLPresentationViewRoot {
     };
   }
 
-  get htmlRoot(): HTMLElement {
-    return this.dom_.htmlRoot;
-  }
+  // Note: (7/4/26) We used to expose htmlRoot. This was mainly because when I originally spun
+  // up the HTMLView tree I had quite a liberal attitude to who could access the DOM. I'm
+  // fairly sure this was a bad idea.
+  //
+  // Over time I would like to move towards a model where the DOM is encapsulated - for example
+  // we would call addSectionsChild(Element) rather than having the Section manipulate the DOM
+  // directly.
+  //
+  // But time is finite and this would require a non-trivial refactor, so for now we just get rid
+  // of root access.
+  //
+  //get htmlRoot(): HTMLElement {
+  //  return this.dom_.htmlRoot;
+  //}
 
   get htmlViewport(): HTMLElement {
     return this.dom_.htmlViewport;
@@ -196,7 +207,7 @@ export class HTMLPresentationViewRoot {
   // ----------------------------------------------------------------------------------------------
 
   layout(): void {
-    this.htmlRoot.style.setProperty(
+    this.dom_.htmlRoot.style.setProperty(
       "--presentation-scale",
       this.presentation.physicalDimensions.scale.toPrecision(4), // eslint-disable-line no-magic-numbers
     );

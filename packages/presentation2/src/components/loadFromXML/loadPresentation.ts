@@ -27,6 +27,10 @@ export async function loadPresentation(options: {
           loadSection({ element: child, presentationBuilder });
           return;
 
+        case "style":
+          loadStylesheet({ element: child, presentationBuilder });
+          return;
+
         default: // Ignore unknown tags for now
       }
     },
@@ -49,4 +53,13 @@ function loadSize(options: {
 
   presentationBuilder.basisDimensions.width = Number(width);
   presentationBuilder.basisDimensions.height = Number(height);
+}
+
+function loadStylesheet(options: {
+  element: Element;
+  presentationBuilder: PresentationBuilder;
+}): void {
+  const { element, presentationBuilder } = options;
+
+  presentationBuilder.stylesheet = element.textContent || "";
 }

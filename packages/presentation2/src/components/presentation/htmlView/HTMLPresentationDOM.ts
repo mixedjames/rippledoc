@@ -13,7 +13,11 @@ export class HTMLPresentationDOM {
   //       overlay_ (div)
 
   private fragment_: DocumentFragment = document.createDocumentFragment();
+
   private root_: HTMLElement = document.createElement("div");
+  private shadowRoot_: ShadowRoot = this.root_.attachShadow({ mode: "open" });
+
+  private styles_: HTMLStyleElement = document.createElement("style");
   private viewport_: HTMLElement = document.createElement("div");
   private backgrounds_: HTMLElement = document.createElement("div");
   private elements_: HTMLElement = document.createElement("div");
@@ -33,11 +37,16 @@ export class HTMLPresentationDOM {
 
     // Connect DOM elements:
     //
-    this.root_.appendChild(this.viewport_);
+    this.styles_.textContent = presentation.stylesheet;
+    this.shadowRoot_.appendChild(this.styles_);
+
+    //this.root_.appendChild(this.viewport_);
+    this.shadowRoot_.appendChild(this.viewport_);
     this.viewport_.appendChild(this.backgrounds_);
     this.viewport_.appendChild(this.elements_);
 
-    this.root_.appendChild(this.overlay_);
+    //this.root_.appendChild(this.overlay_);
+    this.shadowRoot_.appendChild(this.overlay_);
     this.overlay_.appendChild(this.pins_);
 
     this.fragment_.appendChild(this.root_);

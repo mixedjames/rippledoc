@@ -5,6 +5,7 @@ import { SectionBuilder } from "../section/SectionBuilder";
  */
 export class PresentationBuilder {
   private sections_: SectionBuilder[] = [];
+  private stylesheet_: string = "";
 
   private basisDimensions_: { width: number; height: number } = {
     width: 800,
@@ -23,5 +24,13 @@ export class PresentationBuilder {
 
   get basisDimensions(): { width: number; height: number } {
     return this.basisDimensions_;
+  }
+
+  get stylesheet(): string {
+    return this.stylesheet_;
+  }
+
+  set stylesheet(value: string) {
+    this.stylesheet_ = value;
   }
 }

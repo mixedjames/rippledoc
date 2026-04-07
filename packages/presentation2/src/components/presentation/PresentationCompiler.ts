@@ -196,6 +196,7 @@ export class PresentationCompiler {
     const p = Presentation.create({
       basisDimensions: this.builder_.basisDimensions,
       slideHeightNativeExpression: this.slideHeightNativeExpression_!,
+      stylesheet: this.builder_.stylesheet,
     });
 
     p.phase2Constructor.setSections(
