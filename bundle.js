@@ -235,7 +235,8 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.demo-menu-button {
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
   font-size: 0.9rem;
-}`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,cAAc;EACd,eAAe;EACf,oBAAoB;EACpB,YAAY;EACZ,UAAU;EACV,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,+BAA+B;EAC/B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,WAAW;EACX,YAAY;EACZ,oBAAoB;EACpB,YAAY;EACZ,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,8BAA8B;EAC9B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,qBAAqB;EACrB,aAAa;EACb,cAAc;AAChB;;AAEA;EACE,cAAc;EACd,WAAW;EACX,aAAa;EACb,wBAAwB;AAC1B;;AAEA;EACE,eAAe;EACf,QAAQ;EACR,aAAa;EACb,8BAA8B;EAC9B,YAAY;EACZ,aAAa;AACf;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,OAAO;EACP,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,kBAAkB;EAClB,SAAS;EACT,WAAW;EACX,aAAa;EACb,cAAc;EACd,oBAAoB;EACpB,YAAY;EACZ,oCAAoC;EACpC,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,OAAO;EACP,4BAA4B;EAC5B,gBAAgB;AAClB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;EACE,iBAAiB;EACjB,gBAAgB;EAChB,qBAAqB;AACvB;;AAEA;EACE,SAAS;EACT,UAAU;EACV,aAAa;EACb,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,iBAAiB;EACjB,yBAAyB;EACzB,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,qBAAqB;EACrB;;4BAE0B;EAC1B,iBAAiB;AACnB","sourcesContent":["@import \"./presentation.css\";\n\n.demo-menu-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 1.25rem;\n  width: 3.25rem;\n  height: 3.25rem;\n  border-radius: 999px;\n  border: none;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.85);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-menu-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-fullscreen-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 4.75rem;\n  width: 3rem;\n  height: 3rem;\n  border-radius: 999px;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.7);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-fullscreen-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-button-bars {\n  display: inline-block;\n  width: 1.5rem;\n  height: 1.5rem;\n}\n\n.demo-menu-button-bars span {\n  display: block;\n  height: 2px;\n  margin: 3px 0;\n  background: currentColor;\n}\n\n.demo-menu-overlay {\n  position: fixed;\n  inset: 0;\n  display: none;\n  background: rgba(0, 0, 0, 0.9);\n  color: white;\n  z-index: 2100;\n}\n\n.demo-menu-overlay.is-open {\n  display: flex;\n}\n\n.demo-menu-overlay-inner {\n  position: relative;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.demo-menu-close-button {\n  position: absolute;\n  top: 1rem;\n  right: 1rem;\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 999px;\n  border: none;\n  background: rgba(255, 255, 255, 0.1);\n  color: white;\n  cursor: pointer;\n}\n\n.demo-menu-close-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-content {\n  flex: 1;\n  padding: 1.5rem 1.25rem 2rem;\n  overflow-y: auto;\n}\n\n.demo-menu-section {\n  margin-bottom: 1.75rem;\n}\n\n.demo-menu-section-title {\n  font-size: 1.1rem;\n  font-weight: 600;\n  margin: 0 0 0.75rem 0;\n}\n\n.demo-menu-metric-list {\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 0.75rem;\n}\n\n.demo-menu-metric dt {\n  font-size: 0.8rem;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  opacity: 0.8;\n}\n\n.demo-menu-metric dd {\n  margin: 0.15rem 0 0 0;\n  font-family:\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n    \"Courier New\", monospace;\n  font-size: 0.9rem;\n}"],"sourceRoot":""}]);
+}
+`, "",{"version":3,"sources":["webpack://./src/css/styles.css"],"names":[],"mappings":"AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,cAAc;EACd,eAAe;EACf,oBAAoB;EACpB,YAAY;EACZ,UAAU;EACV,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,+BAA+B;EAC/B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,eAAe;EACf,cAAc;EACd,eAAe;EACf,WAAW;EACX,YAAY;EACZ,oBAAoB;EACpB,YAAY;EACZ,aAAa;EACb,mBAAmB;EACnB,uBAAuB;EACvB,8BAA8B;EAC9B,YAAY;EACZ,eAAe;EACf,aAAa;AACf;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,qBAAqB;EACrB,aAAa;EACb,cAAc;AAChB;;AAEA;EACE,cAAc;EACd,WAAW;EACX,aAAa;EACb,wBAAwB;AAC1B;;AAEA;EACE,eAAe;EACf,QAAQ;EACR,aAAa;EACb,8BAA8B;EAC9B,YAAY;EACZ,aAAa;AACf;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,OAAO;EACP,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,kBAAkB;EAClB,SAAS;EACT,WAAW;EACX,aAAa;EACb,cAAc;EACd,oBAAoB;EACpB,YAAY;EACZ,oCAAoC;EACpC,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,0BAA0B;EAC1B,mBAAmB;AACrB;;AAEA;EACE,OAAO;EACP,4BAA4B;EAC5B,gBAAgB;AAClB;;AAEA;EACE,sBAAsB;AACxB;;AAEA;EACE,iBAAiB;EACjB,gBAAgB;EAChB,qBAAqB;AACvB;;AAEA;EACE,SAAS;EACT,UAAU;EACV,aAAa;EACb,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,iBAAiB;EACjB,yBAAyB;EACzB,sBAAsB;EACtB,YAAY;AACd;;AAEA;EACE,qBAAqB;EACrB;;4BAE0B;EAC1B,iBAAiB;AACnB","sourcesContent":["@import \"./presentation.css\";\n\n.demo-menu-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 1.25rem;\n  width: 3.25rem;\n  height: 3.25rem;\n  border-radius: 999px;\n  border: none;\n  padding: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.85);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-menu-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-fullscreen-button {\n  position: fixed;\n  right: 1.25rem;\n  bottom: 4.75rem;\n  width: 3rem;\n  height: 3rem;\n  border-radius: 999px;\n  border: none;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background: rgba(0, 0, 0, 0.7);\n  color: white;\n  cursor: pointer;\n  z-index: 2000;\n}\n\n.demo-fullscreen-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-button-bars {\n  display: inline-block;\n  width: 1.5rem;\n  height: 1.5rem;\n}\n\n.demo-menu-button-bars span {\n  display: block;\n  height: 2px;\n  margin: 3px 0;\n  background: currentColor;\n}\n\n.demo-menu-overlay {\n  position: fixed;\n  inset: 0;\n  display: none;\n  background: rgba(0, 0, 0, 0.9);\n  color: white;\n  z-index: 2100;\n}\n\n.demo-menu-overlay.is-open {\n  display: flex;\n}\n\n.demo-menu-overlay-inner {\n  position: relative;\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.demo-menu-close-button {\n  position: absolute;\n  top: 1rem;\n  right: 1rem;\n  width: 2.5rem;\n  height: 2.5rem;\n  border-radius: 999px;\n  border: none;\n  background: rgba(255, 255, 255, 0.1);\n  color: white;\n  cursor: pointer;\n}\n\n.demo-menu-close-button:focus-visible {\n  outline: 2px solid #ffffff;\n  outline-offset: 3px;\n}\n\n.demo-menu-content {\n  flex: 1;\n  padding: 1.5rem 1.25rem 2rem;\n  overflow-y: auto;\n}\n\n.demo-menu-section {\n  margin-bottom: 1.75rem;\n}\n\n.demo-menu-section-title {\n  font-size: 1.1rem;\n  font-weight: 600;\n  margin: 0 0 0.75rem 0;\n}\n\n.demo-menu-metric-list {\n  margin: 0;\n  padding: 0;\n  display: flex;\n  flex-direction: column;\n  gap: 0.75rem;\n}\n\n.demo-menu-metric dt {\n  font-size: 0.8rem;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  opacity: 0.8;\n}\n\n.demo-menu-metric dd {\n  margin: 0.15rem 0 0 0;\n  font-family:\n    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\",\n    \"Courier New\", monospace;\n  font-size: 0.9rem;\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -2526,17 +2527,66 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * Manager object the the various animation views that may be attached to an Element or Section.
+ * Coordinates pin and animation HTML views for a single "animatable" object
+ * (either a Section or an Element).
+ *
+ * Intended usage
+ * --------------
+ * - Constructed by an owning view (currently HTMLElementView, and potentially
+ *   HTMLSectionView in future) once the DOM for the animatable object exists.
+ * - Owns HTMLPinView instances for any Pin models on the underlying Element.
+ * - Owns HTMLAnimationView instances for each ScrollTriggeredAnimation
+ *   attached to the underlying model.
+ * - The owning view calls layout(), disconnect() and
+ *   animatableObjectChanges() to keep the animation views in sync with the
+ *   underlying DOM.
+ *
+ * Interaction with animations
+ * ---------------------------
+ * - During construction, reads pin and animation models from the parent
+ *   (element.pins / element.animations, section.animations) and builds the
+ *   corresponding HTMLPinView / HTMLAnimationView instances.
+ * - getAnimationTargets() is used by HTMLAnimationView implementations to
+ *   resolve which DOM elements a ScrollTriggeredAnimation should operate on:
+ *   - For sections, animations apply to HTMLSectionView.htmlBackgroundElement
+ *     and sections are never pinned.
+ *   - For elements, animations target either the element's main htmlElement or
+ *     a named sub-component, plus any pinned clones maintained by HTMLPinView.
+ *
+ * Coupling to sections and elements
+ * ---------------------------------
+ * This section describes the current state of coupling between HTMLAnimationManager and the
+ * concrete view classes. It exists as a point for future James to refer back to
+ * when thinking about refactoring.
+ *
+ * - The parent must currently be either HTMLSectionView or HTMLElementView
+ *   (HTMLAnimatableObject).
+ * - Only HTMLElementView instances can have pins; when the parent is a
+ *   HTMLSectionView, getPinsFromParent() always returns an empty array.
+ * - Both HTMLSectionView and HTMLElementView can have animations;
+ *   section.animations are section-level, element.animations are
+ *   element-level.
+ * - HTMLAnimationManager is intentionally coupled to concrete view classes
+ *   such as HTMLPinView and HTMLKeyFrameAnimationView; changes in the
+ *   animation model surface will typically require coordinated updates here.
  */
 class HTMLAnimationManager {
     parent_;
     pinViews_ = [];
     animationViews_ = [];
+    /**
+     * Constructed by an owning view (Section/Element HTML view) once the underlying DOM is ready so
+     * this manager can build and coordinate pin and animation views for that parent.
+     */
     constructor(options) {
         this.parent_ = options.parent;
         this.buildPins();
         this.buildAnimations();
     }
+    /**
+     * Rebuilds HTMLPinView instances for the current parent; only called internally by the
+     * constructor (and potentially future reinitialisation paths) on this manager.
+     */
     buildPins() {
         this.pinViews_.length = 0;
         const pins = this.getPinsFromParent();
@@ -2546,6 +2596,10 @@ class HTMLAnimationManager {
             this.pinViews_.push(new _pin_htmlView_HTMLPinView__WEBPACK_IMPORTED_MODULE_3__.HTMLPinView({ pin, elementView: this.parent_ }));
         });
     }
+    /**
+     * Returns the Pin models for the current parent; used only by buildPins() to abstract over
+     * Section vs Element parents.
+     */
     getPinsFromParent() {
         if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
             // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
@@ -2559,6 +2613,10 @@ class HTMLAnimationManager {
             throw new Error("Unsupported parent type for HTMLAnimationManager");
         }
     }
+    /**
+     * Rebuilds HTMLAnimationView instances from the parent's animation models; only called
+     * internally by the constructor (and any future rebuild logic) on this manager.
+     */
     buildAnimations() {
         const animationViews = this.animationViews_;
         animationViews.length = 0;
@@ -2574,10 +2632,15 @@ class HTMLAnimationManager {
             }
         });
     }
+    /**
+     * Returns the ScrollTriggeredAnimation models for the current parent; used only by
+     * buildAnimations() to hide the Section vs Element branching.
+     */
     getAnimationsFromParent() {
         if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
-            // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
-            // null checks in the caller.
+            // Section-level animations live on the underlying Section model.
+            // Returning the array directly avoids the need for null checks in the
+            // caller.
             return this.parent_.section.animations;
         }
         else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
@@ -2587,6 +2650,10 @@ class HTMLAnimationManager {
             throw new Error("Unsupported parent type for HTMLAnimationManager");
         }
     }
+    /**
+     * Called by the owning HTML view during layout or resize passes so managed pin and animation
+     * views can recompute their DOM geometry.
+     */
     layout() {
         this.pinViews_.forEach((pinView) => {
             pinView.layout();
@@ -2595,6 +2662,10 @@ class HTMLAnimationManager {
             animationView.layout();
         });
     }
+    /**
+     * Called by the owning HTML view when it is being detached or torn down so all managed pin and
+     * animation views can release DOM references and event handlers.
+     */
     disconnect() {
         this.pinViews_.forEach((pinView) => {
             pinView.disconnect();
@@ -2607,7 +2678,8 @@ class HTMLAnimationManager {
     }
     /**
      * Called by an owning object (currently only HTMLElementView) to indicate that the DOM underlying
-     * the animatable object has changed.
+     * the animatable object has changed so pin and animation views can refresh their internal clones
+     * and cached measurements.
      *
      * This is important because of pinned elements - pin views maintain a cloned version of the
      * original element's DOM, and if the original DOM changes then the clones need to be updated to
@@ -2622,7 +2694,8 @@ class HTMLAnimationManager {
         });
     }
     /**
-     * Gets the list of HTMLElements that should be targets for animations.
+     * Used by HTMLAnimationView implementations to compute the concrete DOM Element targets for a
+     * given ScrollTriggeredAnimation on this manager's parent.
      *
      * This solves two problems:
      * 1. Sections vs Elements
@@ -2672,12 +2745,24 @@ class HTMLAnimationManager {
             throw new Error("Unsupported parent type for HTMLAnimationManager");
         }
     }
+    /**
+     * Exposes the current animatable parent (Section or Element view) to callers such as animation
+     * views that need to inspect higher-level context.
+     */
     get animatableParent() {
         return this.parent_;
     }
+    /**
+     * Exposes the HTMLPinView instances managed for the current parent so owning views or tests can
+     * inspect or iterate over active pins.
+     */
     get pinViews() {
         return this.pinViews_;
     }
+    /**
+     * Exposes the HTMLAnimationView instances managed for the current parent so owning views or
+     * tests can observe which animations are active.
+     */
     get animationViews() {
         return this.animationViews_;
     }
@@ -2902,6 +2987,9 @@ class HTMLKeyFrameAnimationView {
         }
         if (keyFrame.strokeDashoffset !== undefined) {
             cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+        }
+        if (keyFrame.transform !== undefined) {
+            cssKeyFrame.transform = keyFrame.transform;
         }
         return cssKeyFrame;
     }
@@ -3935,21 +4023,31 @@ __webpack_require__.r(__webpack_exports__);
 class HTMLElementViewLinkedClone {
     elementView_;
     htmlElement_;
+    /**
+     * Creates a linked clone helper for the given HTMLElementView; constructed by HTMLElementView.makeLinkedClone
+     * and used by pin/animation infrastructure rather than application code directly.
+     */
     constructor(elementView) {
         this.elementView_ = elementView;
         this.update();
     }
+    /** Returns the source HTMLElementView that this linked clone mirrors; read by pin/animation views. */
     get elementView() {
         return this.elementView_;
     }
+    /** Returns the current cloned HTMLElement that should be inserted into the DOM by callers such as HTMLPinView. */
     get htmlElement() {
         return this.htmlElement_;
     }
+    /**
+     * Rebuilds the cloned HTMLElement from the current state of the source HTMLElementView; called initially
+     * from the constructor and subsequently by pin/animation code when the source DOM changes.
+     */
     update() {
         if (this.htmlElement_) {
             this.htmlElement_.remove();
         }
-        this.htmlElement_ = this.elementView_.htmlElement.cloneNode(true);
+        this.htmlElement_ = this.subclassClone();
     }
     /**
      * See Element.allowsSubComponentElements
@@ -3979,6 +4077,22 @@ class HTMLElementViewLinkedClone {
     }
 }
 /**
+ * HTMLElementView owns the DOM representation for a presentation Element inside a Section and
+ * coordinates layout, sizing, pinning support, and animation integration for that Element.
+ *
+ * ## Intended interactions
+ * - Constructed by section/element view factories (or subclasses) with a SectionView and Element.
+ * - Presentation layout code calls layout(), applyContentDependentSize(), and measureContentDependentSize().
+ * - Animation infrastructure (via HTMLAnimationManager) queries DOM through htmlElement / foreground/background
+ *   element getters and uses animatableObjectChanges() when subclass DOM structure changes.
+ * - Subclasses follow the strict pattern below to customise DOM structure and layout while keeping the
+ *   rest of the behaviour consistent.
+ *
+ * ## Current coupling
+ * - Tightly coupled to HTMLSectionView/HTMLPresentationViewRoot for coordinate system and DOM parenting.
+ * - Creates an HTMLAnimationManager for itself during createDOM() to manage pins and animations.
+ * - Exposes makeLinkedClone(), allowsSubComponentElements, and getSubComponentElement() as extension points
+ *   used by pin/animation views; most application code should not call these directly.
  *
  * # Pattern for subclassing
  * This is *not* a limitless extension point. We expect a strict pattern:
@@ -4002,6 +4116,7 @@ class HTMLElementView {
     sectionView_;
     htmlElement_;
     animationManager_;
+    /** Constructs a view for the given Element within a SectionView; called by factories and subclass constructors. */
     constructor(options) {
         this.sectionView_ = options.sectionView;
         this.element_ = options.element;
@@ -4016,27 +4131,37 @@ class HTMLElementView {
     // ----------------------------------------------------------------------------------------------
     // Structural relationships
     // ----------------------------------------------------------------------------------------------
+    /** Returns the underlying presentation Element model; read by layout, animation, and subclasses. */
     get element() {
         return this.element_;
     }
+    /** Returns the root HTMLElement for this view; used by layout and animation code as the main DOM node. */
     get htmlElement() {
         return this.htmlElement_;
     }
+    /** Returns the HTMLElement considered to be in the foreground for this view; overridden by subclasses when needed. */
     get foregroundHTMLElement() {
         return this.htmlElement_;
     }
+    /** Returns the HTMLElement considered to be in the background for this view; overridden by subclasses when needed. */
     get backgroundHTMLElement() {
         return this.htmlElement_;
     }
+    /** Returns the parent HTMLSectionView that owns this element view; used by layout and animation code. */
     get sectionView() {
         return this.sectionView_;
     }
+    /** Returns the root HTMLPresentationViewRoot for this element; used to access global layout/scale information. */
     get presentationView() {
         return this.sectionView.presentationView;
     }
     // ----------------------------------------------------------------------------------------------
     // Rendering
     // ----------------------------------------------------------------------------------------------
+    /**
+     * Creates the base DOM structure for this element view (a positioned div) and wires it into the
+     * section's content DOM; called from the base constructor for non-subclasses.
+     */
     createDOM() {
         this.htmlElement_ = document.createElement("div");
         this.htmlElement_.style.position = "absolute";
@@ -4048,6 +4173,7 @@ class HTMLElementView {
         this.subclassCreateDOM();
         this.animationManager_ = new _animation_htmlView_HTMLAnimationManager__WEBPACK_IMPORTED_MODULE_0__.HTMLAnimationManager({ parent: this });
     }
+    /** Subclass hook to create additional DOM for this element; called from createDOM(). */
     subclassCreateDOM() { }
     /**
      * Content dependent sizing calculations are a two step process to minimise layout thrashing:
@@ -4071,7 +4197,8 @@ class HTMLElementView {
         }
     }
     /**
-     * Gets the content dependent size of the element in basis coordinates.
+     * Gets the content dependent size of the element in basis coordinates; called by the layout
+     * pipeline after applyContentDependentSize() to measure the resulting DOM.
      */
     measureContentDependentSize() {
         const scale = this.presentationView.physicalDimensions.scale;
@@ -4084,6 +4211,10 @@ class HTMLElementView {
         }
         throw new Error("Element does not have a content dependent dimension");
     }
+    /**
+     * Applies the model-based position and size to the DOM and then delegates to subclassLayout()
+     * and the HTMLAnimationManager; called from the presentation layout pass.
+     */
     layout() {
         const scale = this.presentationView.physicalDimensions.scale;
         this.htmlElement_.style.left = `${this.element.left * scale}px`;
@@ -4093,6 +4224,7 @@ class HTMLElementView {
         this.subclassLayout();
         this.animationManager_.layout();
     }
+    /** Subclass hook to perform additional layout work after the base element has been positioned/sized. */
     subclassLayout() { }
     /**
      * Call this from subclasses when the structure of the Element's DOM changes in a way that might
@@ -4113,7 +4245,8 @@ class HTMLElementView {
      * The default implementation returns false. Subclasses should override this property if they
      * support sub-component elements.
      *
-     * See HTMLElementView.getSubComponentElement
+     * See HTMLElementView.getSubComponentElement. Called primarily by animation/pin infrastructure
+     * when resolving animation targets, rather than by general application code.
      */
     get allowsSubComponentElements() {
         return false;
@@ -4126,12 +4259,17 @@ class HTMLElementView {
      *
      * The default implementation does not support sub-component elements, and will throw an error.
      * Subclasses that do support sub-component elements should override this method to return the
-     * appropriate DOMElement for the given sub-component name.
+     * appropriate DOMElement for the given sub-component name. This is typically called by
+     * HTMLAnimationManager/HTMLPinView when resolving animation targets.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getSubComponentElement(name) {
         throw new Error("HTMLElementView does not support sub-component elements.");
     }
+    /**
+     * Creates a linked clone helper for this element view; used by HTMLPinView and related
+     * animation infrastructure to obtain a clone that can track changes to the original DOM.
+     */
     makeLinkedClone() {
         return new HTMLElementViewLinkedClone(this);
     }
@@ -4694,6 +4832,14 @@ function getOptionalNumericKeyFrameAttribute(options) {
     }
     return value;
 }
+function getOptionalStringKeyFrameAttribute(options) {
+    const { element, attributeName } = options;
+    const raw = element.getAttribute(attributeName);
+    if (raw == null || raw.trim() === "") {
+        return undefined;
+    }
+    return raw.trim();
+}
 function loadAnimation(options) {
     const { element, builder } = options;
     const triggerAttr = element.getAttribute("trigger");
@@ -4759,12 +4905,18 @@ function loadAnimation(options) {
             element: child,
             attributeName: "strokeDashoffset",
         });
+        const transform = getOptionalStringKeyFrameAttribute({
+            element: child,
+            attributeName: "transform",
+        });
+        console.log("transform", transform);
         const keyFrame = {
             position,
             ...(opacity !== undefined ? { opacity } : {}),
             ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
             ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
             ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
+            ...(transform !== undefined ? { transform } : {}),
         };
         builder.addKeyFrame(keyFrame);
         keyFrameCount += 1;
@@ -7120,9 +7272,7 @@ if (fullscreenButton && presentationContainer) {
                 });
             }
             else {
-                presentationContainer
-                    .requestFullscreen()
-                    .catch(() => {
+                presentationContainer.requestFullscreen().catch(() => {
                     // ignore errors
                 });
             }
