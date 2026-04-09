@@ -11,31 +11,19 @@
       "path": "./packages/markdown"
     },
     {
-      "path": "./packages/presentation"
-    },
-    {
       "path": "./packages/presentation2"
     },
     {
-      "path": "./packages/presentationBuilder"
-    },
-    {
-      "path": "./packages/htmlPresentationView"
-    },
-    {
       "path": "./apps/expressions-demo"
-    },
-    {
-      "path": "./apps/xml-presentation-structure-viewer"
-    },
-    {
-      "path": "./apps/html-presentation-view-demo"
     },
     {
       "path": "./apps/just-messing"
     },
     {
       "path": "./apps/demo-site"
+    },
+    {
+      "path": "./apps/electron-test"
     }
   ]
 }

@@ -19,21 +19,9 @@ export default defineConfig({
       ),
       "@rippledoc/sanitizer": path.resolve(__dirname, "packages/sanitizer/src"),
       "@rippledoc/markdown": path.resolve(__dirname, "packages/markdown/src"),
-      "@rippledoc/presentation": path.resolve(
-        __dirname,
-        "packages/presentation/src",
-      ),
       "@rippledoc/presentation2": path.resolve(
         __dirname,
         "packages/presentation2/src",
-      ),
-      "@rippledoc/presentationBuilder": path.resolve(
-        __dirname,
-        "packages/presentationBuilder/src",
-      ),
-      "@rippledoc/htmlPresentationView": path.resolve(
-        __dirname,
-        "packages/htmlPresentationView/src",
       ),
     },
   },

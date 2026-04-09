@@ -9,15 +9,18 @@
     "composite": true,
     "declaration": true,
     "paths": {
-      "@rippledoc/core/*": ["packages/core/src/*"],
-      "@rippledoc/expressions": ["packages/expressions"],
-      "@rippledoc/sanitizer": ["packages/sanitizer"],
-      "@rippledoc/markdown": ["packages/markdown"],
-      "@rippledoc/presentation": ["packages/presentation"],
-      "@rippledoc/presentation2": ["packages/presentation2"],
-      "@rippledoc/presentationBuilder": ["packages/presentationBuilder"],
-      "@rippledoc/htmlPresentation": ["packages/htmlPresentation"],
-      "@rippledoc/htmlPresentationView": ["packages/htmlPresentationView"]
+      "@rippledoc/expressions": [
+        "packages/expressions"
+      ],
+      "@rippledoc/sanitizer": [
+        "packages/sanitizer"
+      ],
+      "@rippledoc/markdown": [
+        "packages/markdown"
+      ],
+      "@rippledoc/presentation2": [
+        "packages/presentation2"
+      ],
     },
     "esModuleInterop": true,
     "skipLibCheck": true
