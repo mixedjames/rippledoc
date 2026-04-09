@@ -1,4 +1,4 @@
-import { PresentationBuilder } from "../..";
+import { PresentationBuilder } from "../presentation/PresentationBuilder";
 import { SectionBuilder } from "../section/SectionBuilder";
 import { loadElement } from "./loadElement";
 import { loadScrollTrigger } from "./loadScrollTrigger";

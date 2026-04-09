@@ -9,18 +9,10 @@
     "composite": true,
     "declaration": true,
     "paths": {
-      "@rippledoc/expressions": [
-        "packages/expressions"
-      ],
-      "@rippledoc/sanitizer": [
-        "packages/sanitizer"
-      ],
-      "@rippledoc/markdown": [
-        "packages/markdown"
-      ],
-      "@rippledoc/presentation2": [
-        "packages/presentation2"
-      ],
+      "@rippledoc/expressions": ["packages/expressions"],
+      "@rippledoc/sanitizer": ["packages/sanitizer"],
+      "@rippledoc/markdown": ["packages/markdown"],
+      "@rippledoc/presentation2": ["packages/presentation2"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true
