@@ -2,6 +2,7 @@ import {
   HTMLElementView,
   HTMLElementViewLinkedClone,
 } from "../../../element/htmlView/HTMLElementView";
+import { HTMLSectionView } from "../../../section/htmlView/HTMLSectionView";
 import { Pin } from "../Pin";
 
 /**
@@ -16,6 +17,46 @@ type DOMElement = globalThis.Element;
  * The number of decimal places to use when setting CSS styles for pinned elements.
  */
 const STYLE_PRECISION = 2;
+
+/**
+ * A no-op implementation of HTMLPinManager used when there are no pins.
+ *
+ * Lightweight implementation that allows us to avoid null checks for the common case where there
+ * are no pins, while still providing the same API.
+ */
+export class NullHTMLPinManager {
+  private parent_: HTMLElementView | HTMLSectionView;
+
+  constructor(options: { parent: HTMLElementView | HTMLSectionView }) {
+    this.parent_ = options.parent;
+  }
+
+  get hasPins(): boolean {
+    return false;
+  }
+
+  disconnect(): void {}
+
+  layout(): void {}
+
+  animatableObjectChanges(): void {}
+
+  /**
+   * We must forward these properties, even in the null case, because they are used by the
+   * animation subsystem.
+   */
+  get allowsSubComponentElements(): boolean {
+    return this.parent_.allowsSubComponentElements;
+  }
+
+  getSubComponentElement(name: string): DOMElement {
+    return this.parent_.getSubComponentElement(name);
+  }
+
+  get clonedHTMLElement(): HTMLElement {
+    throw new Error("NullHTMLPinManager does not have a cloned HTMLElement");
+  }
+}
 
 export class HTMLPinManager {
   private readonly targetWrapper_: HTMLElement;
@@ -43,6 +84,10 @@ export class HTMLPinManager {
     this.buildPins();
   }
 
+  get hasPins(): boolean {
+    return true;
+  }
+
   disconnect(): void {
     this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
     this.unsubscribe_.length = 0;
@@ -54,7 +99,7 @@ export class HTMLPinManager {
     this.elementViewLinkedClone_.htmlElement.remove();
   }
 
-  layout(): void { }
+  layout(): void {}
 
   animatableObjectChanges(): void {
     this.updateDOM();

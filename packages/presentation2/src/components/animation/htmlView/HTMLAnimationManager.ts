@@ -2,7 +2,10 @@ import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 import { HTMLKeyFrameAnimationView } from "../keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView";
 import { ScrollTriggeredAnimation } from "../ScrollTriggeredAnimation";
-import { HTMLPinManager } from "../pin/htmlView/HTMLPinManager";
+import {
+  HTMLPinManager,
+  NullHTMLPinManager,
+} from "../pin/htmlView/HTMLPinManager";
 import { KeyFrameAnimation } from "../keyFrameAnimation/KeyFrameAnimation";
 import { HTMLAnimationView } from "./HTMLAnimationView";
 
@@ -59,11 +62,15 @@ type HTMLAnimatableObject = HTMLSectionView | HTMLElementView;
  * - HTMLAnimationManager is intentionally coupled to concrete view classes
  *   such as HTMLPinView and HTMLKeyFrameAnimationView; changes in the
  *   animation model surface will typically require coordinated updates here.
+ *
+ * FIXME: ultimately the attempt to share code for the section and element cases has not panned
+ * out - there are a hugh number of special cases and branching logic to handle the differences
+ * between the two.
  */
 export class HTMLAnimationManager {
   private parent_: HTMLSectionView | HTMLElementView;
 
-  private readonly pinManager_?: HTMLPinManager;
+  private readonly pinManager_: HTMLPinManager | NullHTMLPinManager;
   private readonly animationViews_: HTMLAnimationView[] = [];
 
   /**
@@ -73,9 +80,15 @@ export class HTMLAnimationManager {
   constructor(options: { parent: HTMLAnimatableObject }) {
     this.parent_ = options.parent;
 
-    // Only elements have pins, so only build a pin manager if the parent is an element view.
-    if (this.parent_ instanceof HTMLElementView) {
+    // Only elements have pins, so only build a pin manager if the parent is an element view
+    // and it has pins.
+    if (
+      this.parent_ instanceof HTMLElementView &&
+      this.parent_.element.pins.length > 0
+    ) {
       this.pinManager_ = new HTMLPinManager({ parent: this.parent_ });
+    } else {
+      this.pinManager_ = new NullHTMLPinManager({ parent: this.parent_ });
     }
 
     this.buildAnimations();
@@ -127,9 +140,7 @@ export class HTMLAnimationManager {
    * views can recompute their DOM geometry.
    */
   layout(): void {
-    if (this.pinManager_) {
-      this.pinManager_.layout();
-    }
+    this.pinManager_.layout();
 
     this.animationViews_.forEach((animationView) => {
       animationView.layout();
@@ -141,9 +152,7 @@ export class HTMLAnimationManager {
    * animation views can release DOM references and event handlers.
    */
   disconnect(): void {
-    if (this.pinManager_) {
-      this.pinManager_.disconnect();
-    }
+    this.pinManager_.disconnect();
 
     this.animationViews_.forEach((animationView) => {
       animationView.disconnect();
@@ -161,9 +170,7 @@ export class HTMLAnimationManager {
    * match.
    */
   animatableObjectChanges(): void {
-    if (this.pinManager_) {
-      this.pinManager_.animatableObjectChanges();
-    }
+    this.pinManager_.animatableObjectChanges();
 
     this.animationViews_.forEach((animationView) => {
       animationView.animatableObjectModified();
@@ -217,15 +224,27 @@ export class HTMLAnimationManager {
         // If the animation has a sub-component target, then we need to get the relevant sub-component
         // element from the parent, and all pinned clones of the parent.
 
-        return [
-          this.parent_.getSubComponentElement(animation.subComponentTarget),
-          this.pinManager_.getSubComponentElement(animation.subComponentTarget),
-        ];
+        if (this.pinManager_.hasPins) {
+          return [
+            this.parent_.getSubComponentElement(animation.subComponentTarget),
+            this.pinManager_.getSubComponentElement(
+              animation.subComponentTarget,
+            ),
+          ];
+        } else {
+          return [
+            this.parent_.getSubComponentElement(animation.subComponentTarget),
+          ];
+        }
       } else {
         // If there is no sub-component target, then the animation applies to the whole element
         // and all pinned clones of the element.
 
-        return [this.parent_.htmlElement, this.pinManager_.clonedHTMLElement];
+        if (this.pinManager_.hasPins) {
+          return [this.parent_.htmlElement, this.pinManager_.clonedHTMLElement];
+        } else {
+          return [this.parent_.htmlElement];
+        }
       }
     } else {
       throw new Error("Unsupported parent type for HTMLAnimationManager");

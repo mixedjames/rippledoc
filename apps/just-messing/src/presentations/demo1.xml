@@ -8,37 +8,95 @@
   background: white;
 }
 
-.rdoc-section-background:nth-child(2) {
-  background: palegreen;
+.rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+  background-image: url("../dist/img/stars.jpg");
+  background-size: cover;
+  background-position-x: left;
 }
 
-.rdoc-section-background:nth-child(3) {
-  background: lightblue;
-}
 
 </style>
 
-<section name="s1" h="slideHeight">
-
-<textbox
-l="20" t="sectionBottom-height" r="basisWidth-20" h="content" name="tb0">
->A flying textbox.
-
-  <scroll-trigger name="st2" start="sectionTop+sectionHeight/2+400" end="start+sectionHeight/2"/>
-  <scroll-trigger name="st1" start="sectionTop" end="sectionTop+sectionHeight/2"/>
-
-  <pin trigger="st2"/>
-  <pin trigger="st1"/>
-
+<section name="title" b="elements.tb0.bottom+20">
+<textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
+# A RippleDoc presentation
 </textbox>
+</section>
+
+<section name="s1" b="slideHeight">
+
+  <image
+    name="img1"
+    src="img/test.svg"
+    fit="cover"
+    l="20" t="sectionTop+20" w="200" h="200"
+    >
+    <scroll-trigger name="st1" start="sectionTop" end="sectionBottom-height-40"/>
+    <pin trigger="st1"/>
+
+    <animation trigger="st1" duration="500" target-part="moon" scroll-driven="true">
+      <along-path target="" path=""/>
+      <keyFrame position="0" opacity="1" path-position="0"/>
+      <keyFrame position="500" opacity="0" path-position="500"/>
+    </animation>
+
+    <animation trigger="st1" duration="500" scroll-driven="true">
+      <keyFrame position="0" transform="none" />
+      <keyFrame position="500" transform="translateX(100%)" />
+    </animation>
+
+    <animation trigger="st1" duration="500" target-part="liney" scroll-driven="true">
+      <keyFrame position="0" strokeDashoffset="0" />
+      <keyFrame position="500" strokeDashoffset="100" />
+    </animation>
+
+  </image>
+
+  <textbox l="elements.img1.right+20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb1">
+  # Just messing around
+  This is a presentation created to test out the XML loading functionality of the presentation
+  library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+  ut labore et dolore magna aliqua.
+
+  - Lorem ipsum dolor sit amet
+    - Consectetur adipiscing elit
+  - Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+
+
+  1. Option 1
+  1. Option 2
+  </textbox>
+
+  <image
+    src="img/progress-bar.svg"
+    l="0" r="basisWidth" b="sectionBottom" h="50"
+    >
+    <scroll-trigger name="st1" start="0" end="sections.s2.sectionTop"/>
+    <pin trigger="st1"/>
+    <animation trigger="st1" duration="500" target-part="progress" scroll-driven="true">
+      <keyFrame position="0" strokeDashoffset="100" />
+      <keyFrame position="500" strokeDashoffset="0" />
+    </animation>
+
+  </image>
+</section>
+
+<section h="slideHeight" name="s3">
+  <textbox l="0" r="basisWidth" t="sectionTop" h="slideHeight" name="fancyBG">
+  </textbox>
 
 </section>
 
-<section name="s2" h="slideHeight">
-</section>
+<section h="slideHeight" name="s2">
 
-<section name="s3" h="slideHeight">
+      <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
+      # Another slide
+      This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+      ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+      cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+      qui officia deserunt mollit anim id est laborum.
+      </textbox>
 </section>
-
 
 </presentation>

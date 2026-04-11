@@ -1,0 +1,44 @@
+<presentation>
+
+<size w="600" h="800" />
+
+<style>
+
+.rdoc-section-background {
+  background: white;
+}
+
+.rdoc-section-background:nth-child(2) {
+  background: palegreen;
+}
+
+.rdoc-section-background:nth-child(3) {
+  background: lightblue;
+}
+
+</style>
+
+<section name="s1" h="slideHeight">
+
+<textbox
+l="20" t="sectionBottom-height" r="basisWidth-20" h="content" name="tb0">
+>A flying textbox.
+
+  <scroll-trigger name="st2" start="sectionTop+sectionHeight/2+400" end="start+sectionHeight/2"/>
+  <scroll-trigger name="st1" start="sectionTop" end="sectionTop+sectionHeight/2"/>
+
+  <pin trigger="st2"/>
+  <pin trigger="st1"/>
+
+</textbox>
+
+</section>
+
+<section name="s2" h="slideHeight">
+</section>
+
+<section name="s3" h="slideHeight">
+</section>
+
+
+</presentation>
