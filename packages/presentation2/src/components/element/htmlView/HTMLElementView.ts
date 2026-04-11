@@ -30,6 +30,12 @@ export class HTMLElementViewLinkedClone {
   private elementView_: HTMLElementView;
   private htmlElement_!: HTMLElement;
 
+  // Starts at zero - i.e. implicitly assumes it is initially hidden.
+  // Since the prototypical use case for this class in pinning this seems like a reasonable
+  // default. (and not magic!)
+  // eslint-disable-next-line no-magic-numbers
+  private visibilityCount_ = -1;
+
   /**
    * Creates a linked clone helper for the given HTMLElementView; constructed by HTMLElementView.makeLinkedClone
    * and used by pin/animation infrastructure rather than application code directly.
@@ -59,6 +65,12 @@ export class HTMLElementViewLinkedClone {
     }
 
     this.htmlElement_ = this.subclassClone();
+
+    if (this.visibilityCount_ < 0) {
+      this.htmlElement_.style.visibility = "hidden";
+    } else {
+      this.htmlElement_.style.visibility = "visible";
+    }
   }
 
   /**
@@ -90,6 +102,22 @@ export class HTMLElementViewLinkedClone {
    */
   protected subclassClone(): HTMLElement {
     return this.elementView_.htmlElement.cloneNode(true) as HTMLElement;
+  }
+
+  show(): void {
+    this.visibilityCount_++;
+
+    if (this.visibilityCount_ >= 0) {
+      this.htmlElement.style.visibility = "visible";
+    }
+  }
+
+  hide(): void {
+    this.visibilityCount_--;
+
+    if (this.visibilityCount_ < 0) {
+      this.htmlElement.style.visibility = "hidden";
+    }
   }
 }
 
@@ -132,9 +160,14 @@ export class HTMLElementView {
   private element_: Element;
   private sectionView_: HTMLSectionView;
 
+  // Own properties --------------------------------------------------------------------------------
+  //
+
   private htmlElement_!: HTMLElement;
 
   private animationManager_!: HTMLAnimationManager;
+
+  private visibilityCount_ = 0;
 
   /** Constructs a view for the given Element within a SectionView; called by factories and subclass constructors. */
   constructor(options: {
@@ -193,6 +226,22 @@ export class HTMLElementView {
   // Rendering
   // ----------------------------------------------------------------------------------------------
 
+  show(): void {
+    this.visibilityCount_++;
+
+    if (this.visibilityCount_ >= 0) {
+      this.htmlElement.style.visibility = "visible";
+    }
+  }
+
+  hide(): void {
+    this.visibilityCount_--;
+
+    if (this.visibilityCount_ < 0) {
+      this.htmlElement_.style.visibility = "hidden";
+    }
+  }
+
   /**
    * Creates the base DOM structure for this element view (a positioned div) and wires it into the
    * section's content DOM; called from the base constructor for non-subclasses.
@@ -214,7 +263,7 @@ export class HTMLElementView {
   }
 
   /** Subclass hook to create additional DOM for this element; called from createDOM(). */
-  protected subclassCreateDOM(): void {}
+  protected subclassCreateDOM(): void { }
 
   /**
    * Content dependent sizing calculations are a two step process to minimise layout thrashing:
@@ -280,7 +329,7 @@ export class HTMLElementView {
   }
 
   /** Subclass hook to perform additional layout work after the base element has been positioned/sized. */
-  protected subclassLayout(): void {}
+  protected subclassLayout(): void { }
 
   /**
    * Call this from subclasses when the structure of the Element's DOM changes in a way that might

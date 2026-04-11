@@ -66,6 +66,11 @@ export interface ScrollTrigger {
   get end(): number;
 
   /**
+   * The cumulative vertical offset applied by this scroll trigger.
+   */
+  get deltaY(): number;
+
+  /**
    * The Section this trigger is attached to.
    */
   get section(): Section;
@@ -135,6 +140,10 @@ export class DefaultScrollTrigger implements ScrollTrigger {
 
   get end(): number {
     return this.end_.evaluate();
+  }
+
+  get deltaY(): number {
+    return this.end - this.start;
   }
 
   get section(): Section {

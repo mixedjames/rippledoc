@@ -2,8 +2,7 @@ import { HTMLSectionView } from "../../section/htmlView/HTMLSectionView";
 import { HTMLElementView } from "../../element/htmlView/HTMLElementView";
 import { HTMLKeyFrameAnimationView } from "../keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView";
 import { ScrollTriggeredAnimation } from "../ScrollTriggeredAnimation";
-import { HTMLPinView } from "../pin/htmlView/HTMLPinView";
-import { Pin } from "../pin/Pin";
+import { HTMLPinManager } from "../pin/htmlView/HTMLPinManager";
 import { KeyFrameAnimation } from "../keyFrameAnimation/KeyFrameAnimation";
 import { HTMLAnimationView } from "./HTMLAnimationView";
 
@@ -64,7 +63,7 @@ type HTMLAnimatableObject = HTMLSectionView | HTMLElementView;
 export class HTMLAnimationManager {
   private parent_: HTMLSectionView | HTMLElementView;
 
-  private readonly pinViews_: HTMLPinView[] = [];
+  private readonly pinManager_?: HTMLPinManager;
   private readonly animationViews_: HTMLAnimationView[] = [];
 
   /**
@@ -74,42 +73,12 @@ export class HTMLAnimationManager {
   constructor(options: { parent: HTMLAnimatableObject }) {
     this.parent_ = options.parent;
 
-    this.buildPins();
-    this.buildAnimations();
-  }
-
-  /**
-   * Rebuilds HTMLPinView instances for the current parent; only called internally by the
-   * constructor (and potentially future reinitialisation paths) on this manager.
-   */
-  private buildPins() {
-    this.pinViews_.length = 0;
-
-    const pins = this.getPinsFromParent();
-
-    pins.forEach((pin) => {
-      // We know that the parent must be an HTMLElementView if it has pins, so we can safely cast
-      // here.
-      this.pinViews_.push(
-        new HTMLPinView({ pin, elementView: this.parent_ as HTMLElementView }),
-      );
-    });
-  }
-
-  /**
-   * Returns the Pin models for the current parent; used only by buildPins() to abstract over
-   * Section vs Element parents.
-   */
-  private getPinsFromParent(): readonly Pin[] {
-    if (this.parent_ instanceof HTMLSectionView) {
-      // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
-      // null checks in the caller.
-      return [];
-    } else if (this.parent_ instanceof HTMLElementView) {
-      return this.parent_.element.pins;
-    } else {
-      throw new Error("Unsupported parent type for HTMLAnimationManager");
+    // Only elements have pins, so only build a pin manager if the parent is an element view.
+    if (this.parent_ instanceof HTMLElementView) {
+      this.pinManager_ = new HTMLPinManager({ parent: this.parent_ });
     }
+
+    this.buildAnimations();
   }
 
   /**
@@ -158,9 +127,9 @@ export class HTMLAnimationManager {
    * views can recompute their DOM geometry.
    */
   layout(): void {
-    this.pinViews_.forEach((pinView) => {
-      pinView.layout();
-    });
+    if (this.pinManager_) {
+      this.pinManager_.layout();
+    }
 
     this.animationViews_.forEach((animationView) => {
       animationView.layout();
@@ -172,10 +141,9 @@ export class HTMLAnimationManager {
    * animation views can release DOM references and event handlers.
    */
   disconnect(): void {
-    this.pinViews_.forEach((pinView) => {
-      pinView.disconnect();
-    });
-    this.pinViews_.length = 0;
+    if (this.pinManager_) {
+      this.pinManager_.disconnect();
+    }
 
     this.animationViews_.forEach((animationView) => {
       animationView.disconnect();
@@ -193,9 +161,9 @@ export class HTMLAnimationManager {
    * match.
    */
   animatableObjectChanges(): void {
-    this.pinViews_.forEach((pinView) => {
-      pinView.elementViewModified();
-    });
+    if (this.pinManager_) {
+      this.pinManager_.animatableObjectChanges();
+    }
 
     this.animationViews_.forEach((animationView) => {
       animationView.animatableObjectModified();
@@ -236,24 +204,28 @@ export class HTMLAnimationManager {
       return [this.parent_.htmlBackgroundElement];
     } else if (this.parent_ instanceof HTMLElementView) {
       // (2) Path 2: Elements
+
+      if (!this.pinManager_) {
+        // Should never happen because all HTMLElementViews should have a pin manager, but
+        // we'll sanity check to fail fast + load in case of furture cockups.
+        throw new Error(
+          "Internal error: Missing pin manager for HTMLElementView in HTMLAnimationManager",
+        );
+      }
+
       if (animation.hasSubComponentTarget) {
         // If the animation has a sub-component target, then we need to get the relevant sub-component
         // element from the parent, and all pinned clones of the parent.
 
         return [
           this.parent_.getSubComponentElement(animation.subComponentTarget),
-          ...this.pinViews_.map((pinView) =>
-            pinView.getSubComponentElement(animation.subComponentTarget),
-          ),
+          this.pinManager_.getSubComponentElement(animation.subComponentTarget),
         ];
       } else {
         // If there is no sub-component target, then the animation applies to the whole element
         // and all pinned clones of the element.
 
-        return [
-          this.parent_.htmlElement,
-          ...this.pinViews_.map((pinView) => pinView.clonedElement),
-        ];
+        return [this.parent_.htmlElement, this.pinManager_.clonedHTMLElement];
       }
     } else {
       throw new Error("Unsupported parent type for HTMLAnimationManager");
@@ -272,9 +244,9 @@ export class HTMLAnimationManager {
    * Exposes the HTMLPinView instances managed for the current parent so owning views or tests can
    * inspect or iterate over active pins.
    */
-  get pinViews(): readonly HTMLPinView[] {
-    return this.pinViews_;
-  }
+  //get pinViews(): readonly HTMLPinView[] {
+  //  return this.pinManager_ ? this.pinManager_.pinViews : [];
+  //}
 
   /**
    * Exposes the HTMLAnimationView instances managed for the current parent so owning views or

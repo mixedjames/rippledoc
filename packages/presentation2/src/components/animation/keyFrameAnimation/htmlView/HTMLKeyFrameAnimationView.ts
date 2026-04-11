@@ -62,7 +62,7 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       .map((target: Element): Animation => {
         if (cssKeyFrames[0]!.strokeDashoffset !== undefined) {
           if (target instanceof SVGPathElement) {
-            console.log(target.getTotalLength());
+            //console.log(target.getTotalLength());
             target.setAttribute("pathLength", "100");
             target.style.strokeDasharray = "100";
           }
@@ -109,7 +109,6 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
 
     this.unsubscribe_.push(
       scrollTrigger.on("start", () => {
-        console.log("Playing animation forward");
         this.playAnimation("start");
       }),
       scrollTrigger.on("reverseStart", () => {
@@ -130,7 +129,7 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
   }
 
   private playAnimation(from: "start" | "end"): void {
-    if (this.animation_.isScrollDriven) {
+    if (this.animation_.isScrollDriven == true) {
       return;
     }
 
@@ -146,10 +145,6 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
   }
 
   private pauseAnimation(at: "start" | "end"): void {
-    if (this.animation_.isScrollDriven) {
-      return;
-    }
-
     this.cssAnimation_.forEach((animation) => {
       animation.pause();
       if (at === "start") {

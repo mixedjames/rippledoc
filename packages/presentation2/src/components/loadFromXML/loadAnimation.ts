@@ -135,7 +135,6 @@ export function loadAnimation(options: {
       element: child,
       attributeName: "transform",
     });
-    console.log("transform", transform);
 
     const keyFrame: KeyFrame = {
       position,
