@@ -160,6 +160,9 @@ export class HTMLPresentationViewRoot {
 
   get physicalDimensions(): PhysicalDimensions {
     return {
+      viewportLeft: -this.scaleHelper_.tx,
+      viewportRight: this.scaleHelper_.width + 2 * this.scaleHelper_.tx,
+
       width: this.scaleHelper_.width,
       height: this.scaleHelper_.height,
       scale: this.scaleHelper_.scale,

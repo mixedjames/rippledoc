@@ -86,10 +86,14 @@ export class HTMLPresentationDOM {
 
     // Apply specific styles to certain elements:
     // - The viewport should scroll if content overflows.
-    // - The overlay should not capture pointer events (so that it doesn't interfere with interaction with the content)
-    //
+    // - The overlay should not capture pointer events (so that it doesn't interfere with
+    //   interaction with the content)
+    // -
+
     this.backgrounds_.style.height = `${presentation.height}px`;
     this.elements_.style.height = `${presentation.height}px`;
+
+    this.elements_.style.overflow = "visible";
 
     this.viewport_.style.overflowX = "hidden";
     this.viewport_.style.overflowY = "auto";

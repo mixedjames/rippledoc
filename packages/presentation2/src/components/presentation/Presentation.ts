@@ -36,11 +36,20 @@ export interface Phase2Constructor {
 
 type PresentationOptions = {
   basisDimensions: { width: number; height: number };
-  slideHeightNativeExpression: (newFn: () => number) => void;
   stylesheet: string;
+
+  slideSizeNativeExpressions: {
+    height: (newFn: () => number) => void;
+    left: (newFn: () => number) => void;
+    right: (newFn: () => number) => void;
+  };
 };
 
 export interface PhysicalDimensions {
+  get viewportLeft(): number;
+
+  get viewportRight(): number;
+
   get width(): number;
 
   get height(): number;
@@ -139,9 +148,15 @@ export class Presentation {
   // of elements.
   private sortedContentDependentElements_: ContentDependentElement[] = [];
 
-  // The 'slideHeight' variable is provided to expressions during compilation. Clearly it varies
-  // depending on the view.
-  private slideHeightNativeExpression_: (newFn: () => number) => void;
+  // The 'slideHeight', 'slideLeft', and 'slideRight' variables are provided to expressions during
+  // compilation. Clearly they vary depending on the view. We manage this by using native
+  // expressions - these act as a peephole into the expression system which we can update to
+  // change the value of 'slideHeight' etc. as needed.
+  private slideSizeNativeExpressions_: {
+    height: (newFn: () => number) => void;
+    left: (newFn: () => number) => void;
+    right: (newFn: () => number) => void;
+  };
 
   // ----------------------------------------------------------------------------------------------
   // Construction
@@ -158,7 +173,9 @@ export class Presentation {
     }
 
     this.basisDimensions_ = { ...options.basisDimensions };
-    this.slideHeightNativeExpression_ = options.slideHeightNativeExpression;
+    this.slideSizeNativeExpressions_ = {
+      ...options.slideSizeNativeExpressions,
+    };
     this.stylesheet_ = options.stylesheet;
 
     this.installDefaultSlideHeightExpression();
@@ -199,7 +216,9 @@ export class Presentation {
     // the view is attached, there is no physical dimension to base it on, so this is the best we
     // can do.
 
-    this.slideHeightNativeExpression_(() => this.basisDimensions_.height);
+    this.slideSizeNativeExpressions_.height(() => this.basisDimensions_.height);
+    this.slideSizeNativeExpressions_.left(() => 0);
+    this.slideSizeNativeExpressions_.right(() => this.basisDimensions_.width);
   }
 
   /**
@@ -209,13 +228,35 @@ export class Presentation {
     // Once the view is attached, 'slideHeight' should be based on the physical dimensions of the
     // view. This is the expression we install when a view is attached.
 
-    this.slideHeightNativeExpression_(() => {
+    this.slideSizeNativeExpressions_.height(() => {
       if (this.view_ === null) {
         throw new Error("No view is attached to this presentation.");
       }
 
       return (
         this.view_.physicalDimensions.height /
+        this.view_.physicalDimensions.scale
+      );
+    });
+
+    this.slideSizeNativeExpressions_.left(() => {
+      if (this.view_ === null) {
+        throw new Error("No view is attached to this presentation.");
+      }
+
+      return (
+        this.view_.physicalDimensions.viewportLeft /
+        this.view_.physicalDimensions.scale
+      );
+    });
+
+    this.slideSizeNativeExpressions_.right(() => {
+      if (this.view_ === null) {
+        throw new Error("No view is attached to this presentation.");
+      }
+
+      return (
+        this.view_.physicalDimensions.viewportRight /
         this.view_.physicalDimensions.scale
       );
     });

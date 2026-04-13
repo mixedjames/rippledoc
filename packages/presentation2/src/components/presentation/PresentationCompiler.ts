@@ -58,6 +58,10 @@ export class PresentationCompiler {
 
   private slideHeightNativeExpression_: ((newFn: () => number) => void) | null =
     null;
+  private slideLeftNativeExpression_: ((newFn: () => number) => void) | null =
+    null;
+  private slideRightNativeExpression_: ((newFn: () => number) => void) | null =
+    null;
 
   constructor(builder: PresentationBuilder) {
     this.builder_ = builder;
@@ -118,11 +122,16 @@ export class PresentationCompiler {
     this.mapNamedSections();
     this.mapBasisGeometry();
 
-    const nativeExpression = this.module.addNativeExpression2(
-      "slideHeight",
-      () => 1,
-    );
-    this.slideHeightNativeExpression_ = nativeExpression.replaceNativeFunction;
+    const installPlaceholderNativeExp = (name: string) => {
+      const nativeExpression = this.module.addNativeExpression2(name, () => 1);
+      return nativeExpression.replaceNativeFunction;
+    };
+
+    this.slideHeightNativeExpression_ =
+      installPlaceholderNativeExp("slideHeight");
+    this.slideLeftNativeExpression_ = installPlaceholderNativeExp("slideLeft");
+    this.slideRightNativeExpression_ =
+      installPlaceholderNativeExp("slideRight");
   }
 
   private connectAdjacentSections(): void {
@@ -195,8 +204,12 @@ export class PresentationCompiler {
 
     const p = Presentation.create({
       basisDimensions: this.builder_.basisDimensions,
-      slideHeightNativeExpression: this.slideHeightNativeExpression_!,
       stylesheet: this.builder_.stylesheet,
+      slideSizeNativeExpressions: {
+        height: this.slideHeightNativeExpression_!,
+        left: this.slideLeftNativeExpression_!,
+        right: this.slideRightNativeExpression_!,
+      },
     });
 
     p.phase2Constructor.setSections(
