@@ -18,7 +18,50 @@ import { NameExpression } from "./AST.NameExpression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
 
 /**
+ *
+ */
+export class BindingError extends Error {
+  private readonly missingName_: string;
+
+  constructor(missingName: string) {
+    super(`Binding error: ${missingName} not found`);
+
+    this.name = "SyntaxError";
+    this.missingName_ = missingName;
+  }
+
+  get missingName(): string {
+    return this.missingName_;
+  }
+}
+
+/**
+ * Custom error class for syntax errors encountered during parsing.
+ * Includes the position in the input string where the error occurred.
+ */
+export class ExpressionsSyntaxError extends Error {
+  private readonly position_: number;
+
+  constructor(message: string, position: number) {
+    super(`Syntax error at position ${position}: ${message}`);
+
+    this.name = "ExpressionsSyntaxError";
+    this.position_ = position;
+  }
+
+  get position(): number {
+    return this.position_;
+  }
+}
+
+/**
  * Parse an expression string into an UnboundExpression.
+ *
+ * Throws:
+ *  - ExpressionsSyntaxError if the input string contains a syntax error. The error will include
+ *    the position of the error in the input string.
+ *  - The exact exception thrown for other failure modes is non-contractual however, it will be
+ *    an Error or subclass of Error with a descriptive message.
  */
 export function parseExpression(expressionString: string): UnboundExpression {
   const lexer = new Lexer(expressionString);
@@ -55,7 +98,10 @@ class Parser {
     const root = this.parseAdditive();
 
     if (this.current_.type !== TokenType.EOF) {
-      throw new Error(`Unexpected token at position ${this.current_.position}`);
+      throw new ExpressionsSyntaxError(
+        `Unexpected token`,
+        this.current_.position,
+      );
     }
 
     return new UnboundExpression(root);
@@ -146,8 +192,9 @@ class Parser {
       return expr;
     }
 
-    throw new Error(
-      `Expected number, identifier, or '(' at position ${this.current_.position}`,
+    throw new ExpressionsSyntaxError(
+      `Expected number, identifier, or '('`,
+      this.current_.position,
     );
   }
 
@@ -161,11 +208,18 @@ class Parser {
    * Checks the current token type and advances.
    */
   private expect(type: TokenType): void {
+    let unexpectedLexeme = this.current_.lexeme;
+    if (this.current_.type == TokenType.EOF) {
+      unexpectedLexeme = "end of input";
+    }
+
     if (this.current_.type !== type) {
-      throw new Error(
-        `Expected ${type.toString()} at position ${this.current_.position}`,
+      throw new ExpressionsSyntaxError(
+        `Unexpected '${unexpectedLexeme}'`,
+        this.current_.position,
       );
     }
+
     this.advance();
   }
 
@@ -173,9 +227,15 @@ class Parser {
    * Checks the current token type without advancing.
    */
   private expectAndStay(type: TokenType): void {
+    let unexpectedLexeme = this.current_.lexeme;
+    if (this.current_.type == TokenType.EOF) {
+      unexpectedLexeme = "end of input";
+    }
+
     if (this.current_.type !== type) {
-      throw new Error(
-        `Expected ${type.toString()} at position ${this.current_.position}`,
+      throw new ExpressionsSyntaxError(
+        `Unexpected '${unexpectedLexeme}'`,
+        this.current_.position,
       );
     }
   }

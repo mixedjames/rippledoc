@@ -13,6 +13,20 @@ interface EvaluationResult {
   value: number;
 }
 
+type DemoErrorKind =
+  | "parse"
+  | "binding"
+  | "cyclic"
+  | "evaluation"
+  | "other-compile";
+
+interface DemoError {
+  kind: DemoErrorKind;
+  message: string;
+  expressionName?: string;
+  line?: number;
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById(
     "expr-input",
@@ -68,16 +82,24 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function evaluateNamedExpressions(source: string): {
   results: EvaluationResult[];
-  errors: string[];
+  errors: DemoError[];
 } {
   const definitions = parseDefinitions(source);
   if (definitions.length === 0) {
-    return { results: [], errors: ["No expressions provided."] };
+    return {
+      results: [],
+      errors: [
+        {
+          kind: "parse",
+          message: "No expressions provided.",
+        },
+      ],
+    };
   }
 
-  const root = Module.createRootModule();
+  const root = Module.createRootModule("root");
   const getters: { def: Definition; get: () => unknown }[] = [];
-  const errors: string[] = [];
+  const errors: DemoError[] = [];
 
   // Phase 1: register all expressions with the module.
   for (const def of definitions) {
@@ -85,9 +107,26 @@ function evaluateNamedExpressions(source: string): {
       const get = root.addExpression(def.name, def.expression);
       getters.push({ def, get });
     } catch (err) {
-      errors.push(
-        `Line ${def.line}: could not add '${def.name}' – ${(err as Error).message}`,
-      );
+      errors.push({
+        kind: "parse",
+        expressionName: def.name,
+        line: def.line,
+        message: `Could not add expression '${def.name}': ${(err as Error).message}`,
+      });
+
+      // Insert a fallback expression (constant 0) so that other expressions
+      // can still bind and compile against this name.
+      try {
+        const fallbackGet = root.addExpression(def.name, "0");
+        getters.push({ def, get: fallbackGet });
+      } catch (fallbackErr) {
+        errors.push({
+          kind: "other-compile",
+          expressionName: def.name,
+          line: def.line,
+          message: `Could not add fallback expression for '${def.name}': ${(fallbackErr as Error).message}`,
+        });
+      }
     }
   }
 
@@ -98,8 +137,57 @@ function evaluateNamedExpressions(source: string): {
   // Phase 2: compile the module (parsing, binding, dependency resolution).
   try {
     root.compile();
-  } catch (err) {
-    errors.push(`Compilation error: ${(err as Error).message}`);
+  } catch (err: unknown) {
+    const anyErr = err as any;
+
+    if (anyErr && Array.isArray(anyErr.failures)) {
+      for (const failure of anyErr.failures as any[]) {
+        const expressionName = failure?.expressionName as string | undefined;
+        const def = expressionName
+          ? definitions.find((d) => d.name === expressionName)
+          : undefined;
+
+        if (Array.isArray(failure?.failedNames)) {
+          const missing = (failure.failedNames as string[]).join(", ");
+          errors.push({
+            kind: "binding",
+            expressionName,
+            line: def?.line,
+            message: def
+              ? `Binding error for '${expressionName}' (line ${def.line}): missing name(s) ${missing}.`
+              : `Binding error for '${expressionName ?? "<unknown>"}': missing name(s) ${missing}.`,
+          });
+        } else if (Array.isArray(failure?.dependencyChain)) {
+          const chain = (failure.dependencyChain as string[]).join(
+            " " + "→" + " ",
+          );
+          errors.push({
+            kind: "cyclic",
+            message:
+              (failure.dependencyChain as string[]).length > 0
+                ? `Cyclic dependency between expressions: ${chain}.`
+                : "Cyclic dependency detected between expressions.",
+          });
+        } else {
+          const message =
+            failure && typeof failure.message === "string"
+              ? failure.message
+              : "Compilation failed.";
+          errors.push({
+            kind: "other-compile",
+            expressionName,
+            line: def?.line,
+            message,
+          });
+        }
+      }
+    } else {
+      errors.push({
+        kind: "other-compile",
+        message: err instanceof Error ? err.message : "Compilation failed.",
+      });
+    }
+
     return { results: [], errors };
   }
 
@@ -112,9 +200,12 @@ function evaluateNamedExpressions(source: string): {
       const value = expr.evaluate();
       results.push({ name: def.name, value });
     } catch (err) {
-      errors.push(
-        `Evaluation error for '${def.name}' (line ${def.line}): ${(err as Error).message}`,
-      );
+      errors.push({
+        kind: "evaluation",
+        expressionName: def.name,
+        line: def.line,
+        message: `Evaluation error for '${def.name}' (line ${def.line}): ${(err as Error).message}`,
+      });
     }
   }
 
@@ -159,7 +250,7 @@ function parseDefinitions(source: string): Definition[] {
 function renderResults(
   container: HTMLDivElement,
   values: EvaluationResult[],
-  errors: string[],
+  errors: DemoError[],
 ): void {
   const parts: string[] = [];
 
@@ -180,7 +271,39 @@ function renderResults(
   if (errors.length) {
     parts.push('<ul class="error-list">');
     for (const error of errors) {
-      parts.push(`<li>${escapeHtml(error)}</li>`);
+      const contextParts: string[] = [];
+      if (error.expressionName) {
+        contextParts.push(`'${error.expressionName}'`);
+      }
+      if (typeof error.line === "number") {
+        contextParts.push(`line ${error.line}`);
+      }
+
+      let prefix = "";
+      switch (error.kind) {
+        case "parse":
+          prefix = "Parse error";
+          break;
+        case "binding":
+          prefix = "Binding error";
+          break;
+        case "cyclic":
+          prefix = "Cyclic dependency";
+          break;
+        case "evaluation":
+          prefix = "Evaluation error";
+          break;
+        default:
+          prefix = "Error";
+          break;
+      }
+
+      const context = contextParts.length
+        ? ` for ${contextParts.join(", ")}`
+        : "";
+      const text = `${prefix}${context}: ${error.message}`;
+
+      parts.push(`<li>${escapeHtml(text)}</li>`);
     }
     parts.push("</ul>");
   }

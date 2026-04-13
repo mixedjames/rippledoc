@@ -35,7 +35,9 @@ export class SectionCompiler {
   }) {
     this.builder_ = options.sectionBuilder;
     this.presentationCompiler_ = options.presentationCompiler;
-    this.module_ = this.presentationCompiler_.module.addSubModule();
+    this.module_ = this.presentationCompiler_.module.addSubModule(
+      this.builder_.name,
+    );
 
     this.elements_ = options.sectionBuilder.elements.map((elementBuilder) =>
       elementBuilder.makeCompiler(this),
@@ -139,7 +141,7 @@ export class SectionCompiler {
     // (2) We use the rootModule for the namespace - this prevents the new namespace from being
     //     contaminated with other stuff in the section's namespace.
     //
-    const elementsNamespace = this.module.rootModule.addSubModule();
+    const elementsNamespace = this.module.rootModule.addSubModule("elements");
     this.module.mapModule("elements", elementsNamespace);
 
     this.elements_.forEach((e) => {

@@ -62,7 +62,7 @@ export class PresentationCompiler {
   constructor(builder: PresentationBuilder) {
     this.builder_ = builder;
 
-    this.module_ = Module.createRootModule();
+    this.module_ = Module.createRootModule("presentation");
 
     this.sections_ = builder.sections.map(
       (sectionBuilder) =>
@@ -152,7 +152,7 @@ export class PresentationCompiler {
     //     contaminated with other stuff in the section's namespace.
     //
 
-    const sectionNamespace = this.module.rootModule.addSubModule();
+    const sectionNamespace = this.module.rootModule.addSubModule("sections");
     this.module.mapModule("sections", sectionNamespace);
 
     this.sections_.forEach((s) => {

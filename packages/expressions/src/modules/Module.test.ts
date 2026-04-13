@@ -5,7 +5,7 @@ import { Module } from "./Module";
 
 describe("Module basic expressions", () => {
   it("binds and evaluates simple expressions", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     const getA = root.addExpression("a", "1 + 2");
     const getB = root.addExpression("b", "a * 3");
 
@@ -16,14 +16,14 @@ describe("Module basic expressions", () => {
   });
 
   it("throws if accessing expressions before compile", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     const getA = root.addExpression("a", "1 + 2");
 
     expect(() => getA()).toThrow();
   });
 
   it("prevents duplicate expression names in the same module", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     root.addExpression("a", "1");
 
     expect(() => root.addExpression("a", "2")).toThrow(
@@ -34,8 +34,8 @@ describe("Module basic expressions", () => {
 
 describe("Module compilation invariants", () => {
   it("only allows the root module to be compiled", () => {
-    const root = Module.createRootModule();
-    const child = root.addSubModule();
+    const root = Module.createRootModule("root");
+    const child = root.addSubModule("child");
 
     expect(() => child.compile()).toThrow(
       /Only the root module can be compiled/,
@@ -43,23 +43,23 @@ describe("Module compilation invariants", () => {
   });
 
   it("cannot be compiled twice", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     root.compile();
 
     expect(() => root.compile()).toThrow(/already compiled/);
   });
 
   it("cannot be modified after compilation", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     root.addExpression("a", "1");
-    const child = root.addSubModule();
+    const child = root.addSubModule("child");
 
     root.compile();
 
     expect(() => root.addExpression("b", "2")).toThrow(
       /Cannot modify a compiled module: addExpression/,
     );
-    expect(() => root.addSubModule()).toThrow(
+    expect(() => root.addSubModule("anotherChild")).toThrow(
       /Cannot add a submodule to a compiled module/,
     );
     expect(() => root.mapModule("child", child)).toThrow(
@@ -70,10 +70,10 @@ describe("Module compilation invariants", () => {
 
 describe("Module submodules and scoping", () => {
   it("allows submodules to reference parent expressions", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     root.addExpression("a", "1");
 
-    const child = root.addSubModule();
+    const child = root.addSubModule("child");
     const getB = child.addExpression("b", "a + 2");
 
     root.compile();
@@ -82,10 +82,10 @@ describe("Module submodules and scoping", () => {
   });
 
   it("allows submodules to shadow parent expressions", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     root.addExpression("a", "1");
 
-    const child = root.addSubModule();
+    const child = root.addSubModule("child");
     const getAChild = child.addExpression("a", "2");
 
     root.compile();
@@ -96,8 +96,8 @@ describe("Module submodules and scoping", () => {
 
 describe("Module mapped modules", () => {
   it("allows mapping modules that share a common ancestor", () => {
-    const root = Module.createRootModule();
-    const child = root.addSubModule();
+    const root = Module.createRootModule("root");
+    const child = root.addSubModule("child");
 
     // Mapping root into child (shared ancestor: root).
     child.mapModule("rootAlias", root);
@@ -109,8 +109,8 @@ describe("Module mapped modules", () => {
   });
 
   it("disallows mapping modules from different trees", () => {
-    const root1 = Module.createRootModule();
-    const root2 = Module.createRootModule();
+    const root1 = Module.createRootModule("root1");
+    const root2 = Module.createRootModule("root2");
 
     expect(() => {
       root1.mapModule("other", root2);
@@ -118,8 +118,8 @@ describe("Module mapped modules", () => {
   });
 
   it("supports member access through mapped modules", () => {
-    const root = Module.createRootModule();
-    const child = root.addSubModule();
+    const root = Module.createRootModule("root");
+    const child = root.addSubModule("child");
 
     // Expression defined in child, but referenced via mapping from root.
     const getC = child.addExpression("c", "1 + 2");
@@ -134,8 +134,8 @@ describe("Module mapped modules", () => {
   });
 
   it("shares expressions when the same module is mapped in multiple places", () => {
-    const root = Module.createRootModule();
-    const shared = root.addSubModule();
+    const root = Module.createRootModule("root");
+    const shared = root.addSubModule("shared");
 
     const getX = shared.addExpression("x", "10");
 
@@ -155,7 +155,7 @@ describe("Module mapped modules", () => {
 
 describe("Module native expressions", () => {
   it("adds and evaluates simple native expressions", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
     const getN = root.addNativeExpression("n", () => 5);
 
     root.compile();
@@ -164,7 +164,7 @@ describe("Module native expressions", () => {
   });
 
   it("supports native expressions with dependencies and runtime replacement", () => {
-    const root = Module.createRootModule();
+    const root = Module.createRootModule("root");
 
     // Base expression that native expression will depend on.
     const getBase = root.addExpression("base", "40 + 2");

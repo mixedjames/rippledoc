@@ -49,7 +49,9 @@ export class ElementCompiler {
     this.builder_ = options.elementBuilder;
     this.sectionCompiler_ = options.sectionCompiler;
 
-    this.module_ = this.sectionCompiler_.module.addSubModule();
+    this.module_ = this.sectionCompiler_.module.addSubModule(
+      this.builder_.name,
+    );
 
     this.scrollTriggers_ = this.builder_.scrollTriggers.map(
       (scrollTriggerBuilder) =>

@@ -43,7 +43,7 @@ export class ScrollTriggerCompiler {
       );
     }
 
-    this.module_ = this.parentCompiler_.module.addSubModule();
+    this.module_ = this.parentCompiler_.module.addSubModule("scrollTrigger");
   }
 
   // ----------------------------------------------------------------------------------------------

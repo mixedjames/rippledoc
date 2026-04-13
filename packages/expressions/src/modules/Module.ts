@@ -1,15 +1,26 @@
+// Import expression types and related helpers
 import { UncheckedExpression } from "../expressions/UncheckedExpression";
 import { Expression } from "../expressions/Expression";
 import { UnboundExpression } from "../expressions/UnboundExpression";
-import { parseExpression } from "../parser/Parser";
 import { createNativeExpression } from "../native/NativeExpression";
 import {
   createNativeExpression2,
   type NativeExpression2,
 } from "../native/NativeExpression2";
-import { hasCyclicalDependencies } from "./HasCyclicalDependencies";
+
+// Import parser components
+import { parseExpression, BindingError } from "../parser/Parser";
 import { NameType } from "../parser/NameType";
-import type { BindingContext } from "../parser/BindingContext";
+import { BindingContext, NoSuchNameException } from "../parser/BindingContext";
+
+// Local imports
+import { hasCyclicalDependencies } from "./HasCyclicalDependencies";
+import {
+  BindingFailure,
+  CompilationFailure,
+  CompilationFailuresException,
+  CyclicDependencyFailure,
+} from "./CompilationFailure";
 
 /**
  * Class Module exists as a higher level abstraction (Facade pattern) over the lower level
@@ -93,8 +104,16 @@ import type { BindingContext } from "../parser/BindingContext";
  * rootModule.compile();
  * const getAExpression = getA(); // returns the bound expression for "getA", which depends on "sub.a" defined in the mapped submodule
  * ```
+ *
+ * # Error reporting
+ * Syntax errors are reported immediately when the expression added.
+ * Binding errors, and cyclical dependency errors are reported when compile() is called.
+ *
+ * See 'CompilationFailuresException'
  */
 export class Module {
+  private name_: string;
+
   private compiled_ = false;
 
   /**
@@ -118,16 +137,17 @@ export class Module {
     }
   > = new Map();
 
-  private constructor(parent: Module | null = null) {
+  private constructor(parent: Module | null = null, name: string) {
     if (parent && parent.compiled_) {
       throw new Error("Cannot create a submodule of a compiled module");
     }
 
     this.parent_ = parent;
+    this.name_ = name;
   }
 
-  static createRootModule(): Module {
-    return new Module();
+  static createRootModule(name: string): Module {
+    return new Module(null, name);
   }
 
   get parentModule(): Module | null {
@@ -145,20 +165,37 @@ export class Module {
     return current;
   }
 
+  get name(): string {
+    return this.name_;
+  }
+
+  get qualifiedName(): string {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let m: Module = this;
+    const names = [this.name];
+
+    while (m.parent_) {
+      m = m.parent_;
+      names.unshift(m.name);
+    }
+
+    return names.join(".");
+  }
+
   /**
    * Creates a new Module with this module as its parent and adds it to the list of submodules.
    *
    * @returns The newly created submodule.
    * @throws If this module is already compiled.
    */
-  addSubModule(): Module {
+  addSubModule(name: string): Module {
     if (this.compiled_) {
       throw new Error(
         "addSubModule: Cannot add a submodule to a compiled module",
       );
     }
 
-    const subModule = new Module(this);
+    const subModule = new Module(this, name);
     this.subModules_.push(subModule);
     return subModule;
   }
@@ -172,6 +209,7 @@ export class Module {
    * @param name The name of the expression.
    * @param expression The expression string.
    * @returns A function that returns the bound expression after compilation.
+   * @throws SyntaxError if the expression string is invalid.
    */
   addExpression(name: string, expression: string): () => Expression {
     this.assertNotCompiled("addExpression");
@@ -360,6 +398,12 @@ export class Module {
    * Returns:
    * An array of bound expressions in topologically sorted order (i.e. if expression A depends on
    * expression B, then B will appear before A in the array).
+   *
+   * Throws:
+   *  - CompilationFailuresException if there are binding errors or cyclical dependencies. The
+   *    exception will contain details of the failures.
+   *  - The exact exception throw for other failure modes is non-contractual however, it will be
+   *    an Error or subclass of Error with a descriptive message.
    */
   compile(): Expression[] {
     if (this.compiled_) {
@@ -372,11 +416,24 @@ export class Module {
 
     this.compiled_ = true;
 
+    // (1) Binding
+    // This step will fail by throwing a 'CompilationFailuresException' which should be allowed to
+    // propagate to the client. The module will be left in a broken state - this is contractual.
+    //
     const expressions = this.bindExpressions();
+
+    // (2) Cyclical dependency checking and topological sorting.
+    // FIXME: this step should fail by throwing a 'CompilationFailuresException' with details of the
+    // cycle detected, but for now we throw a generic error. The module will be left in a broken
+    // state - this is contractual.
+    //
     const sortedExpressions: Expression[] = [];
 
     if (hasCyclicalDependencies(expressions, sortedExpressions)) {
-      throw new Error("Circular dependency detected among expressions.");
+      //throw new Error("Circular dependency detected among expressions.");
+      throw new CompilationFailuresException([
+        new CyclicDependencyFailure(this, "<unknown>", ["<unknown>"]),
+      ]);
     }
 
     return sortedExpressions;
@@ -397,18 +454,51 @@ export class Module {
     };
 
     const bound: UncheckedExpression[] = [];
+    const bindingFailures: CompilationFailure[] = [];
 
     // Bind all value expressions defined in this module.
-    for (const entry of this.names_.values()) {
+    //for (const entry of this.names_.values()) {
+    this.names_.forEach((entry, key) => {
       if (entry.type === NameType.VALUE) {
         const unbound = entry.value as UnboundExpression;
-        bound.push(unbound.bind(context));
+
+        try {
+          bound.push(unbound.bind(context));
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          if (e instanceof BindingError) {
+            bindingFailures.push(
+              new BindingFailure(this, key, [e.missingName]),
+            );
+          } else {
+            throw e;
+          }
+        } //catch
       }
-    }
+    }); //for
 
     // Recursively bind submodules.
+    //
+    // Note: propagation of compilation errors
+    //  - All modules emit CompilationFailuresException with list of failed names
+    //  - For all except root, we catch the exception and add it to a top-level list
     for (const sub of this.subModules_) {
-      bound.push(...sub.bindExpressions());
+      try {
+        bound.push(...sub.bindExpressions());
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        if (e instanceof CompilationFailuresException) {
+          bindingFailures.push(...e.failures);
+        } else {
+          throw e;
+        }
+      }
+    } //for
+
+    if (bindingFailures.length > 0) {
+      throw new CompilationFailuresException(bindingFailures);
     }
 
     return bound;
@@ -433,7 +523,7 @@ export class Module {
     parts: string[],
     type: NameType,
   ): () => UncheckedExpression {
-    if (!Array.isArray(parts) || parts.length === 0) {
+    if (parts.length === 0) {
       throw new Error("Name parts required");
     }
 
@@ -452,12 +542,13 @@ export class Module {
         return () => unbound.dependentExpression;
       }
 
-      // Delegate to parent module if available.
+      // We don't know the name:
+      // Try parent module if available.
       if (this.parent_) {
         return this.parent_.lookupName(parts, type);
       }
 
-      throw new Error(`Unresolved name: ${head}`);
+      throw new NoSuchNameException();
     }
 
     // There are remaining parts: expect an object (mapped module) for the head.
@@ -471,6 +562,6 @@ export class Module {
       return this.parent_.lookupName(parts, type);
     }
 
-    throw new Error(`'${head}' is not an object`);
+    throw new NoSuchNameException();
   }
 }

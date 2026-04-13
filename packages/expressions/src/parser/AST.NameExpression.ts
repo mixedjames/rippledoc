@@ -1,8 +1,9 @@
-import type { BindingContext } from "./BindingContext";
+import { BindingContext, NoSuchNameException } from "./BindingContext";
 import type { UncheckedExpression } from "../expressions/UncheckedExpression";
 import type { Expression } from "../expressions/Expression";
 import { AstNode } from "./AST";
 import { NameType } from "./NameType";
+import { BindingError } from "./Parser";
 
 /**
  * Symbolic name reference.
@@ -41,10 +42,22 @@ export class NameExpression extends AstNode {
   }
 
   override bind(context: BindingContext): AstNode {
-    return new LinkedNameExpression(
-      context.lookupName(this.parts_, NameType.VALUE),
-    );
-  }
+    try {
+      return new LinkedNameExpression(
+        context.lookupName(this.parts_, NameType.VALUE),
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      if (e instanceof NoSuchNameException) {
+        // Translate NoSuchNameException
+        throw new BindingError(this.parts_.join("."));
+      } else {
+        // Rethrow everything else
+        throw e;
+      }
+    } //catch
+  } //bind
 }
 
 class LinkedNameExpression extends AstNode {
