@@ -14,6 +14,7 @@ import {
   BinaryExpression,
 } from "./AST";
 import { NameExpression } from "./AST.NameExpression";
+import { FunctionExpression } from "./AST.FunctionExpression";
 
 import { UnboundExpression } from "../expressions/UnboundExpression";
 
@@ -144,7 +145,7 @@ class Parser {
     return left;
   }
 
-  // unary → "-" unary | primary
+  // unary → "-" unary | postfix
   private parseUnary(): AstNode {
     if (this.current_.type === TokenType.MINUS) {
       const op = this.current_.type;
@@ -153,7 +154,22 @@ class Parser {
       return new UnaryExpression(op, operand);
     }
 
-    return this.parsePrimary();
+    return this.parsePostfix();
+  }
+
+  // postfix → primary ( "(" argumentList? ")" )*
+  private parsePostfix(): AstNode {
+    let expr = this.parsePrimary();
+
+    // Function calls: f(), f(a, b)
+    if (
+      expr instanceof NameExpression &&
+      this.current_.type === TokenType.LPAREN
+    ) {
+      expr = this.finishCall(expr);
+    }
+
+    return expr;
   }
 
   // primary → NUMBER
@@ -196,6 +212,28 @@ class Parser {
       `Expected number, identifier, or '('`,
       this.current_.position,
     );
+  }
+
+  // argumentList → additive ( "," additive )*
+  private finishCall(callee: NameExpression): AstNode {
+    // We are currently at '('.
+    this.advance();
+
+    const args: AstNode[] = [];
+
+    // Handle empty argument list: f()
+    if (this.current_.type !== TokenType.RPAREN) {
+      args.push(this.parseAdditive());
+
+      while (this.current_.type === TokenType.COMMA) {
+        this.advance();
+        args.push(this.parseAdditive());
+      }
+    }
+
+    this.expect(TokenType.RPAREN);
+
+    return new FunctionExpression(callee.getParts(), args);
   }
 
   // ---------- Helpers ----------

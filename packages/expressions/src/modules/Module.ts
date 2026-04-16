@@ -129,13 +129,7 @@ export class Module {
   /**
    * Expressions defined in this module, mapped by their name.
    */
-  private names_: Map<
-    string,
-    {
-      type: NameType;
-      value: UnboundExpression | Module;
-    }
-  > = new Map();
+  private names_: Map<string, ModuleEntry> = new Map();
 
   private constructor(parent: Module | null = null, name: string) {
     if (parent && parent.compiled_) {
@@ -272,6 +266,29 @@ export class Module {
       }
       return unboundExpression.dependentExpression.expression;
     };
+  }
+
+  /**
+   * Adds a named host function to the module.
+   *
+   * Host functions are callable from parsed expressions using the standard
+   * function-call syntax, e.g. `sum(1, 2)`.
+   */
+  addFunction(
+    name: string,
+    fn: (args: readonly number[]) => number,
+  ): (args: readonly number[]) => number {
+    this.assertNotCompiled("addFunction");
+
+    if (this.names_.has(name)) {
+      throw new Error(
+        `Expression with name "${name}" already exists in this module`,
+      );
+    }
+
+    this.names_.set(name, { type: NameType.FUNCTION, value: fn });
+
+    return fn;
   }
 
   /**
@@ -451,6 +468,7 @@ export class Module {
   private bindExpressions(): UncheckedExpression[] {
     const context: BindingContext = {
       lookupName: this.lookupName.bind(this),
+      lookupFunction: this.lookupFunction.bind(this),
     };
 
     const bound: UncheckedExpression[] = [];
@@ -460,7 +478,7 @@ export class Module {
     //for (const entry of this.names_.values()) {
     this.names_.forEach((entry, key) => {
       if (entry.type === NameType.VALUE) {
-        const unbound = entry.value as UnboundExpression;
+        const unbound = entry.value;
 
         try {
           bound.push(unbound.bind(context));
@@ -520,7 +538,7 @@ export class Module {
    * as we need it.
    */
   private lookupName(
-    parts: string[],
+    parts: readonly string[],
     type: NameType,
   ): () => UncheckedExpression {
     if (parts.length === 0) {
@@ -538,7 +556,7 @@ export class Module {
     // Final name part: expect a value expression.
     if (rest.length === 0) {
       if (entry && entry.type === type && entry.type === NameType.VALUE) {
-        const unbound = entry.value as UnboundExpression;
+        const unbound = entry.value;
         return () => unbound.dependentExpression;
       }
 
@@ -553,7 +571,7 @@ export class Module {
 
     // There are remaining parts: expect an object (mapped module) for the head.
     if (entry && entry.type === NameType.OBJECT) {
-      const mappedModule = entry.value as Module;
+      const mappedModule = entry.value;
       return mappedModule.lookupName(rest, type);
     }
 
@@ -564,4 +582,56 @@ export class Module {
 
     throw new NoSuchNameException();
   }
+
+  private lookupFunction(name: string): (args: readonly number[]) => number {
+    if (!name) {
+      throw new Error("Name required");
+    }
+
+    return this.lookupFunctionParts(name.split("."));
+  }
+
+  private lookupFunctionParts(
+    parts: readonly string[],
+  ): (args: readonly number[]) => number {
+    if (parts.length === 0) {
+      throw new Error("Name parts required");
+    }
+
+    const [head, ...rest] = parts;
+
+    if (!head) {
+      throw new Error("Invalid name part");
+    }
+
+    const entry = this.names_.get(head);
+
+    if (rest.length === 0) {
+      if (entry && entry.type === NameType.FUNCTION) {
+        return entry.value as (args: readonly number[]) => number;
+      }
+
+      if (this.parent_) {
+        return this.parent_.lookupFunctionParts(parts);
+      }
+
+      throw new NoSuchNameException();
+    }
+
+    if (entry && entry.type === NameType.OBJECT) {
+      const mappedModule = entry.value;
+      return mappedModule.lookupFunctionParts(rest);
+    }
+
+    if (this.parent_) {
+      return this.parent_.lookupFunctionParts(parts);
+    }
+
+    throw new NoSuchNameException();
+  }
 }
+
+type ModuleEntry =
+  | { type: NameType.VALUE; value: UnboundExpression }
+  | { type: NameType.OBJECT; value: Module }
+  | { type: NameType.FUNCTION; value: (args: readonly number[]) => number };

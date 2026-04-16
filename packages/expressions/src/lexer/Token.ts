@@ -26,6 +26,9 @@ export enum TokenType {
   /** '.' */
   DOT,
 
+  /** ',' */
+  COMMA,
+
   /** '(' */
   LPAREN,
 

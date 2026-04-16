@@ -59,6 +59,8 @@ export class Lexer {
         return this.single(TokenType.PERCENT);
       case ".":
         return this.single(TokenType.DOT);
+      case ",":
+        return this.single(TokenType.COMMA);
       case "(":
         return this.single(TokenType.LPAREN);
       case ")":

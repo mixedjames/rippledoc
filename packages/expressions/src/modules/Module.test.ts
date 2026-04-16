@@ -190,3 +190,47 @@ describe("Module native expressions", () => {
     expect(expr.evaluate()).toBe(1);
   });
 });
+
+describe("Module functions", () => {
+  it("allows expressions to call local functions", () => {
+    const root = Module.createRootModule("root");
+    root.addFunction("double", ([value]) => (value ?? 0) * 2);
+    const getResult = root.addExpression("result", "double(5) + 1");
+
+    root.compile();
+
+    expect(getResult().evaluate()).toBe(11);
+  });
+
+  it("allows expressions to call mapped-module functions", () => {
+    const root = Module.createRootModule("root");
+    const math = root.addSubModule("math");
+
+    math.addFunction("sum", (args) => (args[0] ?? 0) + (args[1] ?? 0));
+    root.mapModule("math", math);
+
+    const getResult = root.addExpression("result", "math.sum(2, 3 * 4)");
+
+    root.compile();
+
+    expect(getResult().evaluate()).toBe(14);
+  });
+
+  it("prevents duplicate function names in the same module", () => {
+    const root = Module.createRootModule("root");
+    root.addFunction("sum", () => 0);
+
+    expect(() => root.addFunction("sum", () => 1)).toThrow(
+      /already exists in this module/,
+    );
+  });
+
+  it("prevents function names from colliding with expression names", () => {
+    const root = Module.createRootModule("root");
+    root.addExpression("value", "1");
+
+    expect(() => root.addFunction("value", () => 1)).toThrow(
+      /already exists in this module/,
+    );
+  });
+});

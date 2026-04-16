@@ -30,5 +30,16 @@ export interface BindingContext {
    * Behaviour in the case of logic errors etc. is non-contractual but the implementation should
    * make a best-effort attempt to fail fast and loud.
    */
-  lookupName(parts: string[], type: NameType): () => UncheckedExpression;
+  lookupName(
+    parts: readonly string[],
+    type: NameType,
+  ): () => UncheckedExpression;
+
+  /**
+   * Look up a host language function by simple name.
+   *
+   * The returned callable accepts an array of numeric
+   * arguments and returns a numeric result.
+   */
+  lookupFunction(name: string): (args: readonly number[]) => number;
 }

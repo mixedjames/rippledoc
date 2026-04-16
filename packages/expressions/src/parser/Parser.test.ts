@@ -7,11 +7,27 @@ import { DefaultBindingContext } from "../DefaultBindingContext";
  * using the default binding context.
  */
 function evalExpression(expr: string): number {
+  return evalExpressionWithContext(expr);
+}
+
+function evalExpressionWithContext(
+  expr: string,
+  configureContext?: (ctx: DefaultBindingContext) => void,
+): number {
   const unbound = parseExpression(expr);
   const ctx = new DefaultBindingContext();
+  configureContext?.(ctx);
   const dep = unbound.bind(ctx);
   const resolved = dep.resolve();
   return resolved.evaluate();
+}
+
+function registerFunction(
+  ctx: DefaultBindingContext,
+  name: string,
+  fn: (args: readonly number[]) => number,
+): void {
+  ctx.addFunction(name, fn);
 }
 
 describe("Parser", () => {
@@ -39,8 +55,38 @@ describe("Parser", () => {
     expect(evalExpression("7 % 4 + 1")).toBe(4);
   });
 
+  it("parses and evaluates zero-argument function calls", () => {
+    expect(
+      evalExpressionWithContext("fortyTwo()", (ctx) => {
+        registerFunction(ctx, "fortyTwo", () => 42);
+      }),
+    ).toBe(42);
+  });
+
+  it("parses and evaluates function calls with expression arguments", () => {
+    expect(
+      evalExpressionWithContext("sum(1 + 2, 3 * 4)", (ctx) => {
+        registerFunction(ctx, "sum", (args) => (args[0] ?? 0) + (args[1] ?? 0));
+      }),
+    ).toBe(15);
+  });
+
+  it("allows function calls inside larger expressions", () => {
+    expect(
+      evalExpressionWithContext("double(5) + 3", (ctx) => {
+        registerFunction(ctx, "double", (args) => (args[0] ?? 0) * 2);
+      }),
+    ).toBe(13);
+  });
+
   it("throws on unexpected trailing tokens", () => {
     expect(() => parseExpression("1 2")).toThrow(/Unexpected token/);
+  });
+
+  it("throws when a called function is not registered", () => {
+    expect(() => evalExpression("missing()")).toThrow(
+      /missing|Unresolved function/i,
+    );
   });
 
   it("throws on invalid primary", () => {

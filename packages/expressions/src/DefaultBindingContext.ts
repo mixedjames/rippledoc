@@ -2,6 +2,7 @@ import { NameType } from "./parser/NameType";
 import type { UncheckedExpression } from "./expressions/UncheckedExpression";
 import type { UnboundExpression } from "./expressions/UnboundExpression";
 import type { BindingContext } from "./parser/BindingContext";
+import { NoSuchNameException } from "./parser/BindingContext";
 
 type Provider = () => UncheckedExpression;
 
@@ -24,12 +25,31 @@ export class DefaultBindingContext implements BindingContext {
   // Map<string, DefaultBindingContext>
   private readonly subcontexts_ = new Map<string, DefaultBindingContext>();
 
+  // Map of function names to JS callables of the form (readonly number[]) => number.
+  private readonly functions_ = new Map<
+    string,
+    (args: readonly number[]) => number
+  >();
+
   constructor(parent: DefaultBindingContext | null = null) {
     this.parent_ = parent;
   }
 
   addValueExpression(name: string, provider: UnboundExpression): void {
     this.addExpression(name, NameType.VALUE, provider);
+  }
+
+  /**
+   * Register a host function that can be called from expressions.
+   */
+  addFunction(name: string, fn: (args: readonly number[]) => number): void {
+    if (!name) {
+      throw new Error("Name required");
+    }
+    if (this.functions_.has(name)) {
+      throw new Error(`Duplicate function: ${name}`);
+    }
+    this.functions_.set(name, fn);
   }
 
   /**
@@ -93,6 +113,23 @@ export class DefaultBindingContext implements BindingContext {
     }
 
     return this.lookupRecursive(parts, type);
+  }
+
+  lookupFunction(name: string): (args: readonly number[]) => number {
+    if (!name) {
+      throw new Error("Name required");
+    }
+
+    const fn = this.functions_.get(name);
+    if (fn) {
+      return fn;
+    }
+
+    if (this.parent_) {
+      return this.parent_.lookupFunction(name);
+    }
+
+    throw new NoSuchNameException();
   }
 
   private lookupRecursive(parts: string[], type: NameType): Provider {
