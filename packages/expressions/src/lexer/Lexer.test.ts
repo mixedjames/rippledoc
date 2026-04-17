@@ -79,4 +79,63 @@ describe("Lexer", () => {
     expect(token.lexeme).toBe("@");
     expect(token.value).toBe(0);
   });
+
+  it("should tokenize comparison operators and comma", () => {
+    const source = "a < b <= c > d >= e == f != g, h = !i";
+    const lexer = new Lexer(source);
+
+    const tokens = [];
+    let token;
+    do {
+      token = lexer.nextToken();
+      tokens.push(token);
+    } while (token.type !== TokenType.EOF);
+
+    const lexemes = tokens.map((t) => t.lexeme);
+    const types = tokens.map((t) => t.type);
+
+    expect(lexemes).toEqual([
+      "a",
+      "<",
+      "b",
+      "<=",
+      "c",
+      ">",
+      "d",
+      ">=",
+      "e",
+      "==",
+      "f",
+      "!=",
+      "g",
+      ",",
+      "h",
+      "=",
+      "!",
+      "i",
+      "",
+    ]);
+
+    expect(types).toEqual([
+      TokenType.IDENTIFIER,
+      TokenType.LT,
+      TokenType.IDENTIFIER,
+      TokenType.LTE,
+      TokenType.IDENTIFIER,
+      TokenType.GT,
+      TokenType.IDENTIFIER,
+      TokenType.GTE,
+      TokenType.IDENTIFIER,
+      TokenType.EQEQ,
+      TokenType.IDENTIFIER,
+      TokenType.NEQ,
+      TokenType.IDENTIFIER,
+      TokenType.COMMA,
+      TokenType.IDENTIFIER,
+      TokenType.UNKNOWN, // '=' is unknown unless part of '=='
+      TokenType.UNKNOWN, // '!' is unknown unless part of '!='
+      TokenType.IDENTIFIER,
+      TokenType.EOF,
+    ]);
+  });
 });

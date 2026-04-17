@@ -24,6 +24,8 @@ export class Lexer {
    * Returns the next token in the input stream.
    * Always returns a token; EOF token marks end-of-input.
    */
+  // We tolerate complexity here because lexing inherently involves multiple cases and branches.
+  // eslint-disable-next-line complexity
   public nextToken(): Token {
     this.skipWhitespace();
 
@@ -65,6 +67,26 @@ export class Lexer {
         return this.single(TokenType.LPAREN);
       case ")":
         return this.single(TokenType.RPAREN);
+      case "<":
+        if (this.peekNext() === "=") {
+          return this.twoChar(TokenType.LTE, "<=");
+        }
+        return this.single(TokenType.LT);
+      case ">":
+        if (this.peekNext() === "=") {
+          return this.twoChar(TokenType.GTE, ">=");
+        }
+        return this.single(TokenType.GT);
+      case "=":
+        if (this.peekNext() === "=") {
+          return this.twoChar(TokenType.EQEQ, "==");
+        }
+        break;
+      case "!":
+        if (this.peekNext() === "=") {
+          return this.twoChar(TokenType.NEQ, "!=");
+        }
+        break;
     }
 
     // Unknown character
@@ -94,6 +116,24 @@ export class Lexer {
     return {
       type,
       lexeme: ch,
+      position: start,
+      value: 0,
+    };
+  }
+
+  /**
+   * Creates a two-character token.
+   * @param type The token type.
+   * @param lexeme The two-character lexeme.
+   * @returns A Token object with value 0.
+   */
+  private twoChar(type: TokenType, lexeme: string): Token {
+    const start: number = this.pos_;
+    this.pos_ += 2;
+
+    return {
+      type,
+      lexeme,
       position: start,
       value: 0,
     };

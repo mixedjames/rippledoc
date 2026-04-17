@@ -96,7 +96,7 @@ class Parser {
    * Parse a full expression.
    */
   parseExpression(): UnboundExpression {
-    const root = this.parseAdditive();
+    const root = this.parseEquality();
 
     if (this.current_.type !== TokenType.EOF) {
       throw new ExpressionsSyntaxError(
@@ -109,6 +109,42 @@ class Parser {
   }
 
   // ---------- Grammar ----------
+
+  // equality → relational ( ( "==" | "!=" ) relational )*
+  private parseEquality(): AstNode {
+    let left = this.parseRelational();
+
+    while (
+      this.current_.type === TokenType.EQEQ ||
+      this.current_.type === TokenType.NEQ
+    ) {
+      const op = this.current_.type;
+      this.advance();
+      const right = this.parseRelational();
+      left = new BinaryExpression(left, op, right);
+    }
+
+    return left;
+  }
+
+  // relational → additive ( ( "<" | ">" | "<=" | ">=" ) additive )*
+  private parseRelational(): AstNode {
+    let left = this.parseAdditive();
+
+    while (
+      this.current_.type === TokenType.LT ||
+      this.current_.type === TokenType.GT ||
+      this.current_.type === TokenType.LTE ||
+      this.current_.type === TokenType.GTE
+    ) {
+      const op = this.current_.type;
+      this.advance();
+      const right = this.parseAdditive();
+      left = new BinaryExpression(left, op, right);
+    }
+
+    return left;
+  }
 
   // additive → multiplicative ( ( "+" | "-" ) multiplicative )*
   private parseAdditive(): AstNode {
@@ -203,7 +239,7 @@ class Parser {
     // Parenthesized
     if (this.current_.type === TokenType.LPAREN) {
       this.advance();
-      const expr = this.parseAdditive();
+      const expr = this.parseEquality();
       this.expect(TokenType.RPAREN);
       return expr;
     }
@@ -223,11 +259,11 @@ class Parser {
 
     // Handle empty argument list: f()
     if (this.current_.type !== TokenType.RPAREN) {
-      args.push(this.parseAdditive());
+      args.push(this.parseEquality());
 
       while (this.current_.type === TokenType.COMMA) {
         this.advance();
-        args.push(this.parseAdditive());
+        args.push(this.parseEquality());
       }
     }
 

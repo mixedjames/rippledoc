@@ -160,6 +160,18 @@ export class BinaryExpression extends AstNode {
         return l / r;
       case TokenType.PERCENT:
         return l % r;
+      case TokenType.LT:
+        return l < r ? 1 : 0;
+      case TokenType.GT:
+        return l > r ? 1 : 0;
+      case TokenType.LTE:
+        return l <= r ? 1 : 0;
+      case TokenType.GTE:
+        return l >= r ? 1 : 0;
+      case TokenType.EQEQ:
+        return l === r ? 1 : 0;
+      case TokenType.NEQ:
+        return l !== r ? 1 : 0;
       default:
         throw new Error("Unsupported operator");
     }

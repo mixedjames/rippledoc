@@ -55,6 +55,35 @@ describe("Parser", () => {
     expect(evalExpression("7 % 4 + 1")).toBe(4);
   });
 
+  it("parses and evaluates comparison operators as 1/0", () => {
+    expect(evalExpression("1 < 2")).toBe(1);
+    expect(evalExpression("2 < 1")).toBe(0);
+    expect(evalExpression("2 > 1")).toBe(1);
+    expect(evalExpression("1 > 2")).toBe(0);
+    expect(evalExpression("2 <= 2")).toBe(1);
+    expect(evalExpression("3 <= 2")).toBe(0);
+    expect(evalExpression("3 >= 2")).toBe(1);
+    expect(evalExpression("1 >= 2")).toBe(0);
+    expect(evalExpression("3 == 3")).toBe(1);
+    expect(evalExpression("3 == 4")).toBe(0);
+    expect(evalExpression("3 != 4")).toBe(1);
+    expect(evalExpression("3 != 3")).toBe(0);
+  });
+
+  it("applies C-like precedence for additive, relational, and equality", () => {
+    // (1 + 2) < (2 * 2) -> 3 < 4 -> 1
+    expect(evalExpression("1 + 2 < 2 * 2")).toBe(1);
+
+    // (1 + 2) < 3 -> 0, then 0 == 0 -> 1
+    expect(evalExpression("1 + 2 < 3 == 0")).toBe(1);
+
+    // (2 + 1) > 1 -> 1, then 1 != 0 -> 1
+    expect(evalExpression("2 + 1 > 1 != 0")).toBe(1);
+
+    // Parentheses override precedence: 2 < (3 == 3) -> 2 < 1 -> 0
+    expect(evalExpression("2 < (3 == 3)")).toBe(0);
+  });
+
   it("parses and evaluates zero-argument function calls", () => {
     expect(
       evalExpressionWithContext("fortyTwo()", (ctx) => {
@@ -69,6 +98,35 @@ describe("Parser", () => {
         registerFunction(ctx, "sum", (args) => (args[0] ?? 0) + (args[1] ?? 0));
       }),
     ).toBe(15);
+  });
+
+  it("parses function calls with comparison expressions in arguments", () => {
+    expect(
+      evalExpressionWithContext("sum(1 < 2, 3 == 4)", (ctx) => {
+        registerFunction(ctx, "sum", (args) => (args[0] ?? 0) + (args[1] ?? 0));
+      }),
+    ).toBe(1);
+  });
+
+  it("parses and evaluates dotted function names", () => {
+    expect(
+      evalExpressionWithContext("math.sum(4, 5)", (ctx) => {
+        registerFunction(
+          ctx,
+          "math.sum",
+          (args) => (args[0] ?? 0) + (args[1] ?? 0),
+        );
+      }),
+    ).toBe(9);
+  });
+
+  it("supports nested function calls as arguments", () => {
+    expect(
+      evalExpressionWithContext("sum(double(2), 3)", (ctx) => {
+        registerFunction(ctx, "double", (args) => (args[0] ?? 0) * 2);
+        registerFunction(ctx, "sum", (args) => (args[0] ?? 0) + (args[1] ?? 0));
+      }),
+    ).toBe(7);
   });
 
   it("allows function calls inside larger expressions", () => {

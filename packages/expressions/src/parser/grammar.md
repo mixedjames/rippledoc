@@ -1,7 +1,6 @@
 # Expressions Grammar
 
-This document describes the concrete grammar implemented by `Parser` in `Parser.ts` and some
-proposed extensions.
+This document describes the concrete grammar implemented by `Parser` in `Parser.ts`.
 
 The current parser accepts a **single expression** followed by end-of-input.
 
@@ -16,6 +15,12 @@ The grammar is defined over the following terminal symbols produced by the lexer
 - `*` — multiplication
 - `/` — division
 - `%` — remainder
+- `<` — less than
+- `>` — greater than
+- `<=` — less than or equal
+- `>=` — greater than or equal
+- `==` — equal
+- `!=` — not equal
 - `.` — dot (member access)
 - `(` — left parenthesis
 - `)` — right parenthesis
@@ -29,38 +34,11 @@ The grammar is defined over the following terminal symbols produced by the lexer
 Start symbol: `Expression`
 
 ```ebnf
-Expression      ::= Additive "EOF"
+Expression      ::= Equality "EOF"
 
-Additive        ::= Multiplicative ( ("+" | "-") Multiplicative )*
+Equality        ::= Relational ( ("==" | "!=") Relational )*
 
-Multiplicative  ::= Unary ( ("*" | "/" | "%") Unary )*
-
-Unary           ::= "-" Unary
-                  | Primary
-
-Primary         ::= NUMBER
-                  | IdentifierChain
-                  | "(" Additive ")"
-
-IdentifierChain ::= IDENTIFIER ( "." IDENTIFIER )*
-```
-
-## Proposed extension: function calls
-
-This section describes an extension to the grammar to support C-style function calls. It is a
-specification only; parser and lexer support would need to be added to make it concrete.
-
-Function calls use the usual syntax:
-
-- `f()`
-- `f(a, b, c)`
-- `module.fn(1, 2 + 3)`
-
-The extension is expressed as follows (using the existing `Additive` non-terminal for arguments so
-that argument expressions obey the same precedence rules as top-level expressions):
-
-```ebnf
-Expression      ::= Additive "EOF"
+Relational      ::= Additive ( ("<" | ">" | "<=" | ">=") Additive )*
 
 Additive        ::= Multiplicative ( ("+" | "-") Multiplicative )*
 
@@ -69,33 +47,33 @@ Multiplicative  ::= Unary ( ("*" | "/" | "%") Unary )*
 Unary           ::= "-" Unary
                   | Postfix
 
-Postfix         ::= Primary ( "(" ArgumentList? ")" )*
+Postfix         ::= Primary ( "(" ArgumentList? ")" )?
 
 Primary         ::= NUMBER
                   | IdentifierChain
-                  | "(" Additive ")"
+                  | "(" Equality ")"
 
 IdentifierChain ::= IDENTIFIER ( "." IDENTIFIER )*
 
-ArgumentList    ::= Additive ( "," Additive )*
+ArgumentList    ::= Equality ( "," Equality )*
 ```
-
-Notes on the extension:
-
-- Member access and calls can be freely chained, e.g. `a.b(1).c(d)`.
-- Calls bind more tightly than binary operators because they are part of the `Unary` → `Postfix`
-  layer.
-- An empty argument list (`f()`) is allowed via the `ArgumentList?` rule.
 
 ## Notes
 
-- **Precedence**
-  - Highest: unary minus (`-` as a prefix operator)
-  - Next: multiplicative operators `*`, `/`, `%`
-  - Lowest: additive operators `+`, `-` (infix)
-- **Associativity**
-  - Additive and multiplicative operators are **left-associative** due to the iterative parsing pattern: e.g. `a - b - c` parses as `(a - b) - c`.
+- **Function calls**
+  - Supported forms include `f()`, `f(a, b, c)`, and `module.fn(1, 2 + 3)`.
+  - Call arguments are full expressions and follow the same precedence rules as top-level expressions.
+  - Calls are supported on `IdentifierChain` expressions, and at most one call postfix is parsed.
+- **Comparisons**
+  - Comparison operators return numeric boolean values: `1` for true and `0` for false.
+  - Equality operators (`==`, `!=`) and relational operators (`<`, `>`, `<=`, `>=`) are left-associative.
+- **Precedence (highest to lowest)**
+  - Unary minus (`-` as prefix)
+  - Multiplicative operators `*`, `/`, `%`
+  - Additive operators `+`, `-` (infix)
+  - Relational operators `<`, `>`, `<=`, `>=`
+  - Equality operators `==`, `!=`
 - **Member access**
-  - `IdentifierChain` allows chained member access using dots, e.g. `a`, `a.b`, `a.b.c`.
+  - `IdentifierChain` allows dotted names, e.g. `a`, `a.b`, `a.b.c`.
 - **Parentheses**
-  - Parentheses can be used to override precedence: e.g. `(1 + 2) * 3`.
+  - Parentheses override precedence, e.g. `(1 + 2) * 3`.

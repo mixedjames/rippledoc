@@ -191,8 +191,59 @@ export class PresentationCompiler {
   }
 
   private mapGlobalFunctions(): void {
-    this.module.addFunction("max", (args) => Math.max(...args));
-    this.module.addFunction("min", (args) => Math.min(...args));
+    this.module.addFunction("max", (args: readonly number[]) =>
+      Math.max(...args),
+    );
+    this.module.addFunction("min", (args: readonly number[]) =>
+      Math.min(...args),
+    );
+
+    this.module.addFunction("clamp", (args: readonly number[]) => {
+      // Validation: clamp requires exactly 3 arguments: value, min, max
+      // eslint-disable-next-line no-magic-numbers
+      if (args.length !== 3) {
+        return 0;
+      }
+
+      const [value, min, max] = args;
+
+      if (!value || !min || !max) {
+        return 0;
+      }
+
+      return Math.min(Math.max(value, min), max);
+    });
+
+    this.module.addFunction("lerp", (args: readonly number[]) => {
+      // Validation: lerp requires exactly 3 arguments: start, end, t
+      // eslint-disable-next-line no-magic-numbers
+      if (args.length !== 3) {
+        return 0;
+      }
+
+      const [start, end, t] = args;
+
+      if (!start || !end || !t) {
+        return 0;
+      }
+
+      return start + (end - start) * t;
+    });
+
+    this.module.addFunction("if", (args: readonly number[]) => {
+      // Validation: if requires exactly 3 arguments: condition, trueValue, falseValue
+      // eslint-disable-next-line no-magic-numbers
+      if (args.length !== 3) {
+        return 0;
+      }
+
+      const [condition, trueValue, falseValue] = args;
+      if (!condition || !trueValue || !falseValue) {
+        return 0;
+      }
+
+      return condition ? trueValue : falseValue;
+    });
   }
 
   /**

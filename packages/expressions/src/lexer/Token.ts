@@ -35,6 +35,24 @@ export enum TokenType {
   /** ')' */
   RPAREN,
 
+  /** '<' */
+  LT,
+
+  /** '>' */
+  GT,
+
+  /** '<=' */
+  LTE,
+
+  /** '>=' */
+  GTE,
+
+  /** '==' */
+  EQEQ,
+
+  /** '!=' */
+  NEQ,
+
   /** End-of-file marker */
   EOF,
 
