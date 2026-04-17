@@ -121,17 +121,8 @@ export class PresentationCompiler {
     this.connectAdjacentSections();
     this.mapNamedSections();
     this.mapBasisGeometry();
-
-    const installPlaceholderNativeExp = (name: string) => {
-      const nativeExpression = this.module.addNativeExpression2(name, () => 1);
-      return nativeExpression.replaceNativeFunction;
-    };
-
-    this.slideHeightNativeExpression_ =
-      installPlaceholderNativeExp("slideHeight");
-    this.slideLeftNativeExpression_ = installPlaceholderNativeExp("slideLeft");
-    this.slideRightNativeExpression_ =
-      installPlaceholderNativeExp("slideRight");
+    this.mapPhysicalGeometry();
+    this.mapGlobalFunctions();
   }
 
   private connectAdjacentSections(): void {
@@ -184,6 +175,24 @@ export class PresentationCompiler {
 
     this.module.addNativeExpression("basisWidth", () => basisWidth);
     this.module.addNativeExpression("basisHeight", () => basisHeight);
+  }
+
+  private mapPhysicalGeometry(): void {
+    const installPlaceholderNativeExp = (name: string) => {
+      const nativeExpression = this.module.addNativeExpression2(name, () => 1);
+      return nativeExpression.replaceNativeFunction;
+    };
+
+    this.slideHeightNativeExpression_ =
+      installPlaceholderNativeExp("slideHeight");
+    this.slideLeftNativeExpression_ = installPlaceholderNativeExp("slideLeft");
+    this.slideRightNativeExpression_ =
+      installPlaceholderNativeExp("slideRight");
+  }
+
+  private mapGlobalFunctions(): void {
+    this.module.addFunction("max", (args) => Math.max(...args));
+    this.module.addFunction("min", (args) => Math.min(...args));
   }
 
   /**

@@ -22,6 +22,11 @@ import {
   CyclicDependencyFailure,
 } from "./CompilationFailure";
 
+type ModuleEntry =
+  | { type: NameType.VALUE; value: UnboundExpression }
+  | { type: NameType.OBJECT; value: Module }
+  | { type: NameType.FUNCTION; value: (args: readonly number[]) => number };
+
 /**
  * Class Module exists as a higher level abstraction (Facade pattern) over the lower level
  * lexing, parsing, binding, and cyclical dependency checking processes.
@@ -630,8 +635,3 @@ export class Module {
     throw new NoSuchNameException();
   }
 }
-
-type ModuleEntry =
-  | { type: NameType.VALUE; value: UnboundExpression }
-  | { type: NameType.OBJECT; value: Module }
-  | { type: NameType.FUNCTION; value: (args: readonly number[]) => number };
