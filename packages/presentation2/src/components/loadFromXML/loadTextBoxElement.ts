@@ -1,7 +1,7 @@
 import { SectionBuilder } from "../section/SectionBuilder";
 import { TextBoxBuilder } from "../element/textBoxElement/TextBoxElementBuilder";
 import { parseMarkdown } from "@rippledoc/markdown";
-import { applyCommonElementAttributes } from "./loadImageElement";
+import { applyCommonElementAttributes } from "./loadElement";
 import { loadScrollTrigger } from "./loadScrollTrigger";
 import { loadPin } from "./loadPin";
 import { loadAnimation } from "./loadAnimation";
