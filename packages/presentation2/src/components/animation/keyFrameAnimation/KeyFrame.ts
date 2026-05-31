@@ -12,5 +12,7 @@ export type KeyFrame = {
 
   strokeDashoffset?: number;
 
+  traceStroke?: number;
+
   transform?: string;
 };

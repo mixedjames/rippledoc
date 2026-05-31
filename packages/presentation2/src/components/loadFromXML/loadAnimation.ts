@@ -126,9 +126,9 @@ export function loadAnimation(options: {
       attributeName: "backgroundPositionY",
     });
 
-    const strokeDashoffset = getOptionalNumericKeyFrameAttribute({
+    const traceStroke = getOptionalNumericKeyFrameAttribute({
       element: child,
-      attributeName: "strokeDashoffset",
+      attributeName: "traceStroke",
     });
 
     const transform = getOptionalStringKeyFrameAttribute({
@@ -141,7 +141,7 @@ export function loadAnimation(options: {
       ...(opacity !== undefined ? { opacity } : {}),
       ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
       ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
-      ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
+      ...(traceStroke !== undefined ? { traceStroke } : {}),
       ...(transform !== undefined ? { transform } : {}),
     };
 

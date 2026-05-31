@@ -46,8 +46,8 @@
     </animation>
 
     <animation trigger="st1" duration="500" target-part="liney" scroll-driven="true">
-      <keyFrame position="0" strokeDashoffset="0" />
-      <keyFrame position="500" strokeDashoffset="100" />
+      <keyFrame position="0" traceStroke="0" />
+      <keyFrame position="500" traceStroke="100" />
     </animation>
 
   </image>
@@ -74,8 +74,8 @@
     <scroll-trigger name="st1" start="0" end="sections.s2.sectionTop"/>
     <pin trigger="st1"/>
     <animation trigger="st1" duration="500" target-part="progress" scroll-driven="true">
-      <keyFrame position="0" strokeDashoffset="100" />
-      <keyFrame position="500" strokeDashoffset="0" />
+      <keyFrame position="0" traceStroke="0" />
+      <keyFrame position="500" traceStroke="100" />
     </animation>
 
   </image>

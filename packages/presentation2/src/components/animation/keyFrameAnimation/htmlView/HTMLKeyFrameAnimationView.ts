@@ -14,12 +14,33 @@ type CSSKeyFrame = {
 
 /**
  *
+ * ## (?) Stroke tracing
+ *
+ * Animating the drawing of a stroke (stroke tracing) is explicitly supported by KeyFrameAnimation.
+ * Most properties map directly to CSS properties, but stroke tracing requires translation because
+ * we don't want the user to have to know about stroke dash arrays and offsets to use it.
+ *
+ * To that end:
+ * - The `traceStroke` property is mapped to the `strokeDashoffset` CSS property.
+ * - We store the path length
+ * - We then use that length to set the `strokeDasharray` to the path length and calculate the
+ *   `strokeDashoffset` based on the percentage specified in `traceStroke`.
+ *
+ * Important consequences:
+ * - `traceStroke` only works on SVG path elements, and the path length must be able to be
+ *   determined.
+ * - If `traceStroke` is used, the `strokeDasharray` of the target element will be overridden to be
+ *   the path length. (31/5/26: no current conflict but if we subsequently add support for animating
+ *   stroke dash arrays this will need to be re-evaluated)
  */
 export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
   private readonly animation_: KeyFrameAnimation;
   private cssAnimation_!: Animation[];
 
   private readonly animationManager_: HTMLAnimationManager;
+
+  // See stroke-tracing for details
+  private pathLength_?: number;
 
   private readonly unsubscribe_: Array<() => void> = [];
 
@@ -48,23 +69,44 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
   }
 
   private buildDOM(): void {
+    // Have to get path length before building keyframes, since keyframe building needs to know path
+    // length if traceStroke is used
+    this.animationManager_
+      .getAnimationTargets(this.animation_)
+      .find((target: Element): boolean => {
+        if (target instanceof SVGPathElement) {
+          this.pathLength_ = target.getTotalLength();
+        }
+        return true;
+      });
+
+    // Build CSS keyframes from our keyframes and a config object (which will be shared)
+    //
+
     const cssKeyFrames: CSSKeyFrame[] = this.animation_.keyFrames.map(
       (keyFrame: KeyFrame) => this.buildKeyFrame(keyFrame),
     );
+
     const animationConfig: KeyframeAnimationOptions = {
       duration: this.animation_.duration,
       fill: "forwards",
       direction: "normal",
     };
 
+    // Build the actual CSS Animations on the target elements, but keep them paused for now (we'll
+    // drive them with the scroll trigger)
+    //
+
     this.cssAnimation_ = this.animationManager_
       .getAnimationTargets(this.animation_)
       .map((target: Element): Animation => {
+        // Special case for stroke tracing...
+        // If the first keyframe has a strokeDashoffset property, we know this is a stroke tracing
+        // animation (since that's the only way to get that property in the first place). In that
+        // case, we need to set the strokeDasharray to the path length to set up the stroke tracing
         if (cssKeyFrames[0]!.strokeDashoffset !== undefined) {
           if (target instanceof SVGPathElement) {
-            //console.log(target.getTotalLength());
-            target.setAttribute("pathLength", "100");
-            target.style.strokeDasharray = "100";
+            target.style.strokeDasharray = this.pathLength_!.toString();
           }
         }
 
@@ -93,8 +135,22 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
       cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
     }
 
-    if (keyFrame.strokeDashoffset !== undefined) {
-      cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+    if (keyFrame.traceStroke !== undefined) {
+      if (this.pathLength_ !== undefined) {
+        cssKeyFrame.strokeDashoffset =
+          this.pathLength_ - (keyFrame.traceStroke * this.pathLength_) / 100;
+      } else {
+        // FIXME: need a better way to alert users this error.
+        //
+        // (subelement animations are difficult - most error handling is dealt with in xml/compuler
+        //  layer - however, we don't parse SVG files at that point so can't validate the target
+        //  element until we actually have an SVG to work with, by which point normal error
+        //  reporting is gone)
+        console.log(
+          "WARNING: traceStroke is specified but the target element is not an SVGPathElement" +
+            " or its path length cannot be determined.",
+        );
+      }
     }
 
     if (keyFrame.transform !== undefined) {

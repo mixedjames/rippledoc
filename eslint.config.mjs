@@ -100,8 +100,9 @@ export default [
        *   0 and 1
        *   2 (division by 2 is common for centering things)
        * 255 (because of RGBA color parsing)
+       * 100 (because of percentage values)
        */
-      "no-magic-numbers": ["error", { ignore: [0, 1, 2, 255] }],
+      "no-magic-numbers": ["error", { ignore: [0, 1, 2, 255, 100] }],
     },
   },
 

@@ -29,7 +29,7 @@
      inkscape:window-width="1696"
      inkscape:window-height="942"
      inkscape:window-x="7"
-     inkscape:window-y="47"
+     inkscape:window-y="39"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1" />
   <defs
@@ -39,7 +39,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;stroke:#000000;stroke-width:7.45928;stroke-dasharray:507.842;stroke-dashoffset:0"
+       style="fill:none;stroke:#000000;stroke-width:7.45928"
        d="M 3.3747895,6.6145833 H 155.6452"
        id="progress" />
   </g>
