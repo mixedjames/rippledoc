@@ -3,101 +3,101 @@
 <size w="600" h="800" />
 
 <style>
+<![CDATA[
+
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+
+.rdoc-viewport {
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+}
 
 .rdoc-section-background {
   background: white;
 }
 
-.rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
+.rdoc-section-title .rdoc-element.rdoc-element-bigTopImg {
+  border: 1px solid black;
+}
+
+.rdoc-section-title .rdoc-element.rdoc-element-littleBottomImg {
+  border: 1px solid black;
+}
+
+.rdoc-section-title .rdoc-element.rdoc-element-title {
+  font-size: 40px;
+}
+
+.rdoc-section-title .rdoc-element.rdoc-element-subtitle {
+}
+
+.rdoc-section-title .rdoc-element.rdoc-element-bottom {
+  border-top: 1px solid darkgray;
+  text-transform: uppercase;
+  font-size: 100%;
+  color: darkgray;
+}
+
+
+.rdoc-section-slide3 .rdoc-element-parallaxBg {
   background-image: url("../dist/img/stars.jpg");
   background-size: cover;
   background-position-x: left;
 }
 
-
+]]>
 </style>
 
-<section name="title" b="elements.tb0.bottom+20">
-<textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
-# A RippleDoc presentation
-</textbox>
-</section>
+<section name="title" h="slideHeight">
 
-<section name="s1" b="slideHeight">
-
-  <image
-    name="img1"
-    src="img/test.svg"
-    fit="cover"
-    l="20" t="sectionTop+20" w="200" h="200"
-    >
-    <scroll-trigger name="st1" start="sectionTop" end="sectionBottom-height-40"/>
-    <pin trigger="st1"/>
-
-    <track-path trigger="" target-part="" path=""/>
-
-    <animation trigger="st1" duration="500" target-part="moon" scroll-driven="true">
-      <keyFrame position="0" opacity="1" path-position="0"/>
-      <keyFrame position="500" opacity="0" path-position="500"/>
-    </animation>
-
-    <animation trigger="st1" duration="500" scroll-driven="true">
-      <keyFrame position="0" transform="none" />
-      <keyFrame position="500" transform="translateX(100%)" />
-    </animation>
-
-    <animation trigger="st1" duration="500" target-part="liney" scroll-driven="true">
-      <keyFrame position="0" traceStroke="0" />
-      <keyFrame position="500" traceStroke="100" />
-    </animation>
-
-  </image>
-
-  <textbox l="elements.img1.right+20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb1">
-  # Just messing around
-  This is a presentation created to test out the XML loading functionality of the presentation
-  library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-  ut labore et dolore magna aliqua.
-
-  - Lorem ipsum dolor sit amet
-    - Consectetur adipiscing elit
-  - Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
-
-
-  1. Option 1
-  1. Option 2
+  <textbox l="20" b="elements.title.top-20" r="basisWidth-20" h="200" name="bigTopImg">
+  Some image here
   </textbox>
 
-  <image
-    src="img/progress-bar.svg"
-    l="0" r="basisWidth" b="sectionBottom" h="50"
-    >
-    <scroll-trigger name="st1" start="0" end="sections.s2.sectionTop"/>
-    <pin trigger="st1"/>
-    <animation trigger="st1" duration="500" target-part="progress" scroll-driven="true">
-      <keyFrame position="0" traceStroke="0" />
-      <keyFrame position="500" traceStroke="100" />
-    </animation>
+  <textbox l="20" t="slideHeight/2-height/2" r="basisWidth-20" h="content" name="title">
+  An introduction to RippleDoc
+  </textbox>
 
-  </image>
-</section>
+  <textbox l="20" t="elements.title.bottom" r="basisWidth-20" h="content" name="subtitle">
+  By James Heggie
+  </textbox>
 
-<section h="slideHeight" name="s3">
-  <textbox l="0" r="basisWidth" t="sectionTop" h="slideHeight" name="fancyBG">
+  <textbox l="20" b="sectionBottom" r="basisWidth-120" h="content" name="bottom">
+  A whistlestop tour of the presentation library
+  </textbox>
+
+  <textbox b="sectionBottom-20" w="90" r="basisWidth-20" h="90" name="littleBottomImg">
+  <!-- Some image indicating scrolling down  -->
   </textbox>
 
 </section>
 
-<section h="slideHeight" name="s2">
+<section name="slide2" h="slideHeight">
 
-      <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
-      # Another slide
-      This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
-      ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-      cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-      qui officia deserunt mollit anim id est laborum.
-      </textbox>
+  <textbox l="20" t="sectionTop+sectionHeight/2-height/2" r="basisWidth-20" h="content" name="tb0">
+  At first it all looks like a pretty standard presentation...
+
+    - Text
+    - Images
+    - Some colour
+
+  ...but keep scrolling.
+  </textbox>
+
+</section>
+
+<section h="slideHeight/2" name="slide3">
+
+  <textbox l="0" t="sectionTop" r="basisWidth" h="sectionHeight" name="parallaxBg">
+    <scroll-trigger name="st1" start="sectionTop-slideHeight" end="sectionTop+sectionHeight"/>
+    <animation trigger="st1" duration="100" scroll-driven="true">
+      <keyFrame position="0" backgroundPositionY="0"/>
+      <keyFrame position="100" backgroundPositionY="100"/>
+    </animation>
+  </textbox>
+</section>
+
+<section h="slideHeight" name="slide4">
 </section>
 
 </presentation>
