@@ -34,8 +34,9 @@
     <scroll-trigger name="st1" start="sectionTop" end="sectionBottom-height-40"/>
     <pin trigger="st1"/>
 
+    <track-path trigger="" target-part="" path=""/>
+
     <animation trigger="st1" duration="500" target-part="moon" scroll-driven="true">
-      <along-path target="" path=""/>
       <keyFrame position="0" opacity="1" path-position="0"/>
       <keyFrame position="500" opacity="0" path-position="500"/>
     </animation>

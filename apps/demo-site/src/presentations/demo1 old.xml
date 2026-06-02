@@ -1,21 +1,6 @@
 <presentation>
 
-<size w="600" h="800" />
-
-<style>
-
-.rdoc-section-background {
-  background: white;
-}
-
-.rdoc-elements .rdoc-text-box-element.rdoc-element-fancyBG {
-  background-image: url("../dist/img/stars.jpg");
-  background-size: cover;
-  background-position-x: left;
-}
-
-
-</style>
+<size w="400" h="800" />
 
 <section name="title" b="elements.tb0.bottom+20">
 <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb0">
@@ -35,19 +20,13 @@
     <pin trigger="st1"/>
 
     <animation trigger="st1" duration="500" target-part="moon" scroll-driven="true">
-      <along-path target="" path=""/>
-      <keyFrame position="0" opacity="1" path-position="0"/>
-      <keyFrame position="500" opacity="0" path-position="500"/>
-    </animation>
-
-    <animation trigger="st1" duration="500" scroll-driven="true">
-      <keyFrame position="0" transform="none" />
-      <keyFrame position="500" transform="translateX(100%)" />
+      <keyFrame position="0" opacity="1" />
+      <keyFrame position="500" opacity="0" />
     </animation>
 
     <animation trigger="st1" duration="500" target-part="liney" scroll-driven="true">
-      <keyFrame position="0" traceStroke="0" />
-      <keyFrame position="500" traceStroke="100" />
+      <keyFrame position="0" strokeDashoffset="0" />
+      <keyFrame position="500" strokeDashoffset="100" />
     </animation>
 
   </image>
@@ -74,8 +53,8 @@
     <scroll-trigger name="st1" start="0" end="sections.s2.sectionTop"/>
     <pin trigger="st1"/>
     <animation trigger="st1" duration="500" target-part="progress" scroll-driven="true">
-      <keyFrame position="0" traceStroke="0" />
-      <keyFrame position="500" traceStroke="100" />
+      <keyFrame position="0" strokeDashoffset="100" />
+      <keyFrame position="500" strokeDashoffset="0" />
     </animation>
 
   </image>
@@ -89,14 +68,14 @@
 
 <section h="slideHeight" name="s2">
 
-      <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
-      # Another slide
-      This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
-      ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-      cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-      qui officia deserunt mollit anim id est laborum.
-      </textbox>
+  <textbox l="20" t="sectionTop+20" r="basisWidth-20" h="content" name="tb2">
+  # Another slide
+  This is another slide to test out the XML loading functionality of the presentation library. Lorum ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+  ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+  qui officia deserunt mollit anim id est laborum.
+  </textbox>
 </section>
 
 </presentation>
