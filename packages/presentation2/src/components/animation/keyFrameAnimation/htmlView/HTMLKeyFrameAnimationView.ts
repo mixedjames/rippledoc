@@ -148,7 +148,7 @@ export class HTMLKeyFrameAnimationView implements HTMLAnimationView {
         //  reporting is gone)
         console.log(
           "WARNING: traceStroke is specified but the target element is not an SVGPathElement" +
-          " or its path length cannot be determined.",
+            " or its path length cannot be determined.",
         );
       }
     }

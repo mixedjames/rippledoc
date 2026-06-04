@@ -118,7 +118,9 @@ export class HTMLSectionView {
 
     if (this.section.name.length > 0) {
       this.contentElement_.classList.add(`rdoc-section-${this.section.name}`);
-      this.backgroundElement_.classList.add(`rdoc-section-background-${this.section.name}`);
+      this.backgroundElement_.classList.add(
+        `rdoc-section-background-${this.section.name}`,
+      );
     }
 
     this.presentationView.htmlElements.appendChild(this.contentElement_);

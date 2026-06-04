@@ -12,7 +12,8 @@
       "@rippledoc/expressions": ["packages/expressions"],
       "@rippledoc/sanitizer": ["packages/sanitizer"],
       "@rippledoc/markdown": ["packages/markdown"],
-      "@rippledoc/presentation2": ["packages/presentation2"]
+      "@rippledoc/presentation2": ["packages/presentation2"],
+      "@rippledoc/presentation3": ["packages/presentation3"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

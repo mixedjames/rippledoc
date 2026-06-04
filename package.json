@@ -32,7 +32,9 @@
     "build:just-messing": "webpack --config apps/just-messing/webpack.config.js",
     "watch:just-messing": "webpack --config apps/just-messing/webpack.config.js --watch",
     "build:demo-site": "webpack --config apps/demo-site/webpack.config.js",
-    "watch:demo-site": "webpack --config apps/demo-site/webpack.config.js --watch"
+    "watch:demo-site": "webpack --config apps/demo-site/webpack.config.js --watch",
+    "build:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js",
+    "watch:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js --watch"
   },
   "private": true,
   "workspaces": [
