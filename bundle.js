@@ -989,6 +989,8 @@ class Lexer {
      * Returns the next token in the input stream.
      * Always returns a token; EOF token marks end-of-input.
      */
+    // We tolerate complexity here because lexing inherently involves multiple cases and branches.
+    // eslint-disable-next-line complexity
     nextToken() {
         this.skipWhitespace();
         if (this.pos_ >= this.source_.length) {
@@ -1019,10 +1021,32 @@ class Lexer {
                 return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.PERCENT);
             case ".":
                 return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.DOT);
+            case ",":
+                return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.COMMA);
             case "(":
                 return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LPAREN);
             case ")":
                 return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.RPAREN);
+            case "<":
+                if (this.peekNext() === "=") {
+                    return this.twoChar(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LTE, "<=");
+                }
+                return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LT);
+            case ">":
+                if (this.peekNext() === "=") {
+                    return this.twoChar(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GTE, ">=");
+                }
+                return this.single(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GT);
+            case "=":
+                if (this.peekNext() === "=") {
+                    return this.twoChar(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EQEQ, "==");
+                }
+                break;
+            case "!":
+                if (this.peekNext() === "=") {
+                    return this.twoChar(_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.NEQ, "!=");
+                }
+                break;
         }
         // Unknown character
         const start = this.pos_;
@@ -1047,6 +1071,22 @@ class Lexer {
         return {
             type,
             lexeme: ch,
+            position: start,
+            value: 0,
+        };
+    }
+    /**
+     * Creates a two-character token.
+     * @param type The token type.
+     * @param lexeme The two-character lexeme.
+     * @returns A Token object with value 0.
+     */
+    twoChar(type, lexeme) {
+        const start = this.pos_;
+        this.pos_ += 2;
+        return {
+            type,
+            lexeme,
             position: start,
             value: 0,
         };
@@ -1179,15 +1219,124 @@ var TokenType;
     TokenType[TokenType["PERCENT"] = 6] = "PERCENT";
     /** '.' */
     TokenType[TokenType["DOT"] = 7] = "DOT";
+    /** ',' */
+    TokenType[TokenType["COMMA"] = 8] = "COMMA";
     /** '(' */
-    TokenType[TokenType["LPAREN"] = 8] = "LPAREN";
+    TokenType[TokenType["LPAREN"] = 9] = "LPAREN";
     /** ')' */
-    TokenType[TokenType["RPAREN"] = 9] = "RPAREN";
+    TokenType[TokenType["RPAREN"] = 10] = "RPAREN";
+    /** '<' */
+    TokenType[TokenType["LT"] = 11] = "LT";
+    /** '>' */
+    TokenType[TokenType["GT"] = 12] = "GT";
+    /** '<=' */
+    TokenType[TokenType["LTE"] = 13] = "LTE";
+    /** '>=' */
+    TokenType[TokenType["GTE"] = 14] = "GTE";
+    /** '==' */
+    TokenType[TokenType["EQEQ"] = 15] = "EQEQ";
+    /** '!=' */
+    TokenType[TokenType["NEQ"] = 16] = "NEQ";
     /** End-of-file marker */
-    TokenType[TokenType["EOF"] = 10] = "EOF";
+    TokenType[TokenType["EOF"] = 17] = "EOF";
     /** Any character not recognized by the lexer */
-    TokenType[TokenType["UNKNOWN"] = 11] = "UNKNOWN";
+    TokenType[TokenType["UNKNOWN"] = 18] = "UNKNOWN";
 })(TokenType || (TokenType = {}));
+
+
+/***/ },
+
+/***/ "../../packages/expressions/src/modules/CompilationFailure.ts"
+/*!********************************************************************!*\
+  !*** ../../packages/expressions/src/modules/CompilationFailure.ts ***!
+  \********************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BindingFailure: () => (/* binding */ BindingFailure),
+/* harmony export */   CompilationFailure: () => (/* binding */ CompilationFailure),
+/* harmony export */   CompilationFailuresException: () => (/* binding */ CompilationFailuresException),
+/* harmony export */   CyclicDependencyFailure: () => (/* binding */ CyclicDependencyFailure)
+/* harmony export */ });
+/**
+ * Base class for representing a compilation failure that occurred during the compilation of a
+ * module.
+ *
+ * ## Notes
+ * 1. Do not directly instantiate this class. Use the specific subclass that represents the specific
+ *    type of compilation failure that occurred.
+ * 2. This exception and its subclasses are the public means by which Module reports failures of
+ *    compilation. They should be "machine readable" and are not intended to be user readable.
+ *    This is because I don't want to impose a localisation burden on the expressions module.
+ */
+class CompilationFailure {
+    /**
+     * The module containing the expression that failed to compile.
+     */
+    module_;
+    /**
+     * The name of the expression that failed to compile.
+     */
+    expressionName_;
+    constructor(module, expressionName) {
+        this.module_ = module;
+        this.expressionName_ = expressionName;
+    }
+    get module() {
+        return this.module_;
+    }
+    get expressionName() {
+        return this.expressionName_;
+    }
+}
+/**
+ * Represents a binding failure that occurred during the compilation of a module.
+ *
+ * ## Notes
+ * 1. The `failedNames` property contains the names that failed to resolve. This may be more than
+ *    one name if the expression contains multiple names.
+ */
+class BindingFailure extends CompilationFailure {
+    failedNames_;
+    constructor(module, expressionName, failedNames) {
+        super(module, expressionName);
+        this.failedNames_ = failedNames;
+    }
+    get failedNames() {
+        return this.failedNames_;
+    }
+}
+/**
+ * Represents a cyclic dependency that was detected during the compilation of a module.
+ *
+ * ## Notes
+ * 1. The `dependencyChain` property contains the names involved in the cyclic dependency.
+ */
+class CyclicDependencyFailure extends CompilationFailure {
+    dependencyChain_;
+    constructor(module, expressionName, dependencyChain) {
+        super(module, expressionName);
+        this.dependencyChain_ = dependencyChain;
+    }
+    get dependencyChain() {
+        return this.dependencyChain_;
+    }
+}
+/**
+ * Represents a collection of compilation failures that occurred during the compilation of a module.
+ */
+class CompilationFailuresException extends Error {
+    failures_;
+    constructor(failures) {
+        super("Compilation failed.");
+        this.name = "CompilationFailuresException";
+        this.failures_ = failures;
+    }
+    get failures() {
+        return this.failures_;
+    }
+}
 
 
 /***/ },
@@ -1297,14 +1446,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Module: () => (/* binding */ Module)
 /* harmony export */ });
-/* harmony import */ var _parser_Parser__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../parser/Parser */ "../../packages/expressions/src/parser/Parser.ts");
-/* harmony import */ var _native_NativeExpression__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../native/NativeExpression */ "../../packages/expressions/src/native/NativeExpression.ts");
-/* harmony import */ var _native_NativeExpression2__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../native/NativeExpression2 */ "../../packages/expressions/src/native/NativeExpression2.ts");
-/* harmony import */ var _HasCyclicalDependencies__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./HasCyclicalDependencies */ "../../packages/expressions/src/modules/HasCyclicalDependencies.ts");
-/* harmony import */ var _parser_NameType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../parser/NameType */ "../../packages/expressions/src/parser/NameType.ts");
+/* harmony import */ var _native_NativeExpression__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../native/NativeExpression */ "../../packages/expressions/src/native/NativeExpression.ts");
+/* harmony import */ var _native_NativeExpression2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../native/NativeExpression2 */ "../../packages/expressions/src/native/NativeExpression2.ts");
+/* harmony import */ var _parser_Parser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../parser/Parser */ "../../packages/expressions/src/parser/Parser.ts");
+/* harmony import */ var _parser_NameType__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../parser/NameType */ "../../packages/expressions/src/parser/NameType.ts");
+/* harmony import */ var _parser_BindingContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../parser/BindingContext */ "../../packages/expressions/src/parser/BindingContext.ts");
+/* harmony import */ var _HasCyclicalDependencies__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./HasCyclicalDependencies */ "../../packages/expressions/src/modules/HasCyclicalDependencies.ts");
+/* harmony import */ var _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./CompilationFailure */ "../../packages/expressions/src/modules/CompilationFailure.ts");
+
+
+// Import parser components
 
 
 
+// Local imports
 
 
 /**
@@ -1389,8 +1544,15 @@ __webpack_require__.r(__webpack_exports__);
  * rootModule.compile();
  * const getAExpression = getA(); // returns the bound expression for "getA", which depends on "sub.a" defined in the mapped submodule
  * ```
+ *
+ * # Error reporting
+ * Syntax errors are reported immediately when the expression added.
+ * Binding errors, and cyclical dependency errors are reported when compile() is called.
+ *
+ * See 'CompilationFailuresException'
  */
 class Module {
+    name_;
     compiled_ = false;
     /**
      * The parent module, or null if this is the root module.
@@ -1404,14 +1566,15 @@ class Module {
      * Expressions defined in this module, mapped by their name.
      */
     names_ = new Map();
-    constructor(parent = null) {
+    constructor(parent = null, name) {
         if (parent && parent.compiled_) {
             throw new Error("Cannot create a submodule of a compiled module");
         }
         this.parent_ = parent;
+        this.name_ = name;
     }
-    static createRootModule() {
-        return new Module();
+    static createRootModule(name) {
+        return new Module(null, name);
     }
     get parentModule() {
         return this.parent_;
@@ -1424,17 +1587,30 @@ class Module {
         }
         return current;
     }
+    get name() {
+        return this.name_;
+    }
+    get qualifiedName() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let m = this;
+        const names = [this.name];
+        while (m.parent_) {
+            m = m.parent_;
+            names.unshift(m.name);
+        }
+        return names.join(".");
+    }
     /**
      * Creates a new Module with this module as its parent and adds it to the list of submodules.
      *
      * @returns The newly created submodule.
      * @throws If this module is already compiled.
      */
-    addSubModule() {
+    addSubModule(name) {
         if (this.compiled_) {
             throw new Error("addSubModule: Cannot add a submodule to a compiled module");
         }
-        const subModule = new Module(this);
+        const subModule = new Module(this, name);
         this.subModules_.push(subModule);
         return subModule;
     }
@@ -1447,14 +1623,15 @@ class Module {
      * @param name The name of the expression.
      * @param expression The expression string.
      * @returns A function that returns the bound expression after compilation.
+     * @throws SyntaxError if the expression string is invalid.
      */
     addExpression(name, expression) {
         this.assertNotCompiled("addExpression");
         if (this.names_.has(name)) {
             throw new Error(`Expression with name "${name}" already exists in this module`);
         }
-        const unboundExpression = (0,_parser_Parser__WEBPACK_IMPORTED_MODULE_0__.parseExpression)(expression);
-        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.VALUE, value: unboundExpression });
+        const unboundExpression = (0,_parser_Parser__WEBPACK_IMPORTED_MODULE_2__.parseExpression)(expression);
+        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.VALUE, value: unboundExpression });
         // Return a function that will return the bound expression after compilation.
         return () => {
             if (!unboundExpression.dependentExpression ||
@@ -1477,8 +1654,8 @@ class Module {
         if (this.names_.has(name)) {
             throw new Error(`Expression with name "${name}" already exists in this module`);
         }
-        const unboundExpression = (0,_native_NativeExpression__WEBPACK_IMPORTED_MODULE_1__.createNativeExpression)(expression);
-        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.VALUE, value: unboundExpression });
+        const unboundExpression = (0,_native_NativeExpression__WEBPACK_IMPORTED_MODULE_0__.createNativeExpression)(expression);
+        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.VALUE, value: unboundExpression });
         // Return a function that will return the bound expression after compilation.
         return () => {
             if (!unboundExpression.dependentExpression ||
@@ -1487,6 +1664,20 @@ class Module {
             }
             return unboundExpression.dependentExpression.expression;
         };
+    }
+    /**
+     * Adds a named host function to the module.
+     *
+     * Host functions are callable from parsed expressions using the standard
+     * function-call syntax, e.g. `sum(1, 2)`.
+     */
+    addFunction(name, fn) {
+        this.assertNotCompiled("addFunction");
+        if (this.names_.has(name)) {
+            throw new Error(`Expression with name "${name}" already exists in this module`);
+        }
+        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.FUNCTION, value: fn });
+        return fn;
     }
     /**
      * Adds a named native expression with optional dependencies to the module.
@@ -1507,9 +1698,9 @@ class Module {
         if (this.names_.has(name)) {
             throw new Error(`Expression with name "${name}" already exists in this module`);
         }
-        const nativeExpr = (0,_native_NativeExpression2__WEBPACK_IMPORTED_MODULE_2__.createNativeExpression2)(expression, dependencies);
+        const nativeExpr = (0,_native_NativeExpression2__WEBPACK_IMPORTED_MODULE_1__.createNativeExpression2)(expression, dependencies);
         const unboundExpression = nativeExpr.unboundExpression;
-        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.VALUE, value: unboundExpression });
+        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.VALUE, value: unboundExpression });
         return {
             getExpression: () => {
                 if (!unboundExpression.dependentExpression ||
@@ -1542,7 +1733,7 @@ class Module {
         if (!this.hasCommonAncestor(module)) {
             throw new Error("Mapped module must share a common ancestor with this module");
         }
-        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.OBJECT, value: module });
+        this.names_.set(name, { type: _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.OBJECT, value: module });
     }
     /**
      * Returns true if this module and the other module share
@@ -1580,6 +1771,12 @@ class Module {
      * Returns:
      * An array of bound expressions in topologically sorted order (i.e. if expression A depends on
      * expression B, then B will appear before A in the array).
+     *
+     * Throws:
+     *  - CompilationFailuresException if there are binding errors or cyclical dependencies. The
+     *    exception will contain details of the failures.
+     *  - The exact exception throw for other failure modes is non-contractual however, it will be
+     *    an Error or subclass of Error with a descriptive message.
      */
     compile() {
         if (this.compiled_) {
@@ -1589,10 +1786,22 @@ class Module {
             throw new Error("Only the root module can be compiled");
         }
         this.compiled_ = true;
+        // (1) Binding
+        // This step will fail by throwing a 'CompilationFailuresException' which should be allowed to
+        // propagate to the client. The module will be left in a broken state - this is contractual.
+        //
         const expressions = this.bindExpressions();
+        // (2) Cyclical dependency checking and topological sorting.
+        // FIXME: this step should fail by throwing a 'CompilationFailuresException' with details of the
+        // cycle detected, but for now we throw a generic error. The module will be left in a broken
+        // state - this is contractual.
+        //
         const sortedExpressions = [];
-        if ((0,_HasCyclicalDependencies__WEBPACK_IMPORTED_MODULE_3__.hasCyclicalDependencies)(expressions, sortedExpressions)) {
-            throw new Error("Circular dependency detected among expressions.");
+        if ((0,_HasCyclicalDependencies__WEBPACK_IMPORTED_MODULE_5__.hasCyclicalDependencies)(expressions, sortedExpressions)) {
+            //throw new Error("Circular dependency detected among expressions.");
+            throw new _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__.CompilationFailuresException([
+                new _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__.CyclicDependencyFailure(this, "<unknown>", ["<unknown>"]),
+            ]);
         }
         return sortedExpressions;
     }
@@ -1608,18 +1817,50 @@ class Module {
     bindExpressions() {
         const context = {
             lookupName: this.lookupName.bind(this),
+            lookupFunction: this.lookupFunction.bind(this),
         };
         const bound = [];
+        const bindingFailures = [];
         // Bind all value expressions defined in this module.
-        for (const entry of this.names_.values()) {
-            if (entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.VALUE) {
+        //for (const entry of this.names_.values()) {
+        this.names_.forEach((entry, key) => {
+            if (entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.VALUE) {
                 const unbound = entry.value;
-                bound.push(unbound.bind(context));
+                try {
+                    bound.push(unbound.bind(context));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                }
+                catch (e) {
+                    if (e instanceof _parser_Parser__WEBPACK_IMPORTED_MODULE_2__.BindingError) {
+                        bindingFailures.push(new _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__.BindingFailure(this, key, [e.missingName]));
+                    }
+                    else {
+                        throw e;
+                    }
+                } //catch
             }
-        }
+        }); //for
         // Recursively bind submodules.
+        //
+        // Note: propagation of compilation errors
+        //  - All modules emit CompilationFailuresException with list of failed names
+        //  - For all except root, we catch the exception and add it to a top-level list
         for (const sub of this.subModules_) {
-            bound.push(...sub.bindExpressions());
+            try {
+                bound.push(...sub.bindExpressions());
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }
+            catch (e) {
+                if (e instanceof _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__.CompilationFailuresException) {
+                    bindingFailures.push(...e.failures);
+                }
+                else {
+                    throw e;
+                }
+            }
+        } //for
+        if (bindingFailures.length > 0) {
+            throw new _CompilationFailure__WEBPACK_IMPORTED_MODULE_6__.CompilationFailuresException(bindingFailures);
         }
         return bound;
     }
@@ -1638,7 +1879,7 @@ class Module {
      * as we need it.
      */
     lookupName(parts, type) {
-        if (!Array.isArray(parts) || parts.length === 0) {
+        if (parts.length === 0) {
             throw new Error("Name parts required");
         }
         const [head, ...rest] = parts;
@@ -1648,18 +1889,19 @@ class Module {
         const entry = this.names_.get(head);
         // Final name part: expect a value expression.
         if (rest.length === 0) {
-            if (entry && entry.type === type && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.VALUE) {
+            if (entry && entry.type === type && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.VALUE) {
                 const unbound = entry.value;
                 return () => unbound.dependentExpression;
             }
-            // Delegate to parent module if available.
+            // We don't know the name:
+            // Try parent module if available.
             if (this.parent_) {
                 return this.parent_.lookupName(parts, type);
             }
-            throw new Error(`Unresolved name: ${head}`);
+            throw new _parser_BindingContext__WEBPACK_IMPORTED_MODULE_4__.NoSuchNameException();
         }
         // There are remaining parts: expect an object (mapped module) for the head.
-        if (entry && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_4__.NameType.OBJECT) {
+        if (entry && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.OBJECT) {
             const mappedModule = entry.value;
             return mappedModule.lookupName(rest, type);
         }
@@ -1667,7 +1909,40 @@ class Module {
         if (this.parent_) {
             return this.parent_.lookupName(parts, type);
         }
-        throw new Error(`'${head}' is not an object`);
+        throw new _parser_BindingContext__WEBPACK_IMPORTED_MODULE_4__.NoSuchNameException();
+    }
+    lookupFunction(name) {
+        if (!name) {
+            throw new Error("Name required");
+        }
+        return this.lookupFunctionParts(name.split("."));
+    }
+    lookupFunctionParts(parts) {
+        if (parts.length === 0) {
+            throw new Error("Name parts required");
+        }
+        const [head, ...rest] = parts;
+        if (!head) {
+            throw new Error("Invalid name part");
+        }
+        const entry = this.names_.get(head);
+        if (rest.length === 0) {
+            if (entry && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.FUNCTION) {
+                return entry.value;
+            }
+            if (this.parent_) {
+                return this.parent_.lookupFunctionParts(parts);
+            }
+            throw new _parser_BindingContext__WEBPACK_IMPORTED_MODULE_4__.NoSuchNameException();
+        }
+        if (entry && entry.type === _parser_NameType__WEBPACK_IMPORTED_MODULE_3__.NameType.OBJECT) {
+            const mappedModule = entry.value;
+            return mappedModule.lookupFunctionParts(rest);
+        }
+        if (this.parent_) {
+            return this.parent_.lookupFunctionParts(parts);
+        }
+        throw new _parser_BindingContext__WEBPACK_IMPORTED_MODULE_4__.NoSuchNameException();
     }
 }
 
@@ -1956,6 +2231,116 @@ function createNativeExpression2(nativeFn, dependencies = []) {
 
 /***/ },
 
+/***/ "../../packages/expressions/src/parser/AST.FunctionExpression.ts"
+/*!***********************************************************************!*\
+  !*** ../../packages/expressions/src/parser/AST.FunctionExpression.ts ***!
+  \***********************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   FunctionExpression: () => (/* binding */ FunctionExpression)
+/* harmony export */ });
+/* harmony import */ var _BindingContext__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BindingContext */ "../../packages/expressions/src/parser/BindingContext.ts");
+/* harmony import */ var _AST__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AST */ "../../packages/expressions/src/parser/AST.ts");
+/* harmony import */ var _Parser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Parser */ "../../packages/expressions/src/parser/Parser.ts");
+
+
+
+/**
+ * Unbound function call expression.
+ *
+ * Mirrors NameExpression but uses the FUNCTION namespace and
+ * additionally carries a list of argument AST nodes.
+ *
+ * Examples:
+ *   f()
+ *   f(a, b)
+ *   module.fn(1, x + 2)
+ */
+class FunctionExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
+    parts_;
+    args_;
+    constructor(parts, args) {
+        super();
+        this.parts_ = parts;
+        this.args_ = args;
+    }
+    getParts() {
+        return this.parts_;
+    }
+    getArgs() {
+        return this.args_;
+    }
+    getDependencies() {
+        throw new Error("Unbound FunctionExpression cannot get dependencies");
+    }
+    bind(context) {
+        try {
+            const boundArgs = this.args_.map((arg) => arg.bind(context));
+            const functionName = this.parts_.join(".");
+            const callable = context.lookupFunction(functionName);
+            return new LinkedFunctionExpression(boundArgs, callable);
+        }
+        catch (error) {
+            if (error instanceof _BindingContext__WEBPACK_IMPORTED_MODULE_0__.NoSuchNameException) {
+                throw new _Parser__WEBPACK_IMPORTED_MODULE_2__.BindingError(this.parts_.join("."));
+            }
+            throw error;
+        }
+    }
+}
+class LinkedFunctionExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
+    args_;
+    fn_;
+    constructor(args, fn) {
+        super();
+        this.args_ = args;
+        this.fn_ = fn;
+    }
+    getDependencies() {
+        const deps = [];
+        for (const arg of this.args_) {
+            deps.push(...arg.getDependencies());
+        }
+        return deps;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    bind(_context) {
+        throw new Error("LinkedFunctionExpression cannot be rebound");
+    }
+    resolve() {
+        const resolvedArgs = this.args_.map((arg) => arg.resolve());
+        return new ResolvedFunctionExpression(this.fn_, resolvedArgs);
+    }
+}
+class ResolvedFunctionExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
+    args_;
+    fn_;
+    constructor(fn, args) {
+        super();
+        this.fn_ = fn;
+        this.args_ = args;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    bind(_context) {
+        throw new Error("ResolvedFunctionExpression cannot be rebound");
+    }
+    resolve() {
+        throw new Error("ResolvedFunctionExpression is already resolved");
+    }
+    getDependencies() {
+        throw new Error("ResolvedFunctionExpression cannot get dependencies");
+    }
+    evaluate() {
+        const argValues = this.args_.map((arg) => arg.evaluate());
+        return this.fn_(argValues);
+    }
+}
+
+
+/***/ },
+
 /***/ "../../packages/expressions/src/parser/AST.NameExpression.ts"
 /*!*******************************************************************!*\
   !*** ../../packages/expressions/src/parser/AST.NameExpression.ts ***!
@@ -1966,8 +2351,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   NameExpression: () => (/* binding */ NameExpression)
 /* harmony export */ });
-/* harmony import */ var _AST__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AST */ "../../packages/expressions/src/parser/AST.ts");
-/* harmony import */ var _NameType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./NameType */ "../../packages/expressions/src/parser/NameType.ts");
+/* harmony import */ var _BindingContext__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BindingContext */ "../../packages/expressions/src/parser/BindingContext.ts");
+/* harmony import */ var _AST__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AST */ "../../packages/expressions/src/parser/AST.ts");
+/* harmony import */ var _NameType__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./NameType */ "../../packages/expressions/src/parser/NameType.ts");
+/* harmony import */ var _Parser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Parser */ "../../packages/expressions/src/parser/Parser.ts");
+
+
 
 
 /**
@@ -1983,7 +2372,7 @@ __webpack_require__.r(__webpack_exports__);
  * Because of this, the only valid thing to do with a NameExpression is to bind it exactly once.
  * This will cause it to be replaced with a LinkedNameExpression.
  */
-class NameExpression extends _AST__WEBPACK_IMPORTED_MODULE_0__.AstNode {
+class NameExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
     // Sequence of name parts, e.g. ["a", "b", "c"] for a.b.c
     parts_;
     constructor(parts) {
@@ -2003,10 +2392,23 @@ class NameExpression extends _AST__WEBPACK_IMPORTED_MODULE_0__.AstNode {
         throw new Error("Unbound NameExpression cannot get dependencies");
     }
     bind(context) {
-        return new LinkedNameExpression(context.lookupName(this.parts_, _NameType__WEBPACK_IMPORTED_MODULE_1__.NameType.VALUE));
-    }
+        try {
+            return new LinkedNameExpression(context.lookupName(this.parts_, _NameType__WEBPACK_IMPORTED_MODULE_2__.NameType.VALUE));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }
+        catch (e) {
+            if (e instanceof _BindingContext__WEBPACK_IMPORTED_MODULE_0__.NoSuchNameException) {
+                // Translate NoSuchNameException
+                throw new _Parser__WEBPACK_IMPORTED_MODULE_3__.BindingError(this.parts_.join("."));
+            }
+            else {
+                // Rethrow everything else
+                throw e;
+            }
+        } //catch
+    } //bind
 }
-class LinkedNameExpression extends _AST__WEBPACK_IMPORTED_MODULE_0__.AstNode {
+class LinkedNameExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
     // Link function: () => UncheckedExpression
     link_;
     linkedExpression_ = null;
@@ -2035,7 +2437,7 @@ class LinkedNameExpression extends _AST__WEBPACK_IMPORTED_MODULE_0__.AstNode {
         }
     }
 }
-class ResolvedNameExpression extends _AST__WEBPACK_IMPORTED_MODULE_0__.AstNode {
+class ResolvedNameExpression extends _AST__WEBPACK_IMPORTED_MODULE_1__.AstNode {
     expression_;
     constructor(expression) {
         super();
@@ -2213,12 +2615,48 @@ class BinaryExpression extends AstNode {
                 return l / r;
             case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.PERCENT:
                 return l % r;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LT:
+                return l < r ? 1 : 0;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GT:
+                return l > r ? 1 : 0;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LTE:
+                return l <= r ? 1 : 0;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GTE:
+                return l >= r ? 1 : 0;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EQEQ:
+                return l === r ? 1 : 0;
+            case _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.NEQ:
+                return l !== r ? 1 : 0;
             default:
                 throw new Error("Unsupported operator");
         }
     }
     getDependencies() {
         return [...this.left_.getDependencies(), ...this.right_.getDependencies()];
+    }
+}
+
+
+/***/ },
+
+/***/ "../../packages/expressions/src/parser/BindingContext.ts"
+/*!***************************************************************!*\
+  !*** ../../packages/expressions/src/parser/BindingContext.ts ***!
+  \***************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   NoSuchNameException: () => (/* binding */ NoSuchNameException)
+/* harmony export */ });
+/**
+ * Marker type representing a failure to find a name.
+ * Contains no data because the failing name should be apparent from the context of the call.
+ */
+class NoSuchNameException extends Error {
+    constructor() {
+        super("No such name");
+        this.name = "NoSuchNameException";
     }
 }
 
@@ -2262,13 +2700,16 @@ var NameType;
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BindingError: () => (/* binding */ BindingError),
+/* harmony export */   ExpressionsSyntaxError: () => (/* binding */ ExpressionsSyntaxError),
 /* harmony export */   parseExpression: () => (/* binding */ parseExpression)
 /* harmony export */ });
 /* harmony import */ var _lexer_Token__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../lexer/Token */ "../../packages/expressions/src/lexer/Token.ts");
 /* harmony import */ var _lexer_Lexer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lexer/Lexer */ "../../packages/expressions/src/lexer/Lexer.ts");
 /* harmony import */ var _AST__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./AST */ "../../packages/expressions/src/parser/AST.ts");
 /* harmony import */ var _AST_NameExpression__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AST.NameExpression */ "../../packages/expressions/src/parser/AST.NameExpression.ts");
-/* harmony import */ var _expressions_UnboundExpression__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../expressions/UnboundExpression */ "../../packages/expressions/src/expressions/UnboundExpression.ts");
+/* harmony import */ var _AST_FunctionExpression__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AST.FunctionExpression */ "../../packages/expressions/src/parser/AST.FunctionExpression.ts");
+/* harmony import */ var _expressions_UnboundExpression__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../expressions/UnboundExpression */ "../../packages/expressions/src/expressions/UnboundExpression.ts");
 // Parser.ts
 //
 // Recursive-ascent expression parser.
@@ -2278,8 +2719,44 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+/**
+ *
+ */
+class BindingError extends Error {
+    missingName_;
+    constructor(missingName) {
+        super(`Binding error: ${missingName} not found`);
+        this.name = "SyntaxError";
+        this.missingName_ = missingName;
+    }
+    get missingName() {
+        return this.missingName_;
+    }
+}
+/**
+ * Custom error class for syntax errors encountered during parsing.
+ * Includes the position in the input string where the error occurred.
+ */
+class ExpressionsSyntaxError extends Error {
+    position_;
+    constructor(message, position) {
+        super(`Syntax error at position ${position}: ${message}`);
+        this.name = "ExpressionsSyntaxError";
+        this.position_ = position;
+    }
+    get position() {
+        return this.position_;
+    }
+}
 /**
  * Parse an expression string into an UnboundExpression.
+ *
+ * Throws:
+ *  - ExpressionsSyntaxError if the input string contains a syntax error. The error will include
+ *    the position of the error in the input string.
+ *  - The exact exception thrown for other failure modes is non-contractual however, it will be
+ *    an Error or subclass of Error with a descriptive message.
  */
 function parseExpression(expressionString) {
     const lexer = new _lexer_Lexer__WEBPACK_IMPORTED_MODULE_1__.Lexer(expressionString);
@@ -2306,13 +2783,39 @@ class Parser {
      * Parse a full expression.
      */
     parseExpression() {
-        const root = this.parseAdditive();
+        const root = this.parseEquality();
         if (this.current_.type !== _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EOF) {
-            throw new Error(`Unexpected token at position ${this.current_.position}`);
+            throw new ExpressionsSyntaxError(`Unexpected token`, this.current_.position);
         }
-        return new _expressions_UnboundExpression__WEBPACK_IMPORTED_MODULE_4__.UnboundExpression(root);
+        return new _expressions_UnboundExpression__WEBPACK_IMPORTED_MODULE_5__.UnboundExpression(root);
     }
     // ---------- Grammar ----------
+    // equality → relational ( ( "==" | "!=" ) relational )*
+    parseEquality() {
+        let left = this.parseRelational();
+        while (this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EQEQ ||
+            this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.NEQ) {
+            const op = this.current_.type;
+            this.advance();
+            const right = this.parseRelational();
+            left = new _AST__WEBPACK_IMPORTED_MODULE_2__.BinaryExpression(left, op, right);
+        }
+        return left;
+    }
+    // relational → additive ( ( "<" | ">" | "<=" | ">=" ) additive )*
+    parseRelational() {
+        let left = this.parseAdditive();
+        while (this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LT ||
+            this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GT ||
+            this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LTE ||
+            this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.GTE) {
+            const op = this.current_.type;
+            this.advance();
+            const right = this.parseAdditive();
+            left = new _AST__WEBPACK_IMPORTED_MODULE_2__.BinaryExpression(left, op, right);
+        }
+        return left;
+    }
     // additive → multiplicative ( ( "+" | "-" ) multiplicative )*
     parseAdditive() {
         let left = this.parseMultiplicative();
@@ -2338,7 +2841,7 @@ class Parser {
         }
         return left;
     }
-    // unary → "-" unary | primary
+    // unary → "-" unary | postfix
     parseUnary() {
         if (this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.MINUS) {
             const op = this.current_.type;
@@ -2346,7 +2849,17 @@ class Parser {
             const operand = this.parseUnary();
             return new _AST__WEBPACK_IMPORTED_MODULE_2__.UnaryExpression(op, operand);
         }
-        return this.parsePrimary();
+        return this.parsePostfix();
+    }
+    // postfix → primary ( "(" argumentList? ")" )*
+    parsePostfix() {
+        let expr = this.parsePrimary();
+        // Function calls: f(), f(a, b)
+        if (expr instanceof _AST_NameExpression__WEBPACK_IMPORTED_MODULE_3__.NameExpression &&
+            this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LPAREN) {
+            expr = this.finishCall(expr);
+        }
+        return expr;
     }
     // primary → NUMBER
     //         | IDENTIFIER ("." IDENTIFIER)*
@@ -2375,11 +2888,27 @@ class Parser {
         // Parenthesized
         if (this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.LPAREN) {
             this.advance();
-            const expr = this.parseAdditive();
+            const expr = this.parseEquality();
             this.expect(_lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.RPAREN);
             return expr;
         }
-        throw new Error(`Expected number, identifier, or '(' at position ${this.current_.position}`);
+        throw new ExpressionsSyntaxError(`Expected number, identifier, or '('`, this.current_.position);
+    }
+    // argumentList → additive ( "," additive )*
+    finishCall(callee) {
+        // We are currently at '('.
+        this.advance();
+        const args = [];
+        // Handle empty argument list: f()
+        if (this.current_.type !== _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.RPAREN) {
+            args.push(this.parseEquality());
+            while (this.current_.type === _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.COMMA) {
+                this.advance();
+                args.push(this.parseEquality());
+            }
+        }
+        this.expect(_lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.RPAREN);
+        return new _AST_FunctionExpression__WEBPACK_IMPORTED_MODULE_4__.FunctionExpression(callee.getParts(), args);
     }
     // ---------- Helpers ----------
     advance() {
@@ -2389,8 +2918,12 @@ class Parser {
      * Checks the current token type and advances.
      */
     expect(type) {
+        let unexpectedLexeme = this.current_.lexeme;
+        if (this.current_.type == _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EOF) {
+            unexpectedLexeme = "end of input";
+        }
         if (this.current_.type !== type) {
-            throw new Error(`Expected ${type.toString()} at position ${this.current_.position}`);
+            throw new ExpressionsSyntaxError(`Unexpected '${unexpectedLexeme}'`, this.current_.position);
         }
         this.advance();
     }
@@ -2398,8 +2931,12 @@ class Parser {
      * Checks the current token type without advancing.
      */
     expectAndStay(type) {
+        let unexpectedLexeme = this.current_.lexeme;
+        if (this.current_.type == _lexer_Token__WEBPACK_IMPORTED_MODULE_0__.TokenType.EOF) {
+            unexpectedLexeme = "end of input";
+        }
         if (this.current_.type !== type) {
-            throw new Error(`Expected ${type.toString()} at position ${this.current_.position}`);
+            throw new ExpressionsSyntaxError(`Unexpected '${unexpectedLexeme}'`, this.current_.position);
         }
     }
 }
@@ -2519,7 +3056,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../section/htmlView/HTMLSectionView */ "../../packages/presentation2/src/components/section/htmlView/HTMLSectionView.ts");
 /* harmony import */ var _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../element/htmlView/HTMLElementView */ "../../packages/presentation2/src/components/element/htmlView/HTMLElementView.ts");
 /* harmony import */ var _keyFrameAnimation_htmlView_HTMLKeyFrameAnimationView__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/htmlView/HTMLKeyFrameAnimationView.ts");
-/* harmony import */ var _pin_htmlView_HTMLPinView__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pin/htmlView/HTMLPinView */ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts");
+/* harmony import */ var _pin_htmlView_HTMLPinManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pin/htmlView/HTMLPinManager */ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinManager.ts");
 /* harmony import */ var _keyFrameAnimation_KeyFrameAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../keyFrameAnimation/KeyFrameAnimation */ "../../packages/presentation2/src/components/animation/keyFrameAnimation/KeyFrameAnimation.ts");
 
 
@@ -2569,10 +3106,14 @@ __webpack_require__.r(__webpack_exports__);
  * - HTMLAnimationManager is intentionally coupled to concrete view classes
  *   such as HTMLPinView and HTMLKeyFrameAnimationView; changes in the
  *   animation model surface will typically require coordinated updates here.
+ *
+ * FIXME: ultimately the attempt to share code for the section and element cases has not panned
+ * out - there are a hugh number of special cases and branching logic to handle the differences
+ * between the two.
  */
 class HTMLAnimationManager {
     parent_;
-    pinViews_ = [];
+    pinManager_;
     animationViews_ = [];
     /**
      * Constructed by an owning view (Section/Element HTML view) once the underlying DOM is ready so
@@ -2580,38 +3121,16 @@ class HTMLAnimationManager {
      */
     constructor(options) {
         this.parent_ = options.parent;
-        this.buildPins();
-        this.buildAnimations();
-    }
-    /**
-     * Rebuilds HTMLPinView instances for the current parent; only called internally by the
-     * constructor (and potentially future reinitialisation paths) on this manager.
-     */
-    buildPins() {
-        this.pinViews_.length = 0;
-        const pins = this.getPinsFromParent();
-        pins.forEach((pin) => {
-            // We know that the parent must be an HTMLElementView if it has pins, so we can safely cast
-            // here.
-            this.pinViews_.push(new _pin_htmlView_HTMLPinView__WEBPACK_IMPORTED_MODULE_3__.HTMLPinView({ pin, elementView: this.parent_ }));
-        });
-    }
-    /**
-     * Returns the Pin models for the current parent; used only by buildPins() to abstract over
-     * Section vs Element parents.
-     */
-    getPinsFromParent() {
-        if (this.parent_ instanceof _section_htmlView_HTMLSectionView__WEBPACK_IMPORTED_MODULE_0__.HTMLSectionView) {
-            // Sections themselves cannot be pinned - returning an empty array here to avoid the need for
-            // null checks in the caller.
-            return [];
-        }
-        else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
-            return this.parent_.element.pins;
+        // Only elements have pins, so only build a pin manager if the parent is an element view
+        // and it has pins.
+        if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView &&
+            this.parent_.element.pins.length > 0) {
+            this.pinManager_ = new _pin_htmlView_HTMLPinManager__WEBPACK_IMPORTED_MODULE_3__.HTMLPinManager({ parent: this.parent_ });
         }
         else {
-            throw new Error("Unsupported parent type for HTMLAnimationManager");
+            this.pinManager_ = new _pin_htmlView_HTMLPinManager__WEBPACK_IMPORTED_MODULE_3__.NullHTMLPinManager({ parent: this.parent_ });
         }
+        this.buildAnimations();
     }
     /**
      * Rebuilds HTMLAnimationView instances from the parent's animation models; only called
@@ -2655,9 +3174,7 @@ class HTMLAnimationManager {
      * views can recompute their DOM geometry.
      */
     layout() {
-        this.pinViews_.forEach((pinView) => {
-            pinView.layout();
-        });
+        this.pinManager_.layout();
         this.animationViews_.forEach((animationView) => {
             animationView.layout();
         });
@@ -2667,10 +3184,7 @@ class HTMLAnimationManager {
      * animation views can release DOM references and event handlers.
      */
     disconnect() {
-        this.pinViews_.forEach((pinView) => {
-            pinView.disconnect();
-        });
-        this.pinViews_.length = 0;
+        this.pinManager_.disconnect();
         this.animationViews_.forEach((animationView) => {
             animationView.disconnect();
         });
@@ -2686,9 +3200,7 @@ class HTMLAnimationManager {
      * match.
      */
     animatableObjectChanges() {
-        this.pinViews_.forEach((pinView) => {
-            pinView.elementViewModified();
-        });
+        this.pinManager_.animatableObjectChanges();
         this.animationViews_.forEach((animationView) => {
             animationView.animatableObjectModified();
         });
@@ -2724,21 +3236,35 @@ class HTMLAnimationManager {
         }
         else if (this.parent_ instanceof _element_htmlView_HTMLElementView__WEBPACK_IMPORTED_MODULE_1__.HTMLElementView) {
             // (2) Path 2: Elements
+            if (!this.pinManager_) {
+                // Should never happen because all HTMLElementViews should have a pin manager, but
+                // we'll sanity check to fail fast + load in case of furture cockups.
+                throw new Error("Internal error: Missing pin manager for HTMLElementView in HTMLAnimationManager");
+            }
             if (animation.hasSubComponentTarget) {
                 // If the animation has a sub-component target, then we need to get the relevant sub-component
                 // element from the parent, and all pinned clones of the parent.
-                return [
-                    this.parent_.getSubComponentElement(animation.subComponentTarget),
-                    ...this.pinViews_.map((pinView) => pinView.getSubComponentElement(animation.subComponentTarget)),
-                ];
+                if (this.pinManager_.hasPins) {
+                    return [
+                        this.parent_.getSubComponentElement(animation.subComponentTarget),
+                        this.pinManager_.getSubComponentElement(animation.subComponentTarget),
+                    ];
+                }
+                else {
+                    return [
+                        this.parent_.getSubComponentElement(animation.subComponentTarget),
+                    ];
+                }
             }
             else {
                 // If there is no sub-component target, then the animation applies to the whole element
                 // and all pinned clones of the element.
-                return [
-                    this.parent_.htmlElement,
-                    ...this.pinViews_.map((pinView) => pinView.clonedElement),
-                ];
+                if (this.pinManager_.hasPins) {
+                    return [this.parent_.htmlElement, this.pinManager_.clonedHTMLElement];
+                }
+                else {
+                    return [this.parent_.htmlElement];
+                }
             }
         }
         else {
@@ -2756,9 +3282,9 @@ class HTMLAnimationManager {
      * Exposes the HTMLPinView instances managed for the current parent so owning views or tests can
      * inspect or iterate over active pins.
      */
-    get pinViews() {
-        return this.pinViews_;
-    }
+    //get pinViews(): readonly HTMLPinView[] {
+    //  return this.pinManager_ ? this.pinManager_.pinViews : [];
+    //}
     /**
      * Exposes the HTMLAnimationView instances managed for the current parent so owning views or
      * tests can observe which animations are active.
@@ -2927,11 +3453,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  *
+ * ## (?) Stroke tracing
+ *
+ * Animating the drawing of a stroke (stroke tracing) is explicitly supported by KeyFrameAnimation.
+ * Most properties map directly to CSS properties, but stroke tracing requires translation because
+ * we don't want the user to have to know about stroke dash arrays and offsets to use it.
+ *
+ * To that end:
+ * - The `traceStroke` property is mapped to the `strokeDashoffset` CSS property.
+ * - We store the path length
+ * - We then use that length to set the `strokeDasharray` to the path length and calculate the
+ *   `strokeDashoffset` based on the percentage specified in `traceStroke`.
+ *
+ * Important consequences:
+ * - `traceStroke` only works on SVG path elements, and the path length must be able to be
+ *   determined.
+ * - If `traceStroke` is used, the `strokeDasharray` of the target element will be overridden to be
+ *   the path length. (31/5/26: no current conflict but if we subsequently add support for animating
+ *   stroke dash arrays this will need to be re-evaluated)
  */
 class HTMLKeyFrameAnimationView {
     animation_;
     cssAnimation_;
     animationManager_;
+    // See stroke-tracing for details
+    pathLength_;
     unsubscribe_ = [];
     constructor(options) {
         this.animation_ = options.animation;
@@ -2950,20 +3496,37 @@ class HTMLKeyFrameAnimationView {
         this.buildDOM();
     }
     buildDOM() {
+        // Have to get path length before building keyframes, since keyframe building needs to know path
+        // length if traceStroke is used
+        this.animationManager_
+            .getAnimationTargets(this.animation_)
+            .find((target) => {
+            if (target instanceof SVGPathElement) {
+                this.pathLength_ = target.getTotalLength();
+            }
+            return true;
+        });
+        // Build CSS keyframes from our keyframes and a config object (which will be shared)
+        //
         const cssKeyFrames = this.animation_.keyFrames.map((keyFrame) => this.buildKeyFrame(keyFrame));
         const animationConfig = {
             duration: this.animation_.duration,
             fill: "forwards",
             direction: "normal",
         };
+        // Build the actual CSS Animations on the target elements, but keep them paused for now (we'll
+        // drive them with the scroll trigger)
+        //
         this.cssAnimation_ = this.animationManager_
             .getAnimationTargets(this.animation_)
             .map((target) => {
+            // Special case for stroke tracing...
+            // If the first keyframe has a strokeDashoffset property, we know this is a stroke tracing
+            // animation (since that's the only way to get that property in the first place). In that
+            // case, we need to set the strokeDasharray to the path length to set up the stroke tracing
             if (cssKeyFrames[0].strokeDashoffset !== undefined) {
                 if (target instanceof SVGPathElement) {
-                    console.log(target.getTotalLength());
-                    target.setAttribute("pathLength", "100");
-                    target.style.strokeDasharray = "100";
+                    target.style.strokeDasharray = this.pathLength_.toString();
                 }
             }
             const animation = target.animate(cssKeyFrames, animationConfig);
@@ -2985,8 +3548,21 @@ class HTMLKeyFrameAnimationView {
         if (keyFrame.position !== undefined) {
             cssKeyFrame.offset = keyFrame.position / this.animation_.duration;
         }
-        if (keyFrame.strokeDashoffset !== undefined) {
-            cssKeyFrame.strokeDashoffset = keyFrame.strokeDashoffset;
+        if (keyFrame.traceStroke !== undefined) {
+            if (this.pathLength_ !== undefined) {
+                cssKeyFrame.strokeDashoffset =
+                    this.pathLength_ - (keyFrame.traceStroke * this.pathLength_) / 100;
+            }
+            else {
+                // FIXME: need a better way to alert users this error.
+                //
+                // (subelement animations are difficult - most error handling is dealt with in xml/compuler
+                //  layer - however, we don't parse SVG files at that point so can't validate the target
+                //  element until we actually have an SVG to work with, by which point normal error
+                //  reporting is gone)
+                console.log("WARNING: traceStroke is specified but the target element is not an SVGPathElement" +
+                    " or its path length cannot be determined.");
+            }
         }
         if (keyFrame.transform !== undefined) {
             cssKeyFrame.transform = keyFrame.transform;
@@ -2996,7 +3572,6 @@ class HTMLKeyFrameAnimationView {
     attachEventListeners() {
         const scrollTrigger = this.animation_.scrollTrigger;
         this.unsubscribe_.push(scrollTrigger.on("start", () => {
-            console.log("Playing animation forward");
             this.playAnimation("start");
         }), scrollTrigger.on("reverseStart", () => {
             this.playAnimation("end");
@@ -3011,7 +3586,7 @@ class HTMLKeyFrameAnimationView {
         }));
     }
     playAnimation(from) {
-        if (this.animation_.isScrollDriven) {
+        if (this.animation_.isScrollDriven == true) {
             return;
         }
         this.cssAnimation_.forEach((animation) => {
@@ -3025,9 +3600,6 @@ class HTMLKeyFrameAnimationView {
         });
     }
     pauseAnimation(at) {
-        if (this.animation_.isScrollDriven) {
-            return;
-        }
         this.cssAnimation_.forEach((animation) => {
             animation.pause();
             if (at === "start") {
@@ -3172,124 +3744,214 @@ class PinCompiler {
 
 /***/ },
 
-/***/ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts"
-/*!*****************************************************************************************!*\
-  !*** ../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinView.ts ***!
-  \*****************************************************************************************/
+/***/ "../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinManager.ts"
+/*!********************************************************************************************!*\
+  !*** ../../packages/presentation2/src/components/animation/pin/htmlView/HTMLPinManager.ts ***!
+  \********************************************************************************************/
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   HTMLPinView: () => (/* binding */ HTMLPinView)
+/* harmony export */   HTMLPinManager: () => (/* binding */ HTMLPinManager),
+/* harmony export */   NullHTMLPinManager: () => (/* binding */ NullHTMLPinManager)
 /* harmony export */ });
+/**
+ * The number of decimal places to use when setting CSS styles for pinned elements.
+ */
 const STYLE_PRECISION = 2;
 /**
+ * A no-op implementation of HTMLPinManager used when there are no pins.
  *
+ * Lightweight implementation that allows us to avoid null checks for the common case where there
+ * are no pins, while still providing the same API.
  */
-class HTMLPinView {
-    pin_;
+class NullHTMLPinManager {
+    parent_;
+    constructor(options) {
+        this.parent_ = options.parent;
+    }
+    get hasPins() {
+        return false;
+    }
+    disconnect() { }
+    layout() { }
+    animatableObjectChanges() { }
+    /**
+     * We must forward these properties, even in the null case, because they are used by the
+     * animation subsystem.
+     */
+    get allowsSubComponentElements() {
+        return this.parent_.allowsSubComponentElements;
+    }
+    getSubComponentElement(name) {
+        return this.parent_.getSubComponentElement(name);
+    }
+    get clonedHTMLElement() {
+        throw new Error("NullHTMLPinManager does not have a cloned HTMLElement");
+    }
+}
+class HTMLPinManager {
+    targetWrapper_;
     elementViewLinkedClone_;
     unsubscribe_ = [];
-    clone_;
-    target_;
+    /**
+     * Records the cumulative deltaY of all pins applied so far, in *basis coordinates*.
+     *
+     * The rules for what deltaY should include are as follows:
+     * - deltaY is updated when this pin starts/finishes due to the end (bottom) of the trigger being
+     *   crossed. (ScrollTrigger is already debounced so this should be reliable even when scrolling
+     *   at speed)
+     * - As a consequence, it does *not* include the current pin's deltaY & positioning code is
+     *   written accordingly.
+     */
+    deltaY_ = 0;
     constructor(options) {
-        this.pin_ = options.pin;
-        //this.elementView_ = options.elementView;
-        this.elementViewLinkedClone_ = options.elementView.makeLinkedClone();
+        this.targetWrapper_ = document.createElement("div");
+        this.elementViewLinkedClone_ = options.parent.makeLinkedClone();
         this.buildDOM();
-        this.attachEventListeners();
+        this.buildPins();
+    }
+    get hasPins() {
+        return true;
     }
     disconnect() {
         this.unsubscribe_.forEach((unsubscribe) => unsubscribe());
         this.unsubscribe_.length = 0;
-        this.clone_.remove();
+        // We know it's not null because we always add exactly one child only remove it here
+        // so '!' is safe
+        this.targetWrapper_.replaceWith(this.targetWrapper_.firstElementChild);
+        this.elementViewLinkedClone_.htmlElement.remove();
     }
-    layout() {
-        // FIXME: need to react to layout changes
+    layout() { }
+    animatableObjectChanges() {
+        this.updateDOM();
     }
-    get clonedElement() {
-        return this.clone_;
-    }
-    elementViewModified() {
-        this.clone_.remove();
-        this.buildDOM();
-    }
-    /**
-     * See Element.allowsSubComponentElements
-     */
     get allowsSubComponentElements() {
         return this.elementViewLinkedClone_.allowsSubComponentElements;
     }
     getSubComponentElement(name) {
         return this.elementViewLinkedClone_.getSubComponentElement(name);
     }
+    get clonedHTMLElement() {
+        return this.elementViewLinkedClone_.htmlElement;
+    }
+    buildPins() {
+        const pins = this.elementViewLinkedClone_.elementView.element.pins.slice();
+        pins.forEach((pin) => {
+            const scrollTrigger = pin.scrollTrigger;
+            this.unsubscribe_.push(scrollTrigger.on("start", this.pinForward.bind(this, pin)), scrollTrigger.on("reverseStart", this.pinReverse.bind(this, pin)), scrollTrigger.on("end", this.unpinForward.bind(this, pin)), scrollTrigger.on("reverseEnd", this.unpinReverse.bind(this, pin))); //push
+        }); //forEach
+    } //buildPins
     buildDOM() {
+        // Wrapper element
+        //
+        this.targetWrapper_.style.position = "absolute";
+        this.targetWrapper_.style.top = "0px";
+        this.targetWrapper_.style.left = "0px";
+        this.targetWrapper_.style.visibility = "visible";
+        this.targetWrapper_.classList.add("rdoc-pin-wrapper");
+        // This unreadable pair just wraps the target element in the wrapper.
+        this.elementViewLinkedClone_.elementView.htmlElement.replaceWith(this.targetWrapper_);
+        this.targetWrapper_.appendChild(this.elementViewLinkedClone_.elementView.htmlElement);
+        this.updateDOM();
+    }
+    updateDOM() {
         // Make sure the linked clone is up to date, in case the target DOM has been modified since the
-        // last time we built.
+        // last time we built, and sync the linked clone with target DOM.
+        this.elementViewLinkedClone_.htmlElement.remove();
         this.elementViewLinkedClone_.update();
-        // Placeholder
-        //
-        this.target_ = this.elementViewLinkedClone_.elementView.htmlElement;
-        // Clone
-        //
-        this.clone_ = this.elementViewLinkedClone_.htmlElement;
-        this.clone_.style.position = "absolute";
-        this.clone_.style.visibility = "hidden";
-        this.clone_.classList.add("rdoc-pin-clone");
-        this.elementViewLinkedClone_.elementView.presentationView.htmlPins.appendChild(this.clone_);
+        // Set the clone up for pinning
+        const clone = this.elementViewLinkedClone_.htmlElement;
+        clone.style.position = "absolute";
+        clone.style.visibility = "hidden";
+        clone.classList.add("rdoc-pin-clone");
+        const pinHTMLContainer = this.elementViewLinkedClone_.elementView.presentationView.htmlPins;
+        pinHTMLContainer.appendChild(clone);
     }
-    attachEventListeners() {
-        const scrollTrigger = this.pin_.scrollTrigger;
-        this.unsubscribe_.push(scrollTrigger.on("start", () => {
-            this.pinForward();
-        }), scrollTrigger.on("reverseStart", () => {
-            this.pinReverse();
-        }), scrollTrigger.on("end", () => {
-            this.unpinForward();
-        }), scrollTrigger.on("reverseEnd", () => {
-            this.unpinReverse();
-        }));
+    incrementDeltaY(pin) {
+        this.deltaY_ += pin.scrollTrigger.deltaY;
     }
-    pinForward() {
-        this.positionClone();
-        this.clone_.style.visibility = "visible";
-        this.target_.style.visibility = "hidden";
+    decrementDeltaY(pin) {
+        this.deltaY_ -= pin.scrollTrigger.deltaY;
     }
-    pinReverse() {
-        this.positionClone();
-        this.clone_.style.visibility = "visible";
-        this.target_.style.visibility = "hidden";
-    }
-    unpinForward() {
-        // We're carefull to position the target element based on the perfect position as per the scroll
-        // trigger, rather than the current scroll position. Scrolling at speed might have caused the
-        // end trigger to have been missed.
-        //
-        const scale = this.elementViewLinkedClone_.elementView.presentationView
+    /**
+     * Utility property to get the current scale factor from the presentation view.
+     * Only exists to make the methods below more readable - it is *not* intended to be a general
+     * purpose API and should not be used outside of this class.
+     */
+    get scale() {
+        return this.elementViewLinkedClone_.elementView.presentationView
             .physicalDimensions.scale;
-        const dy = scale * (this.pin_.scrollTrigger.end - this.pin_.scrollTrigger.start);
-        this.target_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
-        this.target_.style.zIndex = "1000";
-        this.target_.style.visibility = "visible";
-        this.clone_.style.visibility = "hidden";
     }
-    unpinReverse() {
-        this.target_.style.transform = `translateY(0px)`;
-        this.target_.style.visibility = "visible";
-        this.clone_.style.visibility = "hidden";
+    pinForward(pin) {
+        this.positionClone(pin);
+        this.elementViewLinkedClone_.show();
+        this.elementViewLinkedClone_.elementView.hide();
     }
-    positionClone() {
-        const targetRect = this.target_.getBoundingClientRect();
-        const scale = this.elementViewLinkedClone_.elementView.presentationView
-            .physicalDimensions.scale;
-        const top = scale *
-            (this.elementViewLinkedClone_.elementView.element.top -
-                this.pin_.scrollTrigger.start);
-        const left = targetRect.left;
-        this.clone_.style.top = `${top.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.left = `${left.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.width = `${targetRect.width.toFixed(STYLE_PRECISION)}px`;
-        this.clone_.style.height = `${targetRect.height.toFixed(STYLE_PRECISION)}px`;
+    pinReverse(pin) {
+        // Order is important here: positionClone assumes that deltaY does not include the current pin's
+        // deltaY, so we must decrement before positioning
+        this.decrementDeltaY(pin);
+        this.positionClone(pin);
+        this.elementViewLinkedClone_.show();
+        this.elementViewLinkedClone_.elementView.hide();
+    }
+    unpinForward(pin) {
+        // 1. We're careful to position the target element based on the perfect position as per the
+        //    scroll trigger, rather than the current scroll position. Scrolling at speed might have
+        //    caused the end trigger to have been missed leading to the target element being in the
+        //    wrong place, and this would cause a jarring jump when the pin ends.
+        //
+        // 2. We assume that deltaY reflects any pins that have occured before, but *not* the current
+        //    pin. (This doesn't actually matter here but we do so for consistency with positionClone
+        //    and the general rules for deltaY)
+        const dy = this.scale * (this.deltaY_ + pin.scrollTrigger.deltaY);
+        this.targetWrapper_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+        this.targetWrapper_.style.zIndex = "1000";
+        this.elementViewLinkedClone_.elementView.show();
+        this.elementViewLinkedClone_.hide();
+        this.incrementDeltaY(pin);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    unpinReverse(pin) {
+        const dy = this.scale * this.deltaY_;
+        this.targetWrapper_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+        this.elementViewLinkedClone_.elementView.show();
+        this.elementViewLinkedClone_.hide();
+    }
+    /**
+     * Positions the clone element based on the perfect position as per the scroll trigger.
+     *
+     * Important notes: (read carefully before messing)
+     * - We assume that deltaY reflects any pins that have occured before, but *not* the current pin.
+     *   (This is not because of some magical primacy of this but because consistency is essential)
+     * - We calculate the bounding rect based on the scale and the element size in basis coords.
+     *   We *do not* use DOM APIs to get the bounding rect - pinning must compose with animations
+     *   which may use transforms - a key idea is that animations are a visual concept only and they
+     *   do not affect the "real" position of elements for the purpose of pinning.
+     */
+    positionClone(pin) {
+        const { scale, tx } = this.elementViewLinkedClone_.elementView.presentationView
+            .physicalDimensions;
+        const el = this.elementViewLinkedClone_.elementView.element;
+        const rect = {
+            // Horizontal position is unaffected by pinning but must consider scale and viewport
+            // translation
+            left: el.left * scale + tx,
+            // Vertical position is fiddly:
+            // - It must consider scale
+            // - It must consider any previous pins (deltaY)
+            // - It must consider the position of the element in the viewport as pinning begins
+            top: scale * (this.deltaY_ + el.top - pin.scrollTrigger.start),
+            // Size must consider scale but is unaffected by pinning/translation
+            width: el.width * scale,
+            height: el.height * scale,
+        };
+        const clone = this.elementViewLinkedClone_.htmlElement;
+        clone.style.top = `${rect.top.toFixed(STYLE_PRECISION)}px`;
+        clone.style.left = `${rect.left.toFixed(STYLE_PRECISION)}px`;
+        clone.style.width = `${rect.width.toFixed(STYLE_PRECISION)}px`;
+        clone.style.height = `${rect.height.toFixed(STYLE_PRECISION)}px`;
     }
 }
 
@@ -3885,7 +4547,7 @@ class ElementCompiler {
     constructor(options) {
         this.builder_ = options.elementBuilder;
         this.sectionCompiler_ = options.sectionCompiler;
-        this.module_ = this.sectionCompiler_.module.addSubModule();
+        this.module_ = this.sectionCompiler_.module.addSubModule(this.builder_.name);
         this.scrollTriggers_ = this.builder_.scrollTriggers.map((scrollTriggerBuilder) => new _scrollTrigger_ScrollTriggerCompiler__WEBPACK_IMPORTED_MODULE_2__.ScrollTriggerCompiler({
             scrollTriggerBuilder,
             elementCompiler: this,
@@ -4023,6 +4685,11 @@ __webpack_require__.r(__webpack_exports__);
 class HTMLElementViewLinkedClone {
     elementView_;
     htmlElement_;
+    // Starts at zero - i.e. implicitly assumes it is initially hidden.
+    // Since the prototypical use case for this class in pinning this seems like a reasonable
+    // default. (and not magic!)
+    // eslint-disable-next-line no-magic-numbers
+    visibilityCount_ = -1;
     /**
      * Creates a linked clone helper for the given HTMLElementView; constructed by HTMLElementView.makeLinkedClone
      * and used by pin/animation infrastructure rather than application code directly.
@@ -4048,6 +4715,12 @@ class HTMLElementViewLinkedClone {
             this.htmlElement_.remove();
         }
         this.htmlElement_ = this.subclassClone();
+        if (this.visibilityCount_ < 0) {
+            this.htmlElement_.style.visibility = "hidden";
+        }
+        else {
+            this.htmlElement_.style.visibility = "visible";
+        }
     }
     /**
      * See Element.allowsSubComponentElements
@@ -4074,6 +4747,18 @@ class HTMLElementViewLinkedClone {
      */
     subclassClone() {
         return this.elementView_.htmlElement.cloneNode(true);
+    }
+    show() {
+        this.visibilityCount_++;
+        if (this.visibilityCount_ >= 0) {
+            this.htmlElement.style.visibility = "visible";
+        }
+    }
+    hide() {
+        this.visibilityCount_--;
+        if (this.visibilityCount_ < 0) {
+            this.htmlElement.style.visibility = "hidden";
+        }
     }
 }
 /**
@@ -4114,8 +4799,11 @@ class HTMLElementView {
     //
     element_;
     sectionView_;
+    // Own properties --------------------------------------------------------------------------------
+    //
     htmlElement_;
     animationManager_;
+    visibilityCount_ = 0;
     /** Constructs a view for the given Element within a SectionView; called by factories and subclass constructors. */
     constructor(options) {
         this.sectionView_ = options.sectionView;
@@ -4158,6 +4846,18 @@ class HTMLElementView {
     // ----------------------------------------------------------------------------------------------
     // Rendering
     // ----------------------------------------------------------------------------------------------
+    show() {
+        this.visibilityCount_++;
+        if (this.visibilityCount_ >= 0) {
+            this.htmlElement.style.visibility = "visible";
+        }
+    }
+    hide() {
+        this.visibilityCount_--;
+        if (this.visibilityCount_ < 0) {
+            this.htmlElement_.style.visibility = "hidden";
+        }
+    }
     /**
      * Creates the base DOM structure for this element view (a positioned div) and wires it into the
      * section's content DOM; called from the base constructor for non-subclasses.
@@ -4901,21 +5601,20 @@ function loadAnimation(options) {
             element: child,
             attributeName: "backgroundPositionY",
         });
-        const strokeDashoffset = getOptionalNumericKeyFrameAttribute({
+        const traceStroke = getOptionalNumericKeyFrameAttribute({
             element: child,
-            attributeName: "strokeDashoffset",
+            attributeName: "traceStroke",
         });
         const transform = getOptionalStringKeyFrameAttribute({
             element: child,
             attributeName: "transform",
         });
-        console.log("transform", transform);
         const keyFrame = {
             position,
             ...(opacity !== undefined ? { opacity } : {}),
             ...(backgroundPositionX !== undefined ? { backgroundPositionX } : {}),
             ...(backgroundPositionY !== undefined ? { backgroundPositionY } : {}),
-            ...(strokeDashoffset !== undefined ? { strokeDashoffset } : {}),
+            ...(traceStroke !== undefined ? { traceStroke } : {}),
             ...(transform !== undefined ? { transform } : {}),
         };
         builder.addKeyFrame(keyFrame);
@@ -4937,6 +5636,7 @@ function loadAnimation(options) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   applyCommonElementAttributes: () => (/* binding */ applyCommonElementAttributes),
 /* harmony export */   loadElement: () => (/* binding */ loadElement)
 /* harmony export */ });
 /* harmony import */ var _loadTextBoxElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./loadTextBoxElement */ "../../packages/presentation2/src/components/loadFromXML/loadTextBoxElement.ts");
@@ -4957,6 +5657,37 @@ function loadElement(options) {
             // Unknown child elements are ignored for now. Consider tightening this
             // behaviour once the XML schema is stable.
             break;
+    }
+}
+function applyCommonElementAttributes(options) {
+    const { element, builder } = options;
+    const nameAttr = element.getAttribute("name");
+    if (nameAttr && nameAttr.trim() !== "") {
+        builder.name = nameAttr;
+    }
+    const l = element.getAttribute("l");
+    const w = element.getAttribute("w");
+    const r = element.getAttribute("r");
+    if (l && l.trim() !== "") {
+        builder.xAxis.set("left", l);
+    }
+    if (w && w.trim() !== "") {
+        builder.xAxis.set("width", w);
+    }
+    if (r && r.trim() !== "") {
+        builder.xAxis.set("right", r);
+    }
+    const t = element.getAttribute("t");
+    const h = element.getAttribute("h");
+    const b = element.getAttribute("b");
+    if (t && t.trim() !== "") {
+        builder.yAxis.set("top", t);
+    }
+    if (h && h.trim() !== "") {
+        builder.yAxis.set("height", h);
+    }
+    if (b && b.trim() !== "") {
+        builder.yAxis.set("bottom", b);
     }
 }
 
@@ -4996,13 +5727,14 @@ async function loadFromXML(options) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   applyCommonElementAttributes: () => (/* binding */ applyCommonElementAttributes),
 /* harmony export */   loadImageElement: () => (/* binding */ loadImageElement)
 /* harmony export */ });
 /* harmony import */ var _element_imageElement_ImageElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../element/imageElement/ImageElement */ "../../packages/presentation2/src/components/element/imageElement/ImageElement.ts");
-/* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
-/* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
-/* harmony import */ var _loadAnimation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadAnimation */ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts");
+/* harmony import */ var _loadElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadElement */ "../../packages/presentation2/src/components/loadFromXML/loadElement.ts");
+/* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
+/* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
+/* harmony import */ var _loadAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./loadAnimation */ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts");
+
 
 
 
@@ -5010,7 +5742,7 @@ __webpack_require__.r(__webpack_exports__);
 function loadImageElement(options) {
     const { element, sectionBuilder } = options;
     const builder = sectionBuilder.addImageElement();
-    applyCommonElementAttributes({ element, builder });
+    (0,_loadElement__WEBPACK_IMPORTED_MODULE_1__.applyCommonElementAttributes)({ element, builder });
     const src = element.getAttribute("src");
     if (!src || src.trim() === "") {
         throw new Error("<image> must have a src attribute");
@@ -5037,51 +5769,20 @@ function loadImageElement(options) {
         const tag = child.tagName.toLowerCase();
         if (tag === "scroll-trigger") {
             const triggerBuilder = builder.addScrollTrigger();
-            (0,_loadScrollTrigger__WEBPACK_IMPORTED_MODULE_1__.loadScrollTrigger)({ element: child, builder: triggerBuilder });
+            (0,_loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__.loadScrollTrigger)({ element: child, builder: triggerBuilder });
             return;
         }
         if (tag === "pin") {
             const pinBuilder = builder.addPin();
-            (0,_loadPin__WEBPACK_IMPORTED_MODULE_2__.loadPin)({ element: child, builder: pinBuilder });
+            (0,_loadPin__WEBPACK_IMPORTED_MODULE_3__.loadPin)({ element: child, builder: pinBuilder });
             return;
         }
         if (tag === "animation") {
             const animationBuilder = builder.addAnimation();
-            (0,_loadAnimation__WEBPACK_IMPORTED_MODULE_3__.loadAnimation)({ element: child, builder: animationBuilder });
+            (0,_loadAnimation__WEBPACK_IMPORTED_MODULE_4__.loadAnimation)({ element: child, builder: animationBuilder });
             return;
         }
     });
-}
-function applyCommonElementAttributes(options) {
-    const { element, builder } = options;
-    const nameAttr = element.getAttribute("name");
-    if (nameAttr && nameAttr.trim() !== "") {
-        builder.name = nameAttr;
-    }
-    const l = element.getAttribute("l");
-    const w = element.getAttribute("w");
-    const r = element.getAttribute("r");
-    if (l && l.trim() !== "") {
-        builder.xAxis.set("left", l);
-    }
-    if (w && w.trim() !== "") {
-        builder.xAxis.set("width", w);
-    }
-    if (r && r.trim() !== "") {
-        builder.xAxis.set("right", r);
-    }
-    const t = element.getAttribute("t");
-    const h = element.getAttribute("h");
-    const b = element.getAttribute("b");
-    if (t && t.trim() !== "") {
-        builder.yAxis.set("top", t);
-    }
-    if (h && h.trim() !== "") {
-        builder.yAxis.set("height", h);
-    }
-    if (b && b.trim() !== "") {
-        builder.yAxis.set("bottom", b);
-    }
 }
 
 
@@ -5139,6 +5840,9 @@ async function loadPresentation(options) {
             case "section":
                 (0,_loadSection__WEBPACK_IMPORTED_MODULE_2__.loadSection)({ element: child, presentationBuilder });
                 return;
+            case "style":
+                loadStylesheet({ element: child, presentationBuilder });
+                return;
             default: // Ignore unknown tags for now
         }
     });
@@ -5153,6 +5857,10 @@ function loadSize(options) {
     }
     presentationBuilder.basisDimensions.width = Number(width);
     presentationBuilder.basisDimensions.height = Number(height);
+}
+function loadStylesheet(options) {
+    const { element, presentationBuilder } = options;
+    presentationBuilder.stylesheet = element.textContent || "";
 }
 
 
@@ -5259,7 +5967,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   loadTextBoxElement: () => (/* binding */ loadTextBoxElement)
 /* harmony export */ });
 /* harmony import */ var _rippledoc_markdown__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @rippledoc/markdown */ "../../packages/markdown/src/index.ts");
-/* harmony import */ var _loadImageElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadImageElement */ "../../packages/presentation2/src/components/loadFromXML/loadImageElement.ts");
+/* harmony import */ var _loadElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./loadElement */ "../../packages/presentation2/src/components/loadFromXML/loadElement.ts");
 /* harmony import */ var _loadScrollTrigger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./loadScrollTrigger */ "../../packages/presentation2/src/components/loadFromXML/loadScrollTrigger.ts");
 /* harmony import */ var _loadPin__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./loadPin */ "../../packages/presentation2/src/components/loadFromXML/loadPin.ts");
 /* harmony import */ var _loadAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./loadAnimation */ "../../packages/presentation2/src/components/loadFromXML/loadAnimation.ts");
@@ -5271,8 +5979,8 @@ __webpack_require__.r(__webpack_exports__);
 function loadTextBoxElement(options) {
     const { element, sectionBuilder } = options;
     const builder = sectionBuilder.addTextBox();
-    (0,_loadImageElement__WEBPACK_IMPORTED_MODULE_1__.applyCommonElementAttributes)({ element, builder });
-    const markdown = (element.textContent ?? "").trim();
+    (0,_loadElement__WEBPACK_IMPORTED_MODULE_1__.applyCommonElementAttributes)({ element, builder });
+    const markdown = stripCommonIndent(element.textContent ?? "").trim();
     const contentNode = (0,_rippledoc_markdown__WEBPACK_IMPORTED_MODULE_0__.parseMarkdown)(markdown);
     builder.htmlContent = contentNode;
     Array.prototype.forEach.call(element.children, (child) => {
@@ -5293,6 +6001,39 @@ function loadTextBoxElement(options) {
             return;
         }
     });
+}
+/**
+ * Strips the common leading indentation from all lines in the given text.
+ *
+ * This is needed because we embed Markdown content in XML. For readability, XML often features
+ * indentation that we don't want to be part of the Markdown content.
+ *
+ * Unfortunately, Markdown treats leading spaces as significant (e.g. for code blocks), so we can't
+ * just ignore this.
+ *
+ * An alternative strategy would be to let the first line determine the common indent, and then
+ * strip that from all lines.
+ */
+function stripCommonIndent(text) {
+    // replace tabs with spaces and split into lines
+    const lines = text.replace(/\t/g, "    ").split("\n");
+    // ignore empty lines
+    // Note: '!' is ok because the regex matches any number of spaces (including zero), so it will
+    // always return a match.
+    const indents = lines
+        .filter((line) => line.trim().length) // ignore empty lines
+        .map((line) => line.match(/^ */)[0].length); // get the length of leading spaces
+    if (indents.length === 0) {
+        // no non-empty lines, return original text - note this is for correctness, not efficiency,
+        // since otherwise we will be passing an empty array to Math.min
+        return text;
+    }
+    const minIndent = Math.min(...indents);
+    if (minIndent === 0) {
+        // no common indent, return original text
+        return text;
+    }
+    return lines.map((line) => line.slice(minIndent)).join("\n");
 }
 
 
@@ -5370,6 +6111,7 @@ class Presentation {
     // Owned properties ------------------------------------------------------------------------------
     //
     basisDimensions_;
+    stylesheet_;
     sections_ = [];
     // View-dependent properties ---------------------------------------------------------------------
     //
@@ -5380,9 +6122,11 @@ class Presentation {
     // phase 2 of construction, and is used by the view to determine the content-dependent dimensions
     // of elements.
     sortedContentDependentElements_ = [];
-    // The 'slideHeight' variable is provided to expressions during compilation. Clearly it varies
-    // depending on the view.
-    slideHeightNativeExpression_;
+    // The 'slideHeight', 'slideLeft', and 'slideRight' variables are provided to expressions during
+    // compilation. Clearly they vary depending on the view. We manage this by using native
+    // expressions - these act as a peephole into the expression system which we can update to
+    // change the value of 'slideHeight' etc. as needed.
+    slideSizeNativeExpressions_;
     // ----------------------------------------------------------------------------------------------
     // Construction
     // ----------------------------------------------------------------------------------------------
@@ -5394,7 +6138,10 @@ class Presentation {
             throw new Error("Presentation is not constructable. Use Presentation.create() instead.");
         }
         this.basisDimensions_ = { ...options.basisDimensions };
-        this.slideHeightNativeExpression_ = options.slideHeightNativeExpression;
+        this.slideSizeNativeExpressions_ = {
+            ...options.slideSizeNativeExpressions,
+        };
+        this.stylesheet_ = options.stylesheet;
         this.installDefaultSlideHeightExpression();
     }
     get phase2Constructor() {
@@ -5422,7 +6169,9 @@ class Presentation {
         // Default 'slideHeight' is the basis height. Is this a good default? Maybe not, but until
         // the view is attached, there is no physical dimension to base it on, so this is the best we
         // can do.
-        this.slideHeightNativeExpression_(() => this.basisDimensions_.height);
+        this.slideSizeNativeExpressions_.height(() => this.basisDimensions_.height);
+        this.slideSizeNativeExpressions_.left(() => 0);
+        this.slideSizeNativeExpressions_.right(() => this.basisDimensions_.width);
     }
     /**
      * See installDefaultSlideHeightExpression
@@ -5430,11 +6179,25 @@ class Presentation {
     installProperSlideHeightExpression() {
         // Once the view is attached, 'slideHeight' should be based on the physical dimensions of the
         // view. This is the expression we install when a view is attached.
-        this.slideHeightNativeExpression_(() => {
+        this.slideSizeNativeExpressions_.height(() => {
             if (this.view_ === null) {
                 throw new Error("No view is attached to this presentation.");
             }
             return (this.view_.physicalDimensions.height /
+                this.view_.physicalDimensions.scale);
+        });
+        this.slideSizeNativeExpressions_.left(() => {
+            if (this.view_ === null) {
+                throw new Error("No view is attached to this presentation.");
+            }
+            return (this.view_.physicalDimensions.viewportLeft /
+                this.view_.physicalDimensions.scale);
+        });
+        this.slideSizeNativeExpressions_.right(() => {
+            if (this.view_ === null) {
+                throw new Error("No view is attached to this presentation.");
+            }
+            return (this.view_.physicalDimensions.viewportRight /
                 this.view_.physicalDimensions.scale);
         });
     }
@@ -5489,6 +6252,9 @@ class Presentation {
         }
         return this.sections[this.sections.length - 1].sectionBottom;
     }
+    get stylesheet() {
+        return this.stylesheet_;
+    }
 }
 
 
@@ -5511,6 +6277,7 @@ __webpack_require__.r(__webpack_exports__);
  */
 class PresentationBuilder {
     sections_ = [];
+    stylesheet_ = "";
     basisDimensions_ = {
         width: 800,
         height: 600,
@@ -5525,6 +6292,12 @@ class PresentationBuilder {
     }
     get basisDimensions() {
         return this.basisDimensions_;
+    }
+    get stylesheet() {
+        return this.stylesheet_;
+    }
+    set stylesheet(value) {
+        this.stylesheet_ = value;
     }
 }
 
@@ -5592,9 +6365,11 @@ class PresentationCompiler {
     sortedExpressions_ = null;
     expressionToElement_ = new Map();
     slideHeightNativeExpression_ = null;
+    slideLeftNativeExpression_ = null;
+    slideRightNativeExpression_ = null;
     constructor(builder) {
         this.builder_ = builder;
-        this.module_ = _rippledoc_expressions__WEBPACK_IMPORTED_MODULE_2__.Module.createRootModule();
+        this.module_ = _rippledoc_expressions__WEBPACK_IMPORTED_MODULE_2__.Module.createRootModule("presentation");
         this.sections_ = builder.sections.map((sectionBuilder) => new _section_SectionCompiler__WEBPACK_IMPORTED_MODULE_1__.SectionCompiler({
             sectionBuilder,
             presentationCompiler: this,
@@ -5633,8 +6408,8 @@ class PresentationCompiler {
         this.connectAdjacentSections();
         this.mapNamedSections();
         this.mapBasisGeometry();
-        const nativeExpression = this.module.addNativeExpression2("slideHeight", () => 1);
-        this.slideHeightNativeExpression_ = nativeExpression.replaceNativeFunction;
+        this.mapPhysicalGeometry();
+        this.mapGlobalFunctions();
     }
     connectAdjacentSections() {
         if (this.sections_.length <= 1) {
@@ -5659,7 +6434,7 @@ class PresentationCompiler {
         // (2) We use the rootModule for the namespace - this prevents the new namespace from being
         //     contaminated with other stuff in the section's namespace.
         //
-        const sectionNamespace = this.module.rootModule.addSubModule();
+        const sectionNamespace = this.module.rootModule.addSubModule("sections");
         this.module.mapModule("sections", sectionNamespace);
         this.sections_.forEach((s) => {
             if (s.builder.hasName) {
@@ -5679,6 +6454,57 @@ class PresentationCompiler {
         this.module.addNativeExpression("basisWidth", () => basisWidth);
         this.module.addNativeExpression("basisHeight", () => basisHeight);
     }
+    mapPhysicalGeometry() {
+        const installPlaceholderNativeExp = (name) => {
+            const nativeExpression = this.module.addNativeExpression2(name, () => 1);
+            return nativeExpression.replaceNativeFunction;
+        };
+        this.slideHeightNativeExpression_ =
+            installPlaceholderNativeExp("slideHeight");
+        this.slideLeftNativeExpression_ = installPlaceholderNativeExp("slideLeft");
+        this.slideRightNativeExpression_ =
+            installPlaceholderNativeExp("slideRight");
+    }
+    mapGlobalFunctions() {
+        this.module.addFunction("max", (args) => Math.max(...args));
+        this.module.addFunction("min", (args) => Math.min(...args));
+        this.module.addFunction("clamp", (args) => {
+            // Validation: clamp requires exactly 3 arguments: value, min, max
+            // eslint-disable-next-line no-magic-numbers
+            if (args.length !== 3) {
+                return 0;
+            }
+            const [value, min, max] = args;
+            if (!value || !min || !max) {
+                return 0;
+            }
+            return Math.min(Math.max(value, min), max);
+        });
+        this.module.addFunction("lerp", (args) => {
+            // Validation: lerp requires exactly 3 arguments: start, end, t
+            // eslint-disable-next-line no-magic-numbers
+            if (args.length !== 3) {
+                return 0;
+            }
+            const [start, end, t] = args;
+            if (!start || !end || !t) {
+                return 0;
+            }
+            return start + (end - start) * t;
+        });
+        this.module.addFunction("if", (args) => {
+            // Validation: if requires exactly 3 arguments: condition, trueValue, falseValue
+            // eslint-disable-next-line no-magic-numbers
+            if (args.length !== 3) {
+                return 0;
+            }
+            const [condition, trueValue, falseValue] = args;
+            if (!condition || !trueValue || !falseValue) {
+                return 0;
+            }
+            return condition ? trueValue : falseValue;
+        });
+    }
     /**
      * PresentationCompiler differs from other Compiler modules in that it has a post-compilation
      * step: this can then perform validation/derivation that depends on a fully validated tree.
@@ -5694,7 +6520,12 @@ class PresentationCompiler {
         this.beforeCompile();
         const p = _Presentation__WEBPACK_IMPORTED_MODULE_0__.Presentation.create({
             basisDimensions: this.builder_.basisDimensions,
-            slideHeightNativeExpression: this.slideHeightNativeExpression_,
+            stylesheet: this.builder_.stylesheet,
+            slideSizeNativeExpressions: {
+                height: this.slideHeightNativeExpression_,
+                left: this.slideLeftNativeExpression_,
+                right: this.slideRightNativeExpression_,
+            },
         });
         p.phase2Constructor.setSections(this.sections_.map((sectionCompiler) => sectionCompiler.compile(p.presentation)));
         this.buildSortedContentDependentElementList(p.phase2Constructor);
@@ -5750,6 +6581,8 @@ class HTMLPresentationDOM {
     //       overlay_ (div)
     fragment_ = document.createDocumentFragment();
     root_ = document.createElement("div");
+    shadowRoot_ = this.root_.attachShadow({ mode: "open" });
+    styles_ = document.createElement("style");
     viewport_ = document.createElement("div");
     backgrounds_ = document.createElement("div");
     elements_ = document.createElement("div");
@@ -5762,10 +6595,14 @@ class HTMLPresentationDOM {
         this.htmlPresentationView_ = htmlPresentationView;
         // Connect DOM elements:
         //
-        this.root_.appendChild(this.viewport_);
+        this.styles_.textContent = presentation.stylesheet;
+        this.shadowRoot_.appendChild(this.styles_);
+        //this.root_.appendChild(this.viewport_);
+        this.shadowRoot_.appendChild(this.viewport_);
         this.viewport_.appendChild(this.backgrounds_);
         this.viewport_.appendChild(this.elements_);
-        this.root_.appendChild(this.overlay_);
+        //this.root_.appendChild(this.overlay_);
+        this.shadowRoot_.appendChild(this.overlay_);
         this.overlay_.appendChild(this.pins_);
         this.fragment_.appendChild(this.root_);
         // Setup standard class names:
@@ -5800,10 +6637,12 @@ class HTMLPresentationDOM {
         });
         // Apply specific styles to certain elements:
         // - The viewport should scroll if content overflows.
-        // - The overlay should not capture pointer events (so that it doesn't interfere with interaction with the content)
-        //
+        // - The overlay should not capture pointer events (so that it doesn't interfere with
+        //   interaction with the content)
+        // -
         this.backgrounds_.style.height = `${presentation.height}px`;
         this.elements_.style.height = `${presentation.height}px`;
+        this.elements_.style.overflow = "visible";
         this.viewport_.style.overflowX = "hidden";
         this.viewport_.style.overflowY = "auto";
         this.overlay_.style.pointerEvents = "none";
@@ -6061,15 +6900,28 @@ class HTMLPresentationViewRoot {
     // ----------------------------------------------------------------------------------------------
     get physicalDimensions() {
         return {
+            viewportLeft: -this.scaleHelper_.tx,
+            viewportRight: this.scaleHelper_.width + 2 * this.scaleHelper_.tx,
             width: this.scaleHelper_.width,
             height: this.scaleHelper_.height,
             scale: this.scaleHelper_.scale,
             tx: this.scaleHelper_.tx,
         };
     }
-    get htmlRoot() {
-        return this.dom_.htmlRoot;
-    }
+    // Note: (7/4/26) We used to expose htmlRoot. This was mainly because when I originally spun
+    // up the HTMLView tree I had quite a liberal attitude to who could access the DOM. I'm
+    // fairly sure this was a bad idea.
+    //
+    // Over time I would like to move towards a model where the DOM is encapsulated - for example
+    // we would call addSectionsChild(Element) rather than having the Section manipulate the DOM
+    // directly.
+    //
+    // But time is finite and this would require a non-trivial refactor, so for now we just get rid
+    // of root access.
+    //
+    //get htmlRoot(): HTMLElement {
+    //  return this.dom_.htmlRoot;
+    //}
     get htmlViewport() {
         return this.dom_.htmlViewport;
     }
@@ -6089,7 +6941,7 @@ class HTMLPresentationViewRoot {
     // ...
     // ----------------------------------------------------------------------------------------------
     layout() {
-        this.htmlRoot.style.setProperty("--presentation-scale", this.presentation.physicalDimensions.scale.toPrecision(4));
+        this.dom_.htmlRoot.style.setProperty("--presentation-scale", this.presentation.physicalDimensions.scale.toPrecision(4));
         this.scaleHelper_.setPhysicalDimensions({
             width: this.dom_.htmlViewport.clientWidth,
             height: this.dom_.htmlViewport.clientHeight,
@@ -6215,6 +7067,9 @@ class DefaultScrollTrigger {
     }
     get end() {
         return this.end_.evaluate();
+    }
+    get deltaY() {
+        return this.end - this.start;
     }
     get section() {
         if (this.parent_ instanceof _section_Section__WEBPACK_IMPORTED_MODULE_1__.Section) {
@@ -6419,7 +7274,7 @@ class ScrollTriggerCompiler {
         else {
             throw new Error("ScrollTriggerCompiler must have either an element compiler or a section compiler as parent, but not both");
         }
-        this.module_ = this.parentCompiler_.module.addSubModule();
+        this.module_ = this.parentCompiler_.module.addSubModule("scrollTrigger");
     }
     // ----------------------------------------------------------------------------------------------
     // Property accessors
@@ -6840,7 +7695,7 @@ class SectionCompiler {
     constructor(options) {
         this.builder_ = options.sectionBuilder;
         this.presentationCompiler_ = options.presentationCompiler;
-        this.module_ = this.presentationCompiler_.module.addSubModule();
+        this.module_ = this.presentationCompiler_.module.addSubModule(this.builder_.name);
         this.elements_ = options.sectionBuilder.elements.map((elementBuilder) => elementBuilder.makeCompiler(this));
         this.scrollTriggers_ = options.sectionBuilder.scrollTriggers.map((scrollTriggerBuilder) => new _scrollTrigger_ScrollTriggerCompiler__WEBPACK_IMPORTED_MODULE_1__.ScrollTriggerCompiler({
             scrollTriggerBuilder,
@@ -6907,7 +7762,7 @@ class SectionCompiler {
         // (2) We use the rootModule for the namespace - this prevents the new namespace from being
         //     contaminated with other stuff in the section's namespace.
         //
-        const elementsNamespace = this.module.rootModule.addSubModule();
+        const elementsNamespace = this.module.rootModule.addSubModule("elements");
         this.module.mapModule("elements", elementsNamespace);
         this.elements_.forEach((e) => {
             if (e.builder.hasName) {
@@ -7048,6 +7903,7 @@ class HTMLSectionView {
         this.contentElement_.classList.add("rdoc-section-content");
         if (this.section.name.length > 0) {
             this.contentElement_.classList.add(`rdoc-section-${this.section.name}`);
+            this.backgroundElement_.classList.add(`rdoc-section-background-${this.section.name}`);
         }
         this.presentationView.htmlElements.appendChild(this.contentElement_);
     }
@@ -7088,35 +7944,19 @@ class HTMLSectionView {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ContentDependentDimension: () => (/* reexport safe */ _components_element_Element__WEBPACK_IMPORTED_MODULE_4__.ContentDependentDimension),
-/* harmony export */   Element: () => (/* reexport safe */ _components_element_Element__WEBPACK_IMPORTED_MODULE_4__.Element),
-/* harmony export */   ElementBuilder: () => (/* reexport safe */ _components_element_ElementBuilder__WEBPACK_IMPORTED_MODULE_5__.ElementBuilder),
-/* harmony export */   HTMLPresentationView: () => (/* reexport safe */ _components_presentation_htmlView_HTMLPresentationView__WEBPACK_IMPORTED_MODULE_9__.HTMLPresentationView),
+/* harmony export */   Element: () => (/* reexport safe */ _components_element_Element__WEBPACK_IMPORTED_MODULE_2__.Element),
+/* harmony export */   HTMLPresentationView: () => (/* reexport safe */ _components_presentation_htmlView_HTMLPresentationView__WEBPACK_IMPORTED_MODULE_4__.HTMLPresentationView),
 /* harmony export */   Presentation: () => (/* reexport safe */ _components_presentation_Presentation__WEBPACK_IMPORTED_MODULE_0__.Presentation),
-/* harmony export */   PresentationBuilder: () => (/* reexport safe */ _components_presentation_PresentationBuilder__WEBPACK_IMPORTED_MODULE_1__.PresentationBuilder),
-/* harmony export */   ScrollTrigger: () => (/* reexport safe */ _components_scrollTrigger_ScrollTrigger__WEBPACK_IMPORTED_MODULE_6__.ScrollTrigger),
-/* harmony export */   ScrollTriggerBuilder: () => (/* reexport safe */ _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_7__.ScrollTriggerBuilder),
-/* harmony export */   Section: () => (/* reexport safe */ _components_section_Section__WEBPACK_IMPORTED_MODULE_2__.Section),
-/* harmony export */   SectionBuilder: () => (/* reexport safe */ _components_section_SectionBuilder__WEBPACK_IMPORTED_MODULE_3__.SectionBuilder),
-/* harmony export */   compilePresentation: () => (/* reexport safe */ _components_compilePresentation__WEBPACK_IMPORTED_MODULE_8__.compilePresentation),
-/* harmony export */   loadFromXML: () => (/* reexport safe */ _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_10__.loadFromXML)
+/* harmony export */   ScrollTriggerBuilder: () => (/* reexport safe */ _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_3__.ScrollTriggerBuilder),
+/* harmony export */   Section: () => (/* reexport safe */ _components_section_Section__WEBPACK_IMPORTED_MODULE_1__.Section),
+/* harmony export */   loadFromXML: () => (/* reexport safe */ _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_5__.loadFromXML)
 /* harmony export */ });
 /* harmony import */ var _components_presentation_Presentation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/presentation/Presentation */ "../../packages/presentation2/src/components/presentation/Presentation.ts");
-/* harmony import */ var _components_presentation_PresentationBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/presentation/PresentationBuilder */ "../../packages/presentation2/src/components/presentation/PresentationBuilder.ts");
-/* harmony import */ var _components_section_Section__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/section/Section */ "../../packages/presentation2/src/components/section/Section.ts");
-/* harmony import */ var _components_section_SectionBuilder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/section/SectionBuilder */ "../../packages/presentation2/src/components/section/SectionBuilder.ts");
-/* harmony import */ var _components_element_Element__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/element/Element */ "../../packages/presentation2/src/components/element/Element.ts");
-/* harmony import */ var _components_element_ElementBuilder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/element/ElementBuilder */ "../../packages/presentation2/src/components/element/ElementBuilder.ts");
-/* harmony import */ var _components_scrollTrigger_ScrollTrigger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/scrollTrigger/ScrollTrigger */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTrigger.ts");
-/* harmony import */ var _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/scrollTrigger/ScrollTriggerBuilder */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerBuilder.ts");
-/* harmony import */ var _components_compilePresentation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/compilePresentation */ "../../packages/presentation2/src/components/compilePresentation.ts");
-/* harmony import */ var _components_presentation_htmlView_HTMLPresentationView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/presentation/htmlView/HTMLPresentationView */ "../../packages/presentation2/src/components/presentation/htmlView/HTMLPresentationView.ts");
-/* harmony import */ var _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/loadFromXML/loadFromXML */ "../../packages/presentation2/src/components/loadFromXML/loadFromXML.ts");
-
-
-
-
-
+/* harmony import */ var _components_section_Section__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/section/Section */ "../../packages/presentation2/src/components/section/Section.ts");
+/* harmony import */ var _components_element_Element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/element/Element */ "../../packages/presentation2/src/components/element/Element.ts");
+/* harmony import */ var _components_scrollTrigger_ScrollTriggerBuilder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/scrollTrigger/ScrollTriggerBuilder */ "../../packages/presentation2/src/components/scrollTrigger/ScrollTriggerBuilder.ts");
+/* harmony import */ var _components_presentation_htmlView_HTMLPresentationView__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/presentation/htmlView/HTMLPresentationView */ "../../packages/presentation2/src/components/presentation/htmlView/HTMLPresentationView.ts");
+/* harmony import */ var _components_loadFromXML_loadFromXML__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/loadFromXML/loadFromXML */ "../../packages/presentation2/src/components/loadFromXML/loadFromXML.ts");
 
 
 
