@@ -11,7 +11,7 @@ export class ConstantAnchorExpression implements AnchorExpression {
   constructor(
     public readonly value: number,
     public readonly editable: boolean = true,
-  ) { }
+  ) {}
 
   evaluate(): number {
     return this.value;

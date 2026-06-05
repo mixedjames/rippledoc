@@ -10,7 +10,7 @@ export class DerivedAnchorExpression implements AnchorExpression {
     readonly dependencies: readonly Anchor[],
     private readonly evaluator_: () => number,
     public readonly description: string,
-  ) { }
+  ) {}
 
   evaluate(): number {
     return this.evaluator_();

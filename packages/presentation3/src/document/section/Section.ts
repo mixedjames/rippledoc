@@ -23,7 +23,8 @@ export class Section extends ConcreteAnchoredObjectBase {
 
   addElement(): Element {
     const element = new Element(this);
-    const margin = this.presentation.slideWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
+    const margin =
+      this.presentation.slideWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
 
     element.setHorizontalAnchors({
       left: offsetFrom(this.leftAnchor, margin),
