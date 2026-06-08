@@ -1,14 +1,12 @@
+import type { SectionView, SectionViewOwner } from "../section/SectionView";
 import { Presentation } from "./Presentation";
 
 /**
- * An ElementView allows an Element to be rendered.
+ * A PresentationView allows a Presentation to be rendered.
  */
 export interface PresentationView {
   destroy(): void;
-}
-
-export class NullPresentationView implements PresentationView {
-  destroy(): void { }
+  createSectionView(section: SectionViewOwner): SectionView;
 }
 
 /**
@@ -16,5 +14,4 @@ export class NullPresentationView implements PresentationView {
  * Presentation that are required by PresentationView implementations.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface PresentationViewOwner extends Presentation {
-}
+export interface PresentationViewOwner extends Presentation {}

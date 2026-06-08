@@ -8,11 +8,6 @@ export interface ElementView {
   destroy(): void;
 }
 
-export class NullElementView implements ElementView {
-  constructor() {}
-  destroy(): void {}
-}
-
 /**
  * An ElementViewOwner is a privileged interface that provides additional methods on Element
  * that are required by ElementView implementations.

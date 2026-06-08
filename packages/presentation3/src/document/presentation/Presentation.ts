@@ -1,8 +1,8 @@
 import { ConcreteAnchoredObjectBase } from "../common/ConcreteAnchoredObjectBase";
 import * as Anchors from "../../anchors/index";
 import { Section, ConcreteSection } from "../section/Section";
-import { ViewFactory } from "./ViewFactory";
-import { PresentationView, NullPresentationView } from "./PresentationView";
+import { PresentationView, PresentationViewOwner } from "./PresentationView";
+import { NullPresentationView } from "../nullView/NullPresentationView";
 
 const DEFAULT_SLIDE_WIDTH = 1000;
 const DEFAULT_SLIDE_HEIGHT = 1000;
@@ -17,7 +17,9 @@ export interface Presentation extends ConcreteAnchoredObjectBase {
   addSection(): Section;
   getSections(): readonly Section[];
 
-  replaceView(viewFactory: ViewFactory): void;
+  replaceView(
+    factory: (owner: PresentationViewOwner) => PresentationView,
+  ): void;
 }
 
 export function createPresentation(
@@ -49,7 +51,7 @@ export class ConcretePresentation
 
   private readonly sections_: ConcreteSection[] = [];
 
-  private view_: PresentationView = new NullPresentationView();
+  private view_: PresentationView = new NullPresentationView(this);
 
   constructor(options: PresentationOptions = {}) {
     super("presentation");
@@ -102,10 +104,16 @@ export class ConcretePresentation
     return this.sections_;
   }
 
+  get view(): PresentationView {
+    return this.view_;
+  }
+
   /**
    * Replaces the current view hierarchy with a new one created by the provided view factory.
    */
-  replaceView(viewFactory: ViewFactory): void {
+  replaceView(
+    factory: (owner: PresentationViewOwner) => PresentationView,
+  ): void {
     // Implementation notes:
     // - We destroy/recreate parents before children
     // - Child views are entitled to rely on this
@@ -114,8 +122,8 @@ export class ConcretePresentation
     //
 
     this.view_.destroy();
-    this.view_ = viewFactory.createPresentationView(this);
+    this.view_ = factory(this);
 
-    this.sections_.forEach((section) => section.replaceView(viewFactory));
+    this.sections_.forEach((section) => section.replaceView(this.view_));
   }
 }

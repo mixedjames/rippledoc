@@ -1,16 +1,14 @@
 import { Section } from "./Section";
 import { PresentationViewOwner } from "../presentation/PresentationView";
+import { ElementView, ElementViewOwner } from "../element/ElementView";
 
 /**
  * A SectionView allows a Section to be rendered.
  */
 export interface SectionView {
   destroy(): void;
-}
 
-export class NullSectionView {
-  constructor() {}
-  destroy(): void {}
+  createElementView(owner: ElementViewOwner): ElementView;
 }
 
 /**

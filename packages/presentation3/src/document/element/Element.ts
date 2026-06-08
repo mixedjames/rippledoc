@@ -1,9 +1,8 @@
 import { ConcreteSection, Section } from "../section/Section";
 import { ConcreteAnchoredObjectBase } from "../common/ConcreteAnchoredObjectBase";
 import { Presentation } from "../presentation/Presentation";
-import { ViewFactory } from "../presentation/ViewFactory";
-import { SectionViewOwner } from "../section/SectionView";
-import { ElementView, NullElementView } from "./ElementView";
+import { SectionView, SectionViewOwner } from "../section/SectionView";
+import { ElementView } from "./ElementView";
 
 export interface Element extends ConcreteAnchoredObjectBase {
   get section(): Section;
@@ -20,11 +19,13 @@ export class ConcreteElement
 {
   private readonly section_: ConcreteSection;
 
-  private view_: ElementView = new NullElementView();
+  private view_: ElementView;
 
   constructor(section: ConcreteSection) {
     super("element");
+
     this.section_ = section;
+    this.view_ = this.section_.view.createElementView(this);
   }
 
   // **********************************************************************************************
@@ -39,9 +40,9 @@ export class ConcreteElement
     return this.section.presentation;
   }
 
-  replaceView(viewFactory: ViewFactory): void {
+  replaceView(view: SectionView): void {
     this.view_.destroy();
-    this.view_ = viewFactory.createElementView(this);
+    this.view_ = view.createElementView(this);
   }
 
   // **********************************************************************************************

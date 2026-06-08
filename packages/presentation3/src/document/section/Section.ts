@@ -4,12 +4,14 @@ import {
 } from "../presentation/Presentation";
 import { Element, ConcreteElement } from "../element/Element";
 
-import { NullSectionView, SectionView, SectionViewOwner } from "./SectionView";
-import { ViewFactory } from "../presentation/ViewFactory";
+import { SectionView, SectionViewOwner } from "./SectionView";
 
 import { ConcreteAnchoredObjectBase } from "../common/ConcreteAnchoredObjectBase";
 import * as Anchors from "../../anchors/index";
-import { PresentationViewOwner } from "../presentation/PresentationView";
+import {
+  PresentationView,
+  PresentationViewOwner,
+} from "../presentation/PresentationView";
 
 const DEFAULT_HORIZONTAL_MARGIN_FRACTION = 0.05;
 const DEFAULT_WIDTH_FRACTION = 0.3;
@@ -49,18 +51,20 @@ export class ConcreteSection
 
   private readonly elements_: ConcreteElement[] = [];
 
-  private view_: SectionView = new NullSectionView();
+  private view_: SectionView;
 
   constructor(presentation: ConcretePresentation) {
     super("section");
+
     this.presentation_ = presentation;
+    this.view_ = this.presentation_.view.createSectionView(this);
   }
 
   // **********************************************************************************************
   // Section implementation
   // **********************************************************************************************
 
-  get presentation(): Presentation {
+  get presentation(): ConcretePresentation {
     return this.presentation_;
   }
 
@@ -89,11 +93,11 @@ export class ConcreteSection
     return this.elements_;
   }
 
-  replaceView(viewFactory: ViewFactory): void {
+  replaceView(view: PresentationView): void {
     this.view_.destroy();
-    this.view_ = viewFactory.createSectionView(this);
+    this.view_ = view.createSectionView(this);
 
-    this.elements_.forEach((element) => element.replaceView(viewFactory));
+    this.elements_.forEach((element) => element.replaceView(this.view_));
   }
 
   // **********************************************************************************************
@@ -102,5 +106,9 @@ export class ConcreteSection
 
   get presentationViewOwner(): PresentationViewOwner {
     return this.presentation_;
+  }
+
+  get view(): SectionView {
+    return this.view_;
   }
 }

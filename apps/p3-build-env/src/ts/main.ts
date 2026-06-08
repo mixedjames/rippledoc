@@ -8,5 +8,10 @@ const p = p3.createPresentation({
 const s1 = p.addSection();
 const s2 = p.addSection();
 
-console.log(s1);
-console.log(s2);
+p.replaceView(
+  p3.createV1PresentationView({
+    container: "#theContainer",
+  }),
+);
+
+console.log(p);
