@@ -76,20 +76,6 @@ export class ScrollTrigger extends ConcreteAnchoredObjectBase {
     return this.height;
   }
 
-  get section(): Section {
-    if (this.parent_ instanceof Section) {
-      return this.parent_;
-    }
-    return this.parent_.section;
-  }
-
-  get element(): Element {
-    if (!(this.parent_ instanceof Element)) {
-      throw new Error("ScrollTrigger parent is not an Element");
-    }
-    return this.parent_;
-  }
-
   onScroll(scrollY: number): void {
     /**
      * Algorithm:

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { constant, offsetFrom } from "../../../anchors/index";
-import { Presentation } from "../../presentation/Presentation";
+import { createPresentation } from "../../presentation/Presentation";
 import { ScrollTrigger } from "../ScrollTrigger";
 
 describe("scroll trigger vertical anchors", () => {
   it("derives bottom from top + height", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1000,
       slideHeight: 800,
     });
@@ -26,7 +26,7 @@ describe("scroll trigger vertical anchors", () => {
   });
 
   it("derives top from bottom - height", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1000,
       slideHeight: 800,
     });
@@ -44,7 +44,7 @@ describe("scroll trigger vertical anchors", () => {
   });
 
   it("supports updating vertical constraints with anchor dependencies", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1000,
       slideHeight: 800,
     });
@@ -67,7 +67,7 @@ describe("scroll trigger vertical anchors", () => {
   });
 
   it("throws when vertical constraints are not exactly two values", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1000,
       slideHeight: 800,
     });

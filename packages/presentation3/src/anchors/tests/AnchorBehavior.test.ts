@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Presentation } from "../../document/presentation/Presentation";
+import { createPresentation } from "../../document/presentation/Presentation";
 import { GeometryConstraintError } from "../GeometryConstraintError";
 import {
   constant,
@@ -9,7 +9,7 @@ import {
 } from "../factories";
 
 function createElementUnderTest() {
-  const section = new Presentation().addSection();
+  const section = createPresentation().addSection();
   const element = section.addElement();
   return { section, element };
 }

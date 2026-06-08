@@ -1,8 +1,15 @@
-import { Presentation } from "../presentation/Presentation";
-import { Element } from "../element/Element";
+import {
+  Presentation,
+  ConcretePresentation,
+} from "../presentation/Presentation";
+import { Element, ConcreteElement } from "../element/Element";
+
+import { NullSectionView, SectionView, SectionViewOwner } from "./SectionView";
+import { ViewFactory } from "../presentation/ViewFactory";
 
 import { ConcreteAnchoredObjectBase } from "../common/ConcreteAnchoredObjectBase";
-import { fractionOf, offsetFrom } from "../../anchors/index";
+import * as Anchors from "../../anchors/index";
+import { PresentationViewOwner } from "../presentation/PresentationView";
 
 const DEFAULT_HORIZONTAL_MARGIN_FRACTION = 0.05;
 const DEFAULT_WIDTH_FRACTION = 0.3;
@@ -14,17 +21,55 @@ const DEFAULT_HEIGHT_FRACTION = 0.25;
  * It can contain multiple elements, which are positioned relative to the section's anchors.
  * Sections are stacked vertically within the presentation.
  */
-export class Section extends ConcreteAnchoredObjectBase {
-  private readonly elements_: Element[] = [];
+export interface Section extends ConcreteAnchoredObjectBase {
+  /**
+   * Adds a new element to the section.
+   */
+  addElement(): Element;
 
-  constructor(readonly presentation: Presentation) {
+  /**
+   * Returns all elements within the section.
+   */
+  getElements(): readonly Element[];
+
+  /**
+   * The presentation that this section belongs to.
+   */
+  get presentation(): Presentation;
+}
+
+/**
+ *
+ */
+export class ConcreteSection
+  extends ConcreteAnchoredObjectBase
+  implements Section, SectionViewOwner
+{
+  private readonly presentation_: ConcretePresentation;
+
+  private readonly elements_: ConcreteElement[] = [];
+
+  private view_: SectionView = new NullSectionView();
+
+  constructor(presentation: ConcretePresentation) {
     super("section");
+    this.presentation_ = presentation;
+  }
+
+  // **********************************************************************************************
+  // Section implementation
+  // **********************************************************************************************
+
+  get presentation(): Presentation {
+    return this.presentation_;
   }
 
   addElement(): Element {
-    const element = new Element(this);
+    const { fractionOf, offsetFrom } = Anchors;
+
+    const element = new ConcreteElement(this);
     const margin =
-      this.presentation.slideWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
+      this.presentation_.slideWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
 
     element.setHorizontalAnchors({
       left: offsetFrom(this.leftAnchor, margin),
@@ -42,5 +87,20 @@ export class Section extends ConcreteAnchoredObjectBase {
 
   getElements(): readonly Element[] {
     return this.elements_;
+  }
+
+  replaceView(viewFactory: ViewFactory): void {
+    this.view_.destroy();
+    this.view_ = viewFactory.createSectionView(this);
+
+    this.elements_.forEach((element) => element.replaceView(viewFactory));
+  }
+
+  // **********************************************************************************************
+  // SectionViewOwner implementation
+  // **********************************************************************************************
+
+  get presentationViewOwner(): PresentationViewOwner {
+    return this.presentation_;
   }
 }

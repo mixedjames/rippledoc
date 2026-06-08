@@ -1,6 +1,6 @@
 import * as p3 from "@rippledoc/presentation3";
 
-const p = new p3.Presentation({
+const p = p3.createPresentation({
   slideWidth: 800,
   slideHeight: 600,
 });

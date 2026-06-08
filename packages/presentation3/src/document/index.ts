@@ -42,6 +42,4 @@
  *   - Rendering/view/UI packages.
  *   - Direct dependency on `anchors/tests` or `document/tests` modules.
  */
-export { Presentation } from "./presentation/Presentation";
-export { Section } from "./section/Section";
-export { Element } from "./element/Element";
+export { createPresentation } from "./presentation/Presentation";

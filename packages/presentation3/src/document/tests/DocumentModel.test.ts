@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Presentation } from "../presentation/Presentation";
+import { createPresentation } from "../presentation/Presentation";
 
 describe("presentation3 document model", () => {
   it("creates full-width, stacked sections by default", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1200,
       slideHeight: 800,
     });
@@ -22,7 +22,7 @@ describe("presentation3 document model", () => {
   });
 
   it("creates elements using fixed default percentages", () => {
-    const presentation = new Presentation({
+    const presentation = createPresentation({
       slideWidth: 1000,
       slideHeight: 800,
     });
