@@ -2,7 +2,19 @@ import {
   Presentation,
   ConcretePresentation,
 } from "../presentation/Presentation";
-import { Element, ConcreteElement } from "../element/Element";
+import { type Element } from "../element/ElementBase";
+import {
+  BitmapImageElement,
+  ConcreteBitmapImageElement,
+} from "../element/ConcreteBitmapImageElement";
+import {
+  ConcreteMarkdownElement,
+  MarkdownElement,
+} from "../element/ConcreteMarkdownElement";
+import {
+  ConcreteSVGImageElement,
+  SVGImageElement,
+} from "../element/ConcreteSVGImageElement";
 
 import { SectionView, SectionViewOwner } from "./SectionView";
 
@@ -29,6 +41,10 @@ export interface Section extends ConcreteAnchoredObjectBase {
    */
   addElement(): Element;
 
+  addBitmapImageElement(): BitmapImageElement;
+  addSVGImageElement(): SVGImageElement;
+  addMarkdownElement(markdown?: string): MarkdownElement;
+
   /**
    * Returns all elements within the section.
    */
@@ -49,7 +65,7 @@ export class ConcreteSection
 {
   private readonly presentation_: ConcretePresentation;
 
-  private readonly elements_: ConcreteElement[] = [];
+  private readonly elements_: Element[] = [];
 
   private view_: SectionView;
 
@@ -69,11 +85,37 @@ export class ConcreteSection
   }
 
   addElement(): Element {
-    const { fractionOf, offsetFrom } = Anchors;
+    return this.addMarkdownElement();
+  }
 
-    const element = new ConcreteElement(this);
+  addBitmapImageElement(): BitmapImageElement {
+    const element = new ConcreteBitmapImageElement(this);
+    this.initializeDefaultElementAnchors(element);
+
+    this.elements_.push(element);
+    return element;
+  }
+
+  addSVGImageElement(): SVGImageElement {
+    const element = new ConcreteSVGImageElement(this);
+    this.initializeDefaultElementAnchors(element);
+
+    this.elements_.push(element);
+    return element;
+  }
+
+  addMarkdownElement(markdown = ""): MarkdownElement {
+    const element = new ConcreteMarkdownElement(this, markdown);
+    this.initializeDefaultElementAnchors(element);
+
+    this.elements_.push(element);
+    return element;
+  }
+
+  private initializeDefaultElementAnchors(element: Element): void {
+    const { fractionOf, offsetFrom } = Anchors;
     const margin =
-      this.presentation_.slideWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
+      this.presentation_.basisWidth * DEFAULT_HORIZONTAL_MARGIN_FRACTION;
 
     element.setHorizontalAnchors({
       left: offsetFrom(this.leftAnchor, margin),
@@ -84,9 +126,6 @@ export class ConcreteSection
       top: offsetFrom(this.topAnchor, margin),
       height: fractionOf(this.heightAnchor, DEFAULT_HEIGHT_FRACTION),
     });
-
-    this.elements_.push(element);
-    return element;
   }
 
   getElements(): readonly Element[] {
@@ -100,6 +139,10 @@ export class ConcreteSection
     this.elements_.forEach((element) => element.replaceView(this.view_));
   }
 
+  //setHorizontalAnchors(descriptor: Anchors.HorizontalAnchors): void {
+  //  throw new Error("Section horizontal anchors cannot be changed.");
+  //}
+
   // **********************************************************************************************
   // SectionViewOwner implementation
   // **********************************************************************************************
@@ -110,5 +153,14 @@ export class ConcreteSection
 
   get view(): SectionView {
     return this.view_;
+  }
+
+  // **********************************************************************************************
+  // ConcreteSection implementation
+  // **********************************************************************************************
+
+  layout({ scale, tx }: { scale: number; tx: number }): void {
+    this.view_.layout({ scale, tx });
+    this.elements_.forEach((element) => element.layout({ scale, tx }));
   }
 }

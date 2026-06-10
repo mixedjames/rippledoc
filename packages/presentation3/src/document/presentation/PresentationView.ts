@@ -7,11 +7,19 @@ import { Presentation } from "./Presentation";
 export interface PresentationView {
   destroy(): void;
   createSectionView(section: SectionViewOwner): SectionView;
+
+  get width(): number;
+  get height(): number;
+
+  layout({ scale, tx }: { scale: number; tx: number }): void;
 }
 
 /**
  * A PresentationViewOwner is a privileged interface that provides additional methods on
  * Presentation that are required by PresentationView implementations.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface PresentationViewOwner extends Presentation {}
+export interface PresentationViewOwner extends Presentation {
+  layout(width: number, height: number): void;
+
+  get layoutTransformation(): { scale: number; tx: number };
+}

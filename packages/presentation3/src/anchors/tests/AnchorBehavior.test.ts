@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createPresentation } from "../../document/presentation/Presentation";
+import {
+  ConcretePresentation,
+  createPresentation,
+} from "../../document/presentation/Presentation";
 import { GeometryConstraintError } from "../GeometryConstraintError";
 import {
   constant,
@@ -64,6 +67,29 @@ describe("anchor behavior", () => {
       });
 
       expect(element.leftAnchor).toBe(leftAnchorBefore);
+    });
+  });
+
+  describe("viewport anchors", () => {
+    it("uses viewportHeight as a dynamic basis-space anchor expression", () => {
+      const presentation = createPresentation({
+        basisWidth: 1000,
+        basisHeight: 800,
+      }) as ConcretePresentation;
+      const section = presentation.addSection();
+      const element = section.addElement();
+
+      element.setVerticalAnchors({
+        top: constant(0),
+        height: offsetFrom(presentation.viewportHeightAnchor, 0),
+      });
+
+      expect(element.height).toBe(800);
+
+      presentation.layout(600, 1000);
+
+      expect(element.height).toBeCloseTo(1666.6666666666667);
+      expect(element.bottom).toBeCloseTo(1666.6666666666667);
     });
   });
 });

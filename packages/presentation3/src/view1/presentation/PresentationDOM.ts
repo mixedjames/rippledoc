@@ -1,4 +1,8 @@
+import { V1PresentationView } from "./V1PresentationView";
+
 export class PresentationDOM {
+  private presentationView_: V1PresentationView;
+
   // DOM elements - hierarchy:
   //   fragment_ (document fragment)
   //     root_ (div)
@@ -6,6 +10,8 @@ export class PresentationDOM {
   //          backgrounds_ (div)
   //          elements_ (div)
   //       overlay_ (div)
+
+  private containerElement_: HTMLElement;
 
   private fragment_: DocumentFragment = document.createDocumentFragment();
 
@@ -19,8 +25,11 @@ export class PresentationDOM {
   private overlay_: HTMLElement = document.createElement("div");
   private pins_: HTMLElement = document.createElement("div");
 
-  constructor(container: HTMLElement | string) {
-    this.connectDOMElements();
+  constructor(
+    presentationView: V1PresentationView,
+    container: HTMLElement | string,
+  ) {
+    this.presentationView_ = presentationView;
 
     const containerElement =
       typeof container === "string"
@@ -31,7 +40,14 @@ export class PresentationDOM {
       throw new Error(`Container element not found or was null`);
     }
 
-    containerElement.appendChild(this.fragment_);
+    if (!(containerElement instanceof HTMLElement)) {
+      throw new Error(`Container element is not an HTMLElement`);
+    }
+
+    this.containerElement_ = containerElement;
+    this.connectDOMElements();
+
+    this.containerElement_.appendChild(this.fragment_);
   }
 
   private connectDOMElements(): void {
@@ -81,6 +97,7 @@ export class PresentationDOM {
       element.style.width = "100%";
       element.style.height = "100%";
       element.style.overflow = "hidden";
+      element.style.boxSizing = "border-box";
     });
 
     // Apply specific styles to certain elements:
@@ -98,6 +115,14 @@ export class PresentationDOM {
     this.viewport_.style.overflowY = "auto";
 
     this.overlay_.style.pointerEvents = "none";
+
+    // Debug stuff
+    this.viewport_.style.backgroundColor = "black";
+    this.backgrounds_.style.backgroundColor = "white";
+  }
+
+  get containerElement(): HTMLElement {
+    return this.containerElement_;
   }
 
   get backgroundsContainer(): HTMLElement {
@@ -106,5 +131,17 @@ export class PresentationDOM {
 
   get elementsContainer(): HTMLElement {
     return this.elements_;
+  }
+
+  get viewportContainer(): HTMLElement {
+    return this.viewport_;
+  }
+
+  layout({ scale, tx }: { scale: number; tx: number }): void {
+    [this.backgrounds_, this.elements_].forEach((element) => {
+      element.style.left = `${tx}px`;
+      element.style.width = `${this.presentationView_.owner.basisWidth * scale}px`;
+      element.style.height = `${this.presentationView_.owner.totalHeight * scale}px`;
+    });
   }
 }

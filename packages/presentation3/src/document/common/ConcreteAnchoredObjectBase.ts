@@ -3,11 +3,25 @@ import * as Anchors from "../../anchors/index";
 type Axis = "horizontal" | "vertical";
 
 /**
+ * ConcreteAnchoredObjectBase provides:
+ * - A concrete base implementation of the Anchors.AnchoredObject that is then used by various DOM
+ *   classes
+ * - Common methods for setting those anchors in a coherent way that prevents both over and
+ *   under-constraining the object
+ * - An "id" property
  *
+ * It is abstract and exists only as a utility class. Code should not depend on it and it may
+ * disappear or be replaced without warning.
+ *
+ * Generic consumers should depend only on the Anchors.AnchoredObject interface instead.
  */
 export abstract class ConcreteAnchoredObjectBase
   implements Anchors.AnchoredObject
 {
+  // IMPLEMENTATION NOTE:
+  // These are public but readonly - this is intentional rather than using getters which would be
+  // superflouos here.
+
   readonly leftAnchor: Anchors.Anchor;
   readonly rightAnchor: Anchors.Anchor;
   readonly widthAnchor: Anchors.Anchor;

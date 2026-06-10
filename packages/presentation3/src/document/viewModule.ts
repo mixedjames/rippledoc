@@ -12,7 +12,13 @@
  * - It packages the public API for views into a namespace avoiding name conflicts with other
  *   modules. (e.g. Element)
  */
-export { ElementView, ElementViewOwner } from "./element/ElementView";
+export {
+  BitmapImageElementViewOwner,
+  ElementView,
+  ElementViewOwner,
+  MarkdownElementViewOwner,
+  SVGImageElementViewOwner,
+} from "./element/ElementView";
 export {
   PresentationView,
   PresentationViewOwner,

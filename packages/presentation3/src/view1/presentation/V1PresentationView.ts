@@ -17,12 +17,20 @@ export class V1PresentationView implements p3.PresentationView {
   private owner_: p3.PresentationViewOwner;
   private dom_: PresentationDOM;
 
+  private resizeObserver_: ResizeObserver;
+
   constructor(
     owner: p3.PresentationViewOwner,
     config: V1PresentationViewConfig,
   ) {
     this.owner_ = owner;
-    this.dom_ = new PresentationDOM(config.container);
+    this.dom_ = new PresentationDOM(this, config.container);
+
+    this.resizeObserver_ = new ResizeObserver(() => {
+      const { clientWidth, clientHeight } = this.dom_.viewportContainer;
+      this.owner_.layout(clientWidth, clientHeight);
+    });
+    this.resizeObserver_.observe(this.dom_.containerElement);
   }
 
   destroy(): void {}
@@ -33,5 +41,21 @@ export class V1PresentationView implements p3.PresentationView {
 
   get htmlDOM(): PresentationDOM {
     return this.dom_;
+  }
+
+  get width(): number {
+    return this.dom_.containerElement.clientWidth;
+  }
+
+  get height(): number {
+    return this.dom_.containerElement.clientHeight;
+  }
+
+  layout({ scale, tx }: { scale: number; tx: number }): void {
+    this.dom_.layout({ scale, tx });
+  }
+
+  get owner(): p3.PresentationViewOwner {
+    return this.owner_;
   }
 }

@@ -1,10 +1,14 @@
 import { SectionViewOwner } from "../section/SectionView";
-import { Element } from "./Element";
+import type { Element } from "./ElementBase";
+import type { BitmapImageElement } from "./ConcreteBitmapImageElement";
+import type { SVGImageElement } from "./ConcreteSVGImageElement";
+import type { MarkdownElement } from "./ConcreteMarkdownElement";
 
 /**
  * An ElementView allows an Element to be rendered.
  */
 export interface ElementView {
+  layout({ scale, tx }: { scale: number; tx: number }): void;
   destroy(): void;
 }
 
@@ -15,3 +19,12 @@ export interface ElementView {
 export interface ElementViewOwner extends Element {
   get sectionView(): SectionViewOwner;
 }
+
+export interface BitmapImageElementViewOwner
+  extends ElementViewOwner, BitmapImageElement {}
+
+export interface SVGImageElementViewOwner
+  extends ElementViewOwner, SVGImageElement {}
+
+export interface MarkdownElementViewOwner
+  extends ElementViewOwner, MarkdownElement {}

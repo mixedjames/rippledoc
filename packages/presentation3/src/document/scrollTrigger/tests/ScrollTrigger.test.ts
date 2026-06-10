@@ -6,8 +6,8 @@ import { ScrollTrigger } from "../ScrollTrigger";
 describe("scroll trigger vertical anchors", () => {
   it("derives bottom from top + height", () => {
     const presentation = createPresentation({
-      slideWidth: 1000,
-      slideHeight: 800,
+      basisWidth: 1000,
+      basisHeight: 800,
     });
     const section = presentation.addSection();
 
@@ -27,8 +27,8 @@ describe("scroll trigger vertical anchors", () => {
 
   it("derives top from bottom - height", () => {
     const presentation = createPresentation({
-      slideWidth: 1000,
-      slideHeight: 800,
+      basisWidth: 1000,
+      basisHeight: 800,
     });
     const section = presentation.addSection();
 
@@ -45,8 +45,8 @@ describe("scroll trigger vertical anchors", () => {
 
   it("supports updating vertical constraints with anchor dependencies", () => {
     const presentation = createPresentation({
-      slideWidth: 1000,
-      slideHeight: 800,
+      basisWidth: 1000,
+      basisHeight: 800,
     });
     const section = presentation.addSection();
 
@@ -68,8 +68,8 @@ describe("scroll trigger vertical anchors", () => {
 
   it("throws when vertical constraints are not exactly two values", () => {
     const presentation = createPresentation({
-      slideWidth: 1000,
-      slideHeight: 800,
+      basisWidth: 1000,
+      basisHeight: 800,
     });
     const section = presentation.addSection();
 

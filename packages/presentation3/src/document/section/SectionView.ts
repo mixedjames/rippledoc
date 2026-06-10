@@ -1,14 +1,23 @@
 import { Section } from "./Section";
 import { PresentationViewOwner } from "../presentation/PresentationView";
-import { ElementView, ElementViewOwner } from "../element/ElementView";
+import {
+  BitmapImageElementViewOwner,
+  ElementView,
+  MarkdownElementViewOwner,
+  SVGImageElementViewOwner,
+} from "../element/ElementView";
 
 /**
  * A SectionView allows a Section to be rendered.
  */
 export interface SectionView {
+  layout({ scale, tx }: { scale: number; tx: number }): void;
+
   destroy(): void;
 
-  createElementView(owner: ElementViewOwner): ElementView;
+  createBitmapImageElementView(owner: BitmapImageElementViewOwner): ElementView;
+  createSVGImageElementView(owner: SVGImageElementViewOwner): ElementView;
+  createMarkdownElementView(owner: MarkdownElementViewOwner): ElementView;
 }
 
 /**
