@@ -2,7 +2,7 @@ import {
   Presentation,
   ConcretePresentation,
 } from "../presentation/Presentation";
-import { type Element } from "../element/ElementBase";
+import { ConcreteElementBase, type Element } from "../element/ElementBase";
 import {
   BitmapImageElement,
   ConcreteBitmapImageElement,
@@ -24,6 +24,7 @@ import {
   PresentationView,
   PresentationViewOwner,
 } from "../presentation/PresentationView";
+import { Layout } from "../presentation/Layout";
 
 const DEFAULT_HORIZONTAL_MARGIN_FRACTION = 0.05;
 const DEFAULT_WIDTH_FRACTION = 0.3;
@@ -35,7 +36,8 @@ const DEFAULT_HEIGHT_FRACTION = 0.25;
  * It can contain multiple elements, which are positioned relative to the section's anchors.
  * Sections are stacked vertically within the presentation.
  */
-export interface Section extends ConcreteAnchoredObjectBase {
+//export interface Section extends ConcreteAnchoredObjectBase {
+export interface Section extends Anchors.YAnchoredObject {
   /**
    * Adds a new element to the section.
    */
@@ -65,7 +67,7 @@ export class ConcreteSection
 {
   private readonly presentation_: ConcretePresentation;
 
-  private readonly elements_: Element[] = [];
+  private readonly elements_: ConcreteElementBase[] = [];
 
   private view_: SectionView;
 
@@ -73,6 +75,8 @@ export class ConcreteSection
     super("section");
 
     this.presentation_ = presentation;
+    this.supplyDefaultLayout(this.presentation_.defaultLayout);
+
     this.view_ = this.presentation_.view.createSectionView(this);
   }
 
@@ -90,26 +94,39 @@ export class ConcreteSection
 
   addBitmapImageElement(): BitmapImageElement {
     const element = new ConcreteBitmapImageElement(this);
-    this.initializeDefaultElementAnchors(element);
-
-    this.elements_.push(element);
+    this.commonElementInitialization(element);
     return element;
   }
 
   addSVGImageElement(): SVGImageElement {
     const element = new ConcreteSVGImageElement(this);
-    this.initializeDefaultElementAnchors(element);
-
-    this.elements_.push(element);
+    this.commonElementInitialization(element);
     return element;
   }
 
   addMarkdownElement(markdown = ""): MarkdownElement {
     const element = new ConcreteMarkdownElement(this, markdown);
-    this.initializeDefaultElementAnchors(element);
-
-    this.elements_.push(element);
+    this.commonElementInitialization(element);
     return element;
+  }
+
+  /**
+   * The various specific addXXXElement methods all route through this common method.
+   *
+   * It does a few fiddling things that have to be right for all elements:
+   * - setting up the default anchors for the element
+   * - adding the element to the section's list of elements
+   * - informing the element about all existing layouts in the presentation, so that it can set up
+   *   its layout state for each layout (we must handle case where layouts exist before an element
+   *   is added to the section).
+   */
+  private commonElementInitialization(element: ConcreteElementBase): void {
+    this.initializeDefaultElementAnchors(element);
+    this.elements_.push(element);
+    this.presentation.layouts.forEach((layout) => {
+      element.layoutAdded(layout, this.presentation.defaultLayout);
+      element.setActiveLayout(this.presentation.activeLayout);
+    });
   }
 
   private initializeDefaultElementAnchors(element: Element): void {
@@ -139,10 +156,6 @@ export class ConcreteSection
     this.elements_.forEach((element) => element.replaceView(this.view_));
   }
 
-  //setHorizontalAnchors(descriptor: Anchors.HorizontalAnchors): void {
-  //  throw new Error("Section horizontal anchors cannot be changed.");
-  //}
-
   // **********************************************************************************************
   // SectionViewOwner implementation
   // **********************************************************************************************
@@ -162,5 +175,15 @@ export class ConcreteSection
   layout({ scale, tx }: { scale: number; tx: number }): void {
     this.view_.layout({ scale, tx });
     this.elements_.forEach((element) => element.layout({ scale, tx }));
+  }
+
+  override setActiveLayout(layout: Layout): void {
+    super.setActiveLayout(layout);
+    this.elements_.forEach((element) => element.setActiveLayout(layout));
+  }
+
+  override layoutAdded(layout: Layout, copyFrom: Layout): void {
+    super.layoutAdded(layout, copyFrom);
+    this.elements_.forEach((element) => element.layoutAdded(layout, copyFrom));
   }
 }

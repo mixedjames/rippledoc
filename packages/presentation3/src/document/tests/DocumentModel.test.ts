@@ -17,14 +17,12 @@ describe("presentation3 document model", () => {
     const first = presentation.addSection();
     const second = presentation.addSection();
 
-    expect(first.left).toBe(0);
-    expect(first.right).toBe(1200);
     expect(first.top).toBe(0);
     expect(first.bottom).toBe(800);
 
     expect(second.top).toBe(800);
     expect(second.bottom).toBe(1600);
-    expect(presentation.height).toBe(1600);
+    expect(presentation.totalHeight).toBe(1600);
   });
 
   it("creates elements using fixed default percentages", () => {

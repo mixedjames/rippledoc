@@ -54,8 +54,13 @@
  *   - App-level runtime concerns (I/O, networking, persistence).
  */
 export { Anchor } from "./Anchor";
-export type { AnchoredObject } from "./AnchoredObject";
+export type {
+  XAnchoredObject,
+  YAnchoredObject,
+  XYAnchoredObject,
+} from "./AnchoredObject";
 export type { HorizontalAnchors, VerticalAnchors } from "./AnchorSets";
+export type { AnchorOwner } from "./AnchorOwner";
 
 export type {
   AnchorExpression,

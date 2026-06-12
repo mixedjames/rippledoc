@@ -61,12 +61,12 @@ describe("anchor behavior", () => {
 
       const leftAnchorBefore = element.leftAnchor;
 
-      element.setHorizontalAnchors({
-        left: offsetFrom(section.leftAnchor, 10),
-        width: fractionOf(section.widthAnchor, 0.5),
+      element.setVerticalAnchors({
+        top: offsetFrom(section.topAnchor, 10),
+        height: fractionOf(section.heightAnchor, 0.5),
       });
 
-      expect(element.leftAnchor).toBe(leftAnchorBefore);
+      expect(element.topAnchor).toBe(leftAnchorBefore);
     });
   });
 

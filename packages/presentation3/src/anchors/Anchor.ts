@@ -1,4 +1,4 @@
-import type { AnchoredObject } from "./AnchoredObject";
+import type { AnchorOwner } from "./AnchorOwner";
 import {
   AnchorExpression,
   ConstantAnchorExpression,
@@ -6,14 +6,14 @@ import {
 import { GeometryConstraintError } from "./GeometryConstraintError";
 
 export class Anchor {
-  private readonly owner_: AnchoredObject;
+  private readonly owner_: AnchorOwner;
 
   private expression_: AnchorExpression;
 
   private readonly internalDependents_ = new Set<Anchor>();
 
   constructor(
-    owner: AnchoredObject,
+    owner: AnchorOwner,
     initialExpression: AnchorExpression = new ConstantAnchorExpression(
       0,
       false,
@@ -31,7 +31,7 @@ export class Anchor {
   // Public API
   // **********************************************************************************************
 
-  get owner(): AnchoredObject {
+  get owner(): AnchorOwner {
     return this.owner_;
   }
 
@@ -49,6 +49,10 @@ export class Anchor {
 
   get currentExpression(): AnchorExpression {
     return this.expression_;
+  }
+
+  clone(): Anchor {
+    return new Anchor(this.owner_, this.expression_);
   }
 
   setExpression(nextExpression: AnchorExpression): void {

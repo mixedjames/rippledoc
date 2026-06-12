@@ -10,13 +10,11 @@ export class V1ElementView implements p3.ElementView {
   constructor(owner: p3.ElementViewOwner, parent: V1SectionView) {
     this.owner_ = owner;
     this.parent_ = parent;
-
-    this.initDOM();
   }
 
   destroy(): void {}
 
-  private initDOM(): void {
+  protected initDOM(): void {
     this.htmlElement_.classList.add("element");
     this.parent_.contentContainer.appendChild(this.htmlElement_);
 
@@ -33,5 +31,17 @@ export class V1ElementView implements p3.ElementView {
 
     this.htmlElement_.style.width = `${this.owner_.width * scale}px`;
     this.htmlElement_.style.height = `${this.owner_.height * scale}px`;
+  }
+
+  protected get owner(): p3.ElementViewOwner {
+    return this.owner_;
+  }
+
+  protected get parent(): V1SectionView {
+    return this.parent_;
+  }
+
+  protected get htmlElement(): HTMLElement {
+    return this.htmlElement_;
   }
 }

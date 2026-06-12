@@ -43,3 +43,6 @@
  *   - Direct dependency on `anchors/tests` or `document/tests` modules.
  */
 export { createPresentation } from "./presentation/Presentation";
+
+export { Presentation } from "./presentation/Presentation";
+export { Layout } from "./presentation/Layout";

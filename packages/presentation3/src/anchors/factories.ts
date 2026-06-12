@@ -6,7 +6,7 @@ import {
   OffsetAnchorExpression,
   VerticalCenterAnchorExpression,
 } from "./expressions/index";
-import type { AnchoredObject } from "./AnchoredObject";
+import type { XAnchoredObject, YAnchoredObject } from "./AnchoredObject";
 
 export function constant(value: number): ConstantAnchorExpression {
   return new ConstantAnchorExpression(value, true);
@@ -31,7 +31,7 @@ export function fractionOf(
 }
 
 export function hCenter(
-  object: AnchoredObject,
+  object: XAnchoredObject,
 ): HorizontalCenterAnchorExpression {
   return new HorizontalCenterAnchorExpression(
     object.leftAnchor,
@@ -40,7 +40,7 @@ export function hCenter(
 }
 
 export function vCenter(
-  object: AnchoredObject,
+  object: YAnchoredObject,
 ): VerticalCenterAnchorExpression {
   return new VerticalCenterAnchorExpression(
     object.topAnchor,
