@@ -76,7 +76,7 @@ export abstract class ConcreteAnchoredObjectBase
     });
   }
 
-  anchorChanged(anchor: Anchors.Anchor): void {
+  anchorChanged(): void {
     // Default implementation does nothing; subclasses may override if they need to react to changes.
   }
 
@@ -205,9 +205,7 @@ export abstract class ConcreteAnchoredObjectBase
   setActiveLayout(layout: Layout): void {
     const anchorSet = this.anchorSets_.get(layout);
     if (!anchorSet) {
-      throw new Error(
-        `Layout ${layout} is not registered for object ${this.id_}.`,
-      );
+      throw new Error(`Layout is not registered for object ${this.id_}.`);
     }
 
     this.leftAnchor_ = anchorSet.leftAnchor;
@@ -222,7 +220,7 @@ export abstract class ConcreteAnchoredObjectBase
     const sourceSet = this.anchorSets_.get(copyFrom);
     if (!sourceSet) {
       throw new Error(
-        `Source layout ${copyFrom} is not registered for object ${this.id_}.`,
+        `Source layout is not registered for object ${this.id_}.`,
       );
     }
 

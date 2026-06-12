@@ -34,7 +34,9 @@
     "build:demo-site": "webpack --config apps/demo-site/webpack.config.js",
     "watch:demo-site": "webpack --config apps/demo-site/webpack.config.js --watch",
     "build:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js",
-    "watch:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js --watch"
+    "watch:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js --watch",
+    "build:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js",
+    "watch:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js --watch"
   },
   "private": true,
   "workspaces": [

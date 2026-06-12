@@ -6,7 +6,6 @@ import { ConcreteElementBase, type Element } from "./ElementBase";
 /**
  * Public interface for raster/bitmap image elements.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BitmapImageElement extends Element {
   get src(): string;
   setSrc(src: string): void;

@@ -23,6 +23,10 @@ module.exports = {
         __dirname,
         "./packages/presentation3/src",
       ),
+      "@rippledoc/presentation4": path.resolve(
+        __dirname,
+        "./packages/presentation4/src",
+      ),
     },
   },
 

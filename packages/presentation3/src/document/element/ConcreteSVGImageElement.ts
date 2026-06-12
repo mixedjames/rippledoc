@@ -9,7 +9,6 @@ import { ConcreteElementBase, type Element } from "./ElementBase";
  * SVG is intentionally modeled as a separate image type because we plan to support animation of
  * internal SVG components later.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SVGImageElement extends Element {
   get src(): string;
   setSrc(src: string): void;

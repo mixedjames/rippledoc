@@ -1,4 +1,3 @@
-import { parseMarkdown } from "@rippledoc/markdown";
 import * as p3 from "../../document/viewModule";
 import { V1SectionView } from "../section/V1SectionView";
 import { V1ElementView } from "./V1ElementView";

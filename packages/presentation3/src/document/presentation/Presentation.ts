@@ -139,7 +139,7 @@ export class ConcretePresentation
   // **********************************************************************************************
 
   addSection(): Section {
-    const { offsetFrom, immutableConstant } = Anchors;
+    const { offsetFrom } = Anchors;
 
     const section = new ConcreteSection(this);
     const previousSection = this.sections_.at(LAST_INDEX);
