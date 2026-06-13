@@ -1,6 +1,8 @@
 import type { Section } from "../clientAPI/Section";
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { Element } from "../clientAPI/Element";
+import type { Layout } from "../clientAPI/Layout";
+import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { MarkdownElement } from "../clientAPI/elements/MarkdownElement";
 import type { BitmapImageElement } from "../clientAPI/elements/BitmapImageElement";
@@ -34,9 +36,20 @@ export class CoreSection
   private view_: SectionView;
 
   constructor(root: CorePresentationRoot) {
-    super();
+    super(root.layoutContext);
     this.root_ = root;
     this.view_ = new NullSectionView();
+  }
+
+  /** Exposes the LayoutManager so CoreElement can thread it to AnchoredObjectBase. */
+  get layoutContext(): LayoutManager {
+    return this.root_.layoutContext;
+  }
+
+  /** Called by CorePresentationRoot when a layout is added to the LayoutManager. */
+  onLayoutAdded(layout: Layout): void {
+    this.initLayoutEntry_(layout);
+    this.elements_.forEach((e) => e.onLayoutAdded(layout));
   }
 
   /** Called by CorePresentationRoot when a view is being attached. */

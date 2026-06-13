@@ -1,5 +1,7 @@
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { Section } from "../clientAPI/Section";
+import type { Layout } from "../clientAPI/Layout";
+import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { PresentationView } from "../viewAPI/PresentationView";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
 import type { LayoutTransform } from "../viewAPI/LayoutTransform";
@@ -27,8 +29,19 @@ export class CorePresentationRoot
   private view_: PresentationView = new NullPresentationView();
 
   constructor(presentation: CorePresentation) {
-    super();
+    super(presentation.layout);
     this.presentation_ = presentation;
+  }
+
+  /** Exposes the LayoutManager so CoreSection can thread it to AnchoredObjectBase. */
+  get layoutContext(): LayoutManager {
+    return this.presentation_.layout;
+  }
+
+  /** Called by CorePresentation when a layout is added to the LayoutManager. */
+  onLayoutAdded(layout: Layout): void {
+    this.initLayoutEntry_(layout);
+    this.sections_.forEach((s) => s.onLayoutAdded(layout));
   }
 
   /** Called by CorePresentation when a view is being attached. */

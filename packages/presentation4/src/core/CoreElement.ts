@@ -1,5 +1,6 @@
 import type { Element } from "../clientAPI/Element";
 import type { Section } from "../clientAPI/Section";
+import type { Layout } from "../clientAPI/Layout";
 import type {
   HorizontalAnchorSet,
   VerticalAnchorSet,
@@ -28,9 +29,14 @@ export abstract class CoreElement
   private view_: ElementView;
 
   constructor(section: CoreSection) {
-    super();
+    super(section.layoutContext);
     this.section_ = section;
     this.view_ = new NullElementView();
+  }
+
+  /** Called by CoreSection when a layout is added to the LayoutManager. */
+  onLayoutAdded(layout: Layout): void {
+    this.initLayoutEntry_(layout);
   }
 
   /** Called by CoreSection when a view is being attached. */

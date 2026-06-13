@@ -13,11 +13,20 @@ export class CoreLayoutManager implements LayoutManager {
   private readonly layouts_: CoreLayout[] = [];
   private activeLayout_: CoreLayout;
   private layoutPicker_: LayoutPicker | null = null;
+  private layoutAddedCallback_: ((layout: Layout) => void) | null = null;
 
   constructor(defaultLayoutOptions: LayoutOptions) {
     const defaultLayout = new CoreLayout(defaultLayoutOptions);
     this.layouts_.push(defaultLayout);
     this.activeLayout_ = defaultLayout;
+  }
+
+  /**
+   * Registers a callback invoked each time addLayout() succeeds.
+   * Used by CorePresentation to cascade new layouts through the document tree.
+   */
+  setLayoutAddedCallback(callback: (layout: Layout) => void): void {
+    this.layoutAddedCallback_ = callback;
   }
 
   // ── LayoutManager (clientAPI) ────────────────────────────────────────────
@@ -29,6 +38,7 @@ export class CoreLayoutManager implements LayoutManager {
   addLayout(options: LayoutOptions): Layout {
     const layout = new CoreLayout(options);
     this.layouts_.push(layout);
+    this.layoutAddedCallback_?.(layout);
     return layout;
   }
 

@@ -79,6 +79,18 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     );
 
     this.root_ = new CorePresentationRoot(this);
+
+    // Wire the layout-added callback to cascade new layouts through the document tree.
+    //
+    // Each anchored object copies its CURRENTLY ACTIVE layout's values as constants
+    // into the new layout's bag. If addLayout() is called while a non-default layout
+    // is active, the new layout inherits from that one, not from the default.
+    //
+    // TODO: In future this could be user selectable?
+    //
+    this.layout_.setLayoutAddedCallback((layout) =>
+      this.root_.onLayoutAdded(layout),
+    );
   }
 
   // ── Presentation (clientAPI) ──────────────────────────────────────────────
@@ -113,6 +125,7 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     this.view_.destroy();
     this.view_ = factory(this);
     this.root_.attachView(this.view_);
+
     // Initialize scale and run the first layout pass from the new view's dimensions.
     this.notifyViewResized(this.view_.width, this.view_.height);
   }

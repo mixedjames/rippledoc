@@ -4,62 +4,262 @@ import type {
   HorizontalAnchorSet,
   VerticalAnchorSet,
 } from "../anchors/AnchorSet";
+import type { LayoutManager } from "../clientAPI/LayoutManager";
+import type { Layout } from "../clientAPI/Layout";
 import { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 import { ConcreteAnchor } from "../anchors/ConcreteAnchor";
+import { ConstantAnchorExpression } from "../anchors/expressions/ConstantAnchorExpression";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 import { GeometryConstraintError } from "../anchors/GeometryConstraintError";
+
+// Which two of (start, end, size) were independently constrained on a setAxis_ call.
+// "none" = setAxis_ was never called for this layout entry on this axis.
+type AxisCombination = "start+size" | "start+end" | "end+size" | "none";
+
+type LayoutEntry = {
+  bag: ConcreteXYAnchors;
+  hCombination: AxisCombination;
+  vCombination: AxisCombination;
+};
 
 /**
  * Shared base for all concrete objects that own geometry anchors.
  *
- * Holds a ConcreteXYAnchors bag (the six anchor slots) and enforces the 2-of-3
- * rule when subclasses set axis constraints. Concrete subclasses expose the
- * appropriate setters publicly via their own interface obligations; this class
- * keeps the implementation private.
+ * Each layout owns an independent ConcreteXYAnchors bag stored in `entries_`.
+ * `anchors` always returns the bag for the currently active layout.
+ *
+ * When a new layout is added, `initLayoutEntry_` copies the active layout's
+ * constrained values as constants into the new bag. This gives a usable starting
+ * point while keeping the two bags completely independent — no cross-layout
+ * expression references can form.
+ *
+ * Concrete subclasses expose the appropriate set methods publicly via their own
+ * interface obligations; this class keeps the shared implementation private.
  */
 export abstract class AnchoredObjectBase {
-  private readonly anchors_: ConcreteXYAnchors;
+  private readonly layoutContext_: LayoutManager;
+  private readonly entries_: Map<Layout, LayoutEntry> = new Map();
 
-  constructor() {
-    this.anchors_ = new ConcreteXYAnchors();
+  constructor(layoutContext: LayoutManager) {
+    this.layoutContext_ = layoutContext;
+    // Eagerly create the bag for whatever layout is active at construction time.
+    this.entries_.set(layoutContext.activeLayout, this.newEntry_());
   }
 
   get anchors(): XYAnchors {
-    return this.anchors_;
+    return this.activeEntry_().bag;
+  }
+
+  // ── Layout lifecycle ──────────────────────────────────────────────────────
+
+  /**
+   * Called (via the Core* cascade) when a new layout is added to the presentation.
+   *
+   * Creates a fresh bag for `layout` by copying the currently-active layout's
+   * constrained anchor values as constants. The two bags are completely independent:
+   * the new layout's DerivedAnchorExpressions close over its own anchor objects,
+   * not the source layout's, so there are no cross-layout dependencies.
+   *
+   * Axes that were never constrained (combination === "none") are left at zero
+   * defaults rather than copying meaningless zeros.
+   */
+  protected initLayoutEntry_(layout: Layout): void {
+    if (this.entries_.has(layout)) return; // guard against double-init
+    const source = this.activeEntry_();
+    const entry = this.newEntry_();
+
+    this.copyAxisAsConstants_(
+      source.bag.left,
+      source.bag.right,
+      source.bag.width,
+      entry.bag.left,
+      entry.bag.right,
+      entry.bag.width,
+      source.hCombination,
+      "horizontal",
+    );
+    this.copyAxisAsConstants_(
+      source.bag.top,
+      source.bag.bottom,
+      source.bag.height,
+      entry.bag.top,
+      entry.bag.bottom,
+      entry.bag.height,
+      source.vCombination,
+      "vertical",
+    );
+    entry.hCombination = source.hCombination;
+    entry.vCombination = source.vCombination;
+
+    this.entries_.set(layout, entry);
   }
 
   // ── Axis constraint helpers ────────────────────────────────────────────────
 
   /**
-   * Set the horizontal axis constraints. Exactly two of left/right/width must
-   * be provided; the third is derived. See setAxis_ for the derivation rules.
+   * Set the horizontal axis constraints for the active layout. Exactly two of
+   * left/right/width must be provided; the third is derived. See setAxis_.
    */
   protected setHorizontalAnchors_(descriptor: HorizontalAnchorSet): void {
+    const entry = this.activeEntry_();
     this.setAxis_(
-      this.anchors_.left,
-      this.anchors_.right,
-      this.anchors_.width,
+      entry.bag.left,
+      entry.bag.right,
+      entry.bag.width,
       descriptor.left,
       descriptor.right,
       descriptor.width,
       "horizontal",
     );
+    entry.hCombination = this.combination_(
+      descriptor.left,
+      descriptor.right,
+      descriptor.width,
+    );
   }
 
   /**
-   * Set the vertical axis constraints. Exactly two of top/bottom/height must
-   * be provided; the third is derived. See setAxis_ for the derivation rules.
+   * Set the vertical axis constraints for the active layout. Exactly two of
+   * top/bottom/height must be provided; the third is derived. See setAxis_.
    */
   protected setVerticalAnchors_(descriptor: VerticalAnchorSet): void {
+    const entry = this.activeEntry_();
     this.setAxis_(
-      this.anchors_.top,
-      this.anchors_.bottom,
-      this.anchors_.height,
+      entry.bag.top,
+      entry.bag.bottom,
+      entry.bag.height,
       descriptor.top,
       descriptor.bottom,
       descriptor.height,
       "vertical",
     );
+    entry.vCombination = this.combination_(
+      descriptor.top,
+      descriptor.bottom,
+      descriptor.height,
+    );
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
+  private newEntry_(): LayoutEntry {
+    return {
+      bag: new ConcreteXYAnchors(),
+      hCombination: "none",
+      vCombination: "none",
+    };
+  }
+
+  /**
+   * Returns the bag for the active layout. If the object was created before a
+   * layout was added (and the cascade hasn't reached it yet), lazily creates a
+   * fresh empty entry rather than throwing.
+   */
+  private activeEntry_(): LayoutEntry {
+    const layout = this.layoutContext_.activeLayout;
+    let entry = this.entries_.get(layout);
+    if (!entry) {
+      entry = this.newEntry_();
+      this.entries_.set(layout, entry);
+    }
+    return entry;
+  }
+
+  /**
+   * Determines which two anchors were explicitly constrained on a 2-of-3 axis call.
+   * Precondition: exactly two of the three values are defined (validated by setAxis_).
+   */
+  private combination_(
+    start: AnchorExpression | undefined,
+    end: AnchorExpression | undefined,
+    size: AnchorExpression | undefined,
+  ): AxisCombination {
+    if (start !== undefined && size !== undefined) return "start+size";
+    if (start !== undefined && end !== undefined) return "start+end";
+    return "end+size";
+  }
+
+  /**
+   * Copies a constrained axis from a source bag into a destination bag using
+   * constant expressions, eliminating all cross-layout anchor references.
+   *
+   * ── The copy strategy ─────────────────────────────────────────────────────
+   *
+   * The two independently constrained anchors (tracked by `combination`) are
+   * copied as ConstantAnchorExpressions — a snapshot of their current value.
+   * The third (derived) anchor gets a fresh DerivedAnchorExpression that closes
+   * over the DESTINATION bag's own anchors, not the source bag's, so the
+   * derivation relationship (e.g. "end = start + size") is preserved inside the
+   * new layout's self-contained expression graph.
+   *
+   * "none" means the axis was never constrained; we skip it rather than copying
+   * zeros, since zeros may never have been intentionally set.
+   */
+  private copyAxisAsConstants_(
+    srcStart: ConcreteAnchor,
+    srcEnd: ConcreteAnchor,
+    srcSize: ConcreteAnchor,
+    dstStart: ConcreteAnchor,
+    dstEnd: ConcreteAnchor,
+    dstSize: ConcreteAnchor,
+    combination: AxisCombination,
+    axis: "horizontal" | "vertical",
+  ): void {
+    if (combination === "none") return;
+
+    const constStart = new ConstantAnchorExpression(srcStart.value);
+    const constEnd = new ConstantAnchorExpression(srcEnd.value);
+    const constSize = new ConstantAnchorExpression(srcSize.value);
+
+    if (combination === "start+size") {
+      // Constrained: start and size. Derived: end = start + size.
+      ConcreteAnchor.applyExpressions(
+        new Map<ConcreteAnchor, AnchorExpression>([
+          [dstStart, constStart],
+          [dstSize, constSize],
+          [
+            dstEnd,
+            new DerivedAnchorExpression(
+              [dstStart, dstSize],
+              () => dstStart.value + dstSize.value,
+              `${axis}.end=start+size`,
+            ),
+          ],
+        ]),
+      );
+    } else if (combination === "start+end") {
+      // Constrained: start and end. Derived: size = end - start.
+      ConcreteAnchor.applyExpressions(
+        new Map<ConcreteAnchor, AnchorExpression>([
+          [dstStart, constStart],
+          [dstEnd, constEnd],
+          [
+            dstSize,
+            new DerivedAnchorExpression(
+              [dstStart, dstEnd],
+              () => dstEnd.value - dstStart.value,
+              `${axis}.size=end-start`,
+            ),
+          ],
+        ]),
+      );
+    } else {
+      // "end+size": Constrained: end and size. Derived: start = end - size.
+      ConcreteAnchor.applyExpressions(
+        new Map<ConcreteAnchor, AnchorExpression>([
+          [dstEnd, constEnd],
+          [dstSize, constSize],
+          [
+            dstStart,
+            new DerivedAnchorExpression(
+              [dstEnd, dstSize],
+              () => dstEnd.value - dstSize.value,
+              `${axis}.start=end-size`,
+            ),
+          ],
+        ]),
+      );
+    }
   }
 
   /**
@@ -81,17 +281,16 @@ export abstract class AnchoredObjectBase {
    *   end + size provided  → start = end − size
    *
    * The derived expression closes over the two anchor OBJECTS (not their
-   * current values). Because anchors have stable identity, this means the
-   * derived value automatically stays consistent whenever the other two anchors
-   * change — no re-derivation required.
+   * current values). Because anchors have stable identity, the derived value
+   * automatically stays consistent whenever the other two anchors change —
+   * no re-derivation required.
    *
    * ── Atomicity ────────────────────────────────────────────────────────────
    *
    * All three expressions (two provided, one derived) are passed to
    * ConcreteAnchor.applyExpressions in a single call, which runs the cycle
-   * check before touching any state. If the proposed graph contains a cycle
-   * (e.g. left depends on right when right is being derived from left), a
-   * GeometryConstraintError is thrown and nothing changes.
+   * check before touching any state. If the proposed graph contains a cycle,
+   * a GeometryConstraintError is thrown and nothing changes.
    */
   private setAxis_(
     startAnchor: ConcreteAnchor,
