@@ -26,6 +26,9 @@ export interface SectionView {
   /** Create a view for an SVG image element owned by this section. */
   createSVGImageElementView(owner: SVGImageElementViewOwner): ElementView;
 
-  /** Tear down this view and all element views it created. */
+  /**
+   * Tear down this view and all element views it created, bottom-up.
+   * See PresentationView.destroy() for the full view ownership contract.
+   */
   destroy(): void;
 }

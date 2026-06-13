@@ -1,5 +1,9 @@
 import type { Element } from "../clientAPI/Element";
 import type { Section } from "../clientAPI/Section";
+import type {
+  HorizontalAnchorSet,
+  VerticalAnchorSet,
+} from "../anchors/AnchorSet";
 import type { ElementView } from "../viewAPI/ElementView";
 import type { ElementViewOwner } from "../viewAPI/ElementViewOwner";
 import type { SectionViewOwner } from "../viewAPI/SectionViewOwner";
@@ -31,8 +35,12 @@ export abstract class CoreElement
 
   /** Called by CoreSection when a view is being attached. */
   attachView(sectionView: SectionView): void {
-    this.view_.destroy();
     this.view_ = this.createView(sectionView);
+  }
+
+  /** Called by CoreSection.removeElement. Destroys this element's view. */
+  detachView(): void {
+    this.view_.destroy();
   }
 
   /** Called by CoreSection during layout passes. */
@@ -46,6 +54,14 @@ export abstract class CoreElement
 
   get section(): Section {
     return this.section_;
+  }
+
+  setHorizontalAnchors(descriptor: HorizontalAnchorSet): void {
+    this.setHorizontalAnchors_(descriptor);
+  }
+
+  setVerticalAnchors(descriptor: VerticalAnchorSet): void {
+    this.setVerticalAnchors_(descriptor);
   }
 
   // ── ElementViewOwner (viewAPI) ───────────────────────────────────────────

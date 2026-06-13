@@ -1,5 +1,14 @@
+import type { Anchor } from "../anchors/index";
 import type { PresentationRoot } from "./PresentationRoot";
 import type { LayoutManager } from "./LayoutManager";
+
+/** Options supplied when creating a new presentation. */
+export interface PresentationOptions {
+  /** Width of the virtual canvas. Defaults to 1000. */
+  basisWidth?: number;
+  /** Height of the virtual canvas. Defaults to 1000. */
+  basisHeight?: number;
+}
 
 /**
  * Presentation is the top-level holder object for a RippleDoc presentation.
@@ -18,4 +27,11 @@ export interface Presentation {
 
   /** Manages the set of layouts and which layout is currently active. */
   get layout(): LayoutManager;
+
+  /**
+   * A live anchor whose value equals the current viewport height in virtual
+   * basis-space coordinates. Use it as the `height` expression for any element
+   * that should fill the visible viewport. Updates when the view is resized.
+   */
+  get viewportHeightAnchor(): Anchor;
 }

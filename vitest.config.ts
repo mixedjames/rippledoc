@@ -31,6 +31,14 @@ export default defineConfig({
         __dirname,
         "packages/presentation4/src",
       ),
+      "@rippledoc/presentation4/viewAPI": path.resolve(
+        __dirname,
+        "packages/presentation4/src/viewAPI",
+      ),
+      "@rippledoc/view-editor": path.resolve(
+        __dirname,
+        "packages/view-editor/src",
+      ),
     },
   },
 });

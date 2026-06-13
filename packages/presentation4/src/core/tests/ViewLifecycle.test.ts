@@ -84,7 +84,15 @@ class SpySectionView implements SectionView {
     return view;
   }
 
+  // Cascades bottom-up: element views destroyed before this section view.
   destroy(): void {
+    for (const { view } of [
+      ...this.markdownViewsCreated,
+      ...this.bitmapViewsCreated,
+      ...this.svgViewsCreated,
+    ]) {
+      view.destroy();
+    }
     this.destroyCount++;
   }
 }
@@ -125,7 +133,11 @@ class SpyPresentationView implements PresentationView {
     return view;
   }
 
+  // Cascades bottom-up: section views (and their element views) destroyed before this view.
   destroy(): void {
+    for (const { view } of this.sectionViewsCreated) {
+      view.destroy();
+    }
     this.destroyCount++;
   }
 }
@@ -340,6 +352,87 @@ describe("view lifecycle — re-attaching a view", () => {
     const newSectionSpy = spy2.sectionViewsCreated[0]!.view;
     expect(newSectionSpy.markdownViewsCreated).toHaveLength(1);
     expect(newSectionSpy.bitmapViewsCreated).toHaveLength(1);
+  });
+});
+
+describe("view lifecycle — removeSection", () => {
+  it("destroys the SectionView when a section is removed", () => {
+    const p = new CorePresentation();
+    const section = p.root.addSection();
+
+    const spy = new SpyPresentationView(800, 600);
+    p.attachView(() => spy);
+
+    const sectionSpy = spy.sectionViewsCreated[0]!.view;
+    expect(sectionSpy.destroyCount).toBe(0);
+
+    p.root.removeSection(section);
+
+    expect(sectionSpy.destroyCount).toBe(1);
+  });
+
+  it("destroys element views bottom-up when a section is removed", () => {
+    const p = new CorePresentation();
+    const section = p.root.addSection();
+    section.addMarkdownElement("content");
+
+    const spy = new SpyPresentationView(800, 600);
+    p.attachView(() => spy);
+
+    const sectionSpy = spy.sectionViewsCreated[0]!.view;
+    const elementSpy = sectionSpy.markdownViewsCreated[0]!.view;
+
+    p.root.removeSection(section);
+
+    // Element view destroyed before section view (bottom-up).
+    expect(elementSpy.destroyCount).toBe(1);
+    expect(sectionSpy.destroyCount).toBe(1);
+  });
+
+  it("does not destroy anything when no view is attached (null view teardown is a no-op)", () => {
+    const p = new CorePresentation();
+    const section = p.root.addSection();
+    section.addMarkdownElement();
+    // No attachView — all views are null. removeSection must not throw.
+    expect(() => p.root.removeSection(section)).not.toThrow();
+  });
+});
+
+describe("view lifecycle — removeElement", () => {
+  it("destroys the ElementView when an element is removed", () => {
+    const p = new CorePresentation();
+    const section = p.root.addSection();
+    const el = section.addMarkdownElement("hello");
+
+    const spy = new SpyPresentationView(800, 600);
+    p.attachView(() => spy);
+
+    const sectionSpy = spy.sectionViewsCreated[0]!.view;
+    const elementSpy = sectionSpy.markdownViewsCreated[0]!.view;
+    expect(elementSpy.destroyCount).toBe(0);
+
+    section.removeElement(el);
+
+    expect(elementSpy.destroyCount).toBe(1);
+  });
+
+  it("does not affect other element views when one is removed", () => {
+    const p = new CorePresentation();
+    const section = p.root.addSection();
+    const el1 = section.addMarkdownElement("one");
+    const el2 = section.addMarkdownElement("two");
+
+    const spy = new SpyPresentationView(800, 600);
+    p.attachView(() => spy);
+
+    const sectionSpy = spy.sectionViewsCreated[0]!.view;
+    const spy1 = sectionSpy.markdownViewsCreated[0]!.view;
+    const spy2 = sectionSpy.markdownViewsCreated[1]!.view;
+
+    section.removeElement(el1);
+
+    expect(spy1.destroyCount).toBe(1);
+    expect(spy2.destroyCount).toBe(0);
   });
 });
 

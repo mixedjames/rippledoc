@@ -1,4 +1,7 @@
-import type { Presentation } from "../clientAPI/Presentation";
+import type {
+  Presentation,
+  PresentationOptions,
+} from "../clientAPI/Presentation";
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
@@ -10,14 +13,11 @@ import type { LayoutTransform } from "../viewAPI/LayoutTransform";
 import { CorePresentationRoot } from "./CorePresentationRoot";
 import { CoreLayoutManager } from "./CoreLayoutManager";
 import { NullPresentationView } from "./nullView/NullPresentationView";
+import { ConcreteAnchor } from "../anchors/ConcreteAnchor";
+import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 
 const DEFAULT_BASIS_WIDTH = 1000;
 const DEFAULT_BASIS_HEIGHT = 1000;
-
-export interface PresentationOptions {
-  basisWidth?: number;
-  basisHeight?: number;
-}
 
 /**
  * Concrete implementation of Presentation and PresentationViewOwner.
@@ -32,15 +32,56 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
   private view_: PresentationView = new NullPresentationView();
   private layoutTransform_: LayoutTransform = { scale: 1, tx: 0 };
 
+  // ── Viewport tracking ────────────────────────────────────────────────────
+  // basisWidth_ and basisHeight_ are set from the default layout and used to
+  // compute scale when the physical viewport changes.
+  private readonly basisWidth_: number;
+  private readonly basisHeight_: number;
+  // Initialised to basisHeight so the anchor has a meaningful value before any
+  // notifyViewResized call (1:1 mapping, scale=1).
+  private physicalHeight_: number;
+  // scale_ = min(physicalWidth/basisWidth, physicalHeight/basisHeight).
+  // Starts at 1 (1:1 mapping) to match physicalHeight_ == basisHeight_.
+  private scale_: number = 1;
+
+  /**
+   * A live anchor whose value equals the current viewport height in virtual
+   * basis-space coordinates: physicalHeight / scale.
+   *
+   * Use it as the `height` expression for any element that should fill the
+   * visible viewport (e.g. a full-bleed slide). The value updates automatically
+   * when notifyViewResized is called.
+   */
+  readonly viewportHeightAnchor: ConcreteAnchor;
+
   constructor(options: PresentationOptions = {}) {
     this.layout_ = new CoreLayoutManager({
       basisWidth: options.basisWidth ?? DEFAULT_BASIS_WIDTH,
       basisHeight: options.basisHeight ?? DEFAULT_BASIS_HEIGHT,
     });
+
+    const defaultLayout = this.layout_.defaultLayout;
+    this.basisWidth_ = defaultLayout.basisWidth;
+    this.basisHeight_ = defaultLayout.basisHeight;
+    this.physicalHeight_ = this.basisHeight_;
+
+    // The evaluator closes over this instance's mutable fields so the anchor
+    // stays live across notifyViewResized calls without replacing the expression.
+    this.viewportHeightAnchor = new ConcreteAnchor(
+      new DerivedAnchorExpression(
+        [],
+        () =>
+          this.scale_ > 0
+            ? this.physicalHeight_ / this.scale_
+            : this.basisHeight_,
+        "viewportHeight=physicalHeight/scale",
+      ),
+    );
+
     this.root_ = new CorePresentationRoot(this);
   }
 
-  // ── Presentation (clientAPI) ─────────────────────────────────────────────
+  // ── Presentation (clientAPI) ──────────────────────────────────────────────
 
   get root(): PresentationRoot {
     return this.root_;
@@ -56,9 +97,13 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     return this.layoutTransform_;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   notifyViewResized(physicalWidth: number, physicalHeight: number): void {
-    // physicalWidth / physicalHeight will feed ScaleHelper once implemented.
+    // scale = largest uniform scale factor that fits the basis canvas inside the
+    // physical viewport (contain-fit, same as CSS object-fit: contain).
+    const scaleX = physicalWidth / this.basisWidth_;
+    const scaleY = physicalHeight / this.basisHeight_;
+    this.scale_ = Math.min(scaleX, scaleY);
+    this.physicalHeight_ = physicalHeight;
     this.performLayout();
   }
 
@@ -68,7 +113,8 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     this.view_.destroy();
     this.view_ = factory(this);
     this.root_.attachView(this.view_);
-    this.performLayout();
+    // Initialize scale and run the first layout pass from the new view's dimensions.
+    this.notifyViewResized(this.view_.width, this.view_.height);
   }
 
   private performLayout(): void {

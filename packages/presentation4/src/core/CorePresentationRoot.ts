@@ -13,6 +13,9 @@ import type { CorePresentation } from "./CorePresentation";
  *
  * The structural root of the document tree and the origin of the global virtual
  * coordinate space. Owned by CorePresentation. Owns CoreSection instances.
+ *
+ * TODO: the inherited AnchoredObjectBase anchors will represent the canvas bounds
+ * (left=0, top=0, width=basisWidth, height=totalHeight) once layout wires them up.
  */
 export class CorePresentationRoot
   extends AnchoredObjectBase
@@ -55,8 +58,8 @@ export class CorePresentationRoot
   }
 
   get totalHeight(): number {
-    // Will be computed from section anchors once anchor system is in place.
-    return 0;
+    const last = this.sections_[this.sections_.length - 1];
+    return last ? last.anchors.bottom.value : 0;
   }
 
   addSection(): Section {
@@ -70,5 +73,13 @@ export class CorePresentationRoot
 
   getSections(): readonly Section[] {
     return this.sections_;
+  }
+
+  removeSection(section: Section): void {
+    const index = this.sections_.findIndex((s) => s === section);
+    if (index < 0) throw new Error("Section does not belong to this root.");
+    const coreSection = this.sections_[index]!;
+    this.sections_.splice(index, 1);
+    coreSection.detachView();
   }
 }

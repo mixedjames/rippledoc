@@ -24,7 +24,7 @@
  */
 
 export type { Anchor, AnchorExpression, XYAnchors } from "../anchors/index";
-export type { Presentation } from "./Presentation";
+export type { Presentation, PresentationOptions } from "./Presentation";
 export type { PresentationRoot } from "./PresentationRoot";
 export type { LayoutManager } from "./LayoutManager";
 export type { Layout, LayoutOptions } from "./Layout";

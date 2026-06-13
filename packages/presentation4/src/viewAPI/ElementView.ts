@@ -12,6 +12,9 @@ export interface ElementView {
   /** Apply the current layout transform. Called by the model on every layout pass. */
   layout(transform: LayoutTransform): void;
 
-  /** Tear down this view. Called by the model before discarding it. */
+  /**
+   * Tear down this view.
+   * See PresentationView.destroy() for the full view ownership contract.
+   */
   destroy(): void;
 }

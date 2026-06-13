@@ -20,6 +20,9 @@
       "path": "./packages/presentation4"
     },
     {
+      "path": "./packages/view-editor"
+    },
+    {
       "path": "./apps/expressions-demo"
     },
     {

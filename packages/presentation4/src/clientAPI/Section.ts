@@ -1,6 +1,7 @@
 import type { PresentationRoot } from "./PresentationRoot";
 import type { Element } from "./Element";
 import type { XYAnchors } from "../anchors/index";
+import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { MarkdownElement } from "./elements/MarkdownElement";
 import type { BitmapImageElement } from "./elements/BitmapImageElement";
 import type { SVGImageElement } from "./elements/SVGImageElement";
@@ -29,6 +30,9 @@ export interface Section {
    */
   get anchors(): XYAnchors;
 
+  /** Set the vertical geometry of this section. Exactly two of top/bottom/height must be provided. */
+  setVerticalAnchors(descriptor: VerticalAnchorSet): void;
+
   /** Adds a new markdown element owned by this section. */
   addMarkdownElement(markdown?: string): MarkdownElement;
 
@@ -40,4 +44,10 @@ export interface Section {
 
   /** Returns all elements owned by this section, in the order they were added. */
   getElements(): readonly Element[];
+
+  /**
+   * Removes an element from this section and destroys its view.
+   * Throws if the element does not belong to this section.
+   */
+  removeElement(element: Element): void;
 }

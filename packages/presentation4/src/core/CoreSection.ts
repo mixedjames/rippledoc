@@ -1,9 +1,11 @@
 import type { Section } from "../clientAPI/Section";
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { Element } from "../clientAPI/Element";
+import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { MarkdownElement } from "../clientAPI/elements/MarkdownElement";
 import type { BitmapImageElement } from "../clientAPI/elements/BitmapImageElement";
 import type { SVGImageElement } from "../clientAPI/elements/SVGImageElement";
+import type { PresentationView } from "../viewAPI/PresentationView";
 import type { SectionView } from "../viewAPI/SectionView";
 import type { SectionViewOwner } from "../viewAPI/SectionViewOwner";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
@@ -38,12 +40,18 @@ export class CoreSection
   }
 
   /** Called by CorePresentationRoot when a view is being attached. */
-  attachView(
-    presentationView: import("../viewAPI/PresentationView").PresentationView,
-  ): void {
-    this.view_.destroy();
+  attachView(presentationView: PresentationView): void {
     this.view_ = presentationView.createSectionView(this);
     this.elements_.forEach((e) => e.attachView(this.view_));
+  }
+
+  /**
+   * Called by CorePresentationRoot.removeSection. Delegates entirely to
+   * this.view_.destroy(), which cascades to all element views per the
+   * SectionView.destroy() ownership contract (see PresentationView.destroy()).
+   */
+  detachView(): void {
+    this.view_.destroy();
   }
 
   /** Called by CorePresentationRoot during layout passes. */
@@ -56,6 +64,10 @@ export class CoreSection
 
   get root(): PresentationRoot {
     return this.root_;
+  }
+
+  setVerticalAnchors(descriptor: VerticalAnchorSet): void {
+    this.setVerticalAnchors_(descriptor);
   }
 
   addMarkdownElement(markdown = ""): MarkdownElement {
@@ -81,6 +93,14 @@ export class CoreSection
 
   getElements(): readonly Element[] {
     return this.elements_;
+  }
+
+  removeElement(element: Element): void {
+    const index = this.elements_.findIndex((e) => e === element);
+    if (index < 0) throw new Error("Element does not belong to this section.");
+    const coreElement = this.elements_[index]!;
+    this.elements_.splice(index, 1);
+    coreElement.detachView();
   }
 
   // ── SectionViewOwner (viewAPI) ───────────────────────────────────────────

@@ -1,5 +1,9 @@
 import type { Section } from "./Section";
 import type { XYAnchors } from "../anchors/index";
+import type {
+  HorizontalAnchorSet,
+  VerticalAnchorSet,
+} from "../anchors/AnchorSet";
 
 /**
  * Element is the base interface for all content items in a presentation.
@@ -24,4 +28,10 @@ export interface Element {
    * to any other anchor in the presentation, not just anchors from the owning section.
    */
   get anchors(): XYAnchors;
+
+  /** Set the horizontal geometry of this element. Exactly two of left/right/width must be provided. */
+  setHorizontalAnchors(descriptor: HorizontalAnchorSet): void;
+
+  /** Set the vertical geometry of this element. Exactly two of top/bottom/height must be provided. */
+  setVerticalAnchors(descriptor: VerticalAnchorSet): void;
 }

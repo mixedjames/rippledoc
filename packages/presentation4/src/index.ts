@@ -14,3 +14,5 @@
  * constructing a presentation.
  */
 export type * from "./clientAPI/index";
+export { createPresentation } from "./createPresentation";
+export { constant, offsetFrom, fractionOf } from "./anchors/factories";

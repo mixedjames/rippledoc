@@ -14,7 +14,11 @@
       "@rippledoc/markdown": ["packages/markdown"],
       "@rippledoc/presentation2": ["packages/presentation2"],
       "@rippledoc/presentation3": ["packages/presentation3"],
-      "@rippledoc/presentation4": ["packages/presentation4"]
+      "@rippledoc/presentation4": ["packages/presentation4"],
+      "@rippledoc/presentation4/viewAPI": [
+        "packages/presentation4/src/viewAPI"
+      ],
+      "@rippledoc/view-editor": ["packages/view-editor"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

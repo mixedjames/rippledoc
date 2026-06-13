@@ -8,6 +8,7 @@
 
 import { describe, it, expect } from "vitest";
 import { CorePresentation } from "../CorePresentation";
+import { constant } from "../../anchors/factories";
 
 // ── CorePresentation ─────────────────────────────────────────────────────────
 
@@ -82,12 +83,70 @@ describe("CorePresentationRoot", () => {
     });
   });
 
+  describe("removeSection", () => {
+    it("removes the section from getSections", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      p.root.removeSection(s1);
+      const sections = p.root.getSections();
+      expect(sections).toHaveLength(1);
+      expect(sections[0]).toBe(s2);
+    });
+
+    it("throws when the section does not belong to this root", () => {
+      const p1 = new CorePresentation();
+      const p2 = new CorePresentation();
+      const foreign = p2.root.addSection();
+      expect(() => p1.root.removeSection(foreign)).toThrow();
+    });
+
+    it("totalHeight reflects the removal", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      s1.setVerticalAnchors({ top: constant(0), height: constant(300) });
+      s2.setVerticalAnchors({ top: constant(300), height: constant(200) });
+      p.root.removeSection(s2);
+      expect(p.root.totalHeight).toBe(300);
+    });
+  });
+
   describe("totalHeight", () => {
-    it("totalHeight is 0 before the anchor system is implemented", () => {
-      // This will change once anchor computation is wired up.
+    it("is 0 with no sections", () => {
+      expect(new CorePresentation().root.totalHeight).toBe(0);
+    });
+
+    it("is 0 when sections have no vertical anchors set", () => {
+      // Sections default to zero geometry (all six anchors start at 0).
       const p = new CorePresentation();
       p.root.addSection();
       expect(p.root.totalHeight).toBe(0);
+    });
+
+    it("equals the bottom of a single section", () => {
+      const p = new CorePresentation();
+      const s = p.root.addSection();
+      s.setVerticalAnchors({ top: constant(0), height: constant(500) });
+      expect(p.root.totalHeight).toBe(500);
+    });
+
+    it("equals the bottom of the last section with multiple sections", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      s1.setVerticalAnchors({ top: constant(0), height: constant(300) });
+      s2.setVerticalAnchors({ top: constant(300), height: constant(200) });
+      expect(p.root.totalHeight).toBe(500);
+    });
+
+    it("updates live when a section's height anchor changes", () => {
+      const p = new CorePresentation();
+      const s = p.root.addSection();
+      s.setVerticalAnchors({ top: constant(0), height: constant(400) });
+      expect(p.root.totalHeight).toBe(400);
+      s.setVerticalAnchors({ top: constant(0), height: constant(800) });
+      expect(p.root.totalHeight).toBe(800);
     });
   });
 });
@@ -183,6 +242,27 @@ describe("CoreSection", () => {
       const p = new CorePresentation();
       const section = p.root.addSection();
       expect(section.getElements()).toHaveLength(0);
+    });
+  });
+
+  describe("removeElement", () => {
+    it("removes the element from getElements", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const el1 = section.addMarkdownElement("one");
+      const el2 = section.addMarkdownElement("two");
+      section.removeElement(el1);
+      const elements = section.getElements();
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBe(el2);
+    });
+
+    it("throws when the element does not belong to this section", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      const foreign = s2.addMarkdownElement();
+      expect(() => s1.removeElement(foreign)).toThrow();
     });
   });
 

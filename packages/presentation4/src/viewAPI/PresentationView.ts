@@ -26,7 +26,33 @@ export interface PresentationView {
   /** Create a view for a section in this presentation. */
   createSectionView(owner: SectionViewOwner): SectionView;
 
-  /** Tear down this view and release all associated resources. */
+  /**
+   * Tear down this view and all section views (and their element views) it created,
+   * bottom-up.
+   *
+   * ── View ownership ────────────────────────────────────────────────────────
+   *
+   * Each layer of the view hierarchy owns the views it creates:
+   *   PresentationView  creates and owns  SectionViews
+   *   SectionView       creates and owns  ElementViews
+   *
+   * "Owns" means the creator must call destroy() on every view it created before
+   * (or during) its own teardown. Bottom-up order is required: element views are
+   * torn down before their section view, section views before the presentation view.
+   *
+   * ── Two code paths ────────────────────────────────────────────────────────
+   *
+   * 1. Full-tree replacement (CorePresentation.attachView): the old PresentationView
+   *    is destroyed here, cascading to all section and element views. Individual
+   *    model nodes do NOT call destroy — the cascade covers the whole tree.
+   *
+   * 2. Single-node removal (CorePresentationRoot.removeSection,
+   *    CoreSection.removeElement): the removed model node calls detachView() on
+   *    itself, which calls destroy() on its view (cascading to its children). The
+   *    parent view is not involved.
+   *
+   * These two paths are mutually exclusive and never cause double-destroy.
+   */
   destroy(): void;
 }
 

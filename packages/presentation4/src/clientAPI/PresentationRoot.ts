@@ -44,6 +44,12 @@ export interface PresentationRoot {
   /** Appends a new empty section to the bottom of the presentation. */
   addSection(): Section;
 
+  /**
+   * Removes a section from the presentation and destroys its view.
+   * Throws if the section does not belong to this root.
+   */
+  removeSection(section: Section): void;
+
   /** Returns all sections in display order, top to bottom. */
   getSections(): readonly Section[];
 }
