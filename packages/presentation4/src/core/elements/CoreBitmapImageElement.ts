@@ -37,9 +37,11 @@ export class CoreBitmapImageElement
 
   setSrc(src: string): void {
     this.src_ = src;
+    this.eventContext_.emit("element:srcChanged", { element: this, src });
   }
 
   setAlt(alt: string): void {
     this.alt_ = alt;
+    this.eventContext_.emit("element:altChanged", { element: this, alt });
   }
 }

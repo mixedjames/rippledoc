@@ -1,6 +1,7 @@
 import type { Anchor } from "../anchors/index";
 import type { PresentationRoot } from "./PresentationRoot";
 import type { LayoutManager } from "./LayoutManager";
+import type { PresentationEventSource } from "./PresentationEvents";
 
 /** Options supplied when creating a new presentation. */
 export interface PresentationOptions {
@@ -34,4 +35,7 @@ export interface Presentation {
    * that should fill the visible viewport. Updates when the view is resized.
    */
   get viewportHeightAnchor(): Anchor;
+
+  /** Subscribe to structural, content, geometry, and layout change events. */
+  get events(): PresentationEventSource;
 }

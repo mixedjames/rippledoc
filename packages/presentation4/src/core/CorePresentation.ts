@@ -10,11 +10,15 @@ import type {
   PresentationViewFactory,
 } from "../viewAPI/PresentationView";
 import type { LayoutTransform } from "../viewAPI/LayoutTransform";
+import type { PresentationEventSource } from "../clientAPI/PresentationEvents";
+import type { PresentationEvents } from "../clientAPI/PresentationEvents";
 import { CorePresentationRoot } from "./CorePresentationRoot";
 import { CoreLayoutManager } from "./CoreLayoutManager";
 import { NullPresentationView } from "./nullView/NullPresentationView";
 import { ConcreteAnchor } from "../anchors/ConcreteAnchor";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
+import { EventController } from "../common/EventController";
+import { EventContext } from "./EventContext";
 
 const DEFAULT_BASIS_WIDTH = 1000;
 const DEFAULT_BASIS_HEIGHT = 1000;
@@ -29,6 +33,8 @@ const DEFAULT_BASIS_HEIGHT = 1000;
 export class CorePresentation implements Presentation, PresentationViewOwner {
   private readonly root_: CorePresentationRoot;
   private readonly layout_: CoreLayoutManager;
+  private readonly eventController_: EventController<PresentationEvents>;
+  private readonly eventContext_: EventContext;
   private view_: PresentationView = new NullPresentationView();
   private layoutTransform_: LayoutTransform = { scale: 1, tx: 0 };
 
@@ -78,19 +84,21 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
       ),
     );
 
+    this.eventController_ = new EventController<PresentationEvents>();
+    this.eventContext_ = new EventContext(this.eventController_);
+
     this.root_ = new CorePresentationRoot(this);
 
-    // Wire the layout-added callback to cascade new layouts through the document tree.
-    //
-    // Each anchored object copies its CURRENTLY ACTIVE layout's values as constants
-    // into the new layout's bag. If addLayout() is called while a non-default layout
-    // is active, the new layout inherits from that one, not from the default.
-    //
-    // TODO: In future this could be user selectable?
-    //
-    this.layout_.setLayoutAddedCallback((layout) =>
-      this.root_.onLayoutAdded(layout),
-    );
+    // Wire the layout-added callback to cascade new layouts through the document
+    // tree and emit the layout:added event.
+    this.layout_.setLayoutAddedCallback((layout) => {
+      this.root_.onLayoutAdded(layout);
+      this.eventController_.emit("layout:added", { layout });
+    });
+
+    this.layout_.setLayoutActiveChangedCallback((layout) => {
+      this.eventController_.emit("layout:activeChanged", { layout });
+    });
   }
 
   // ── Presentation (clientAPI) ──────────────────────────────────────────────
@@ -101,6 +109,16 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
 
   get layout(): LayoutManager {
     return this.layout_;
+  }
+
+  get events(): PresentationEventSource {
+    return this.eventController_;
+  }
+
+  // ── Internal accessors for the Core* tree ────────────────────────────────
+
+  get eventContext(): EventContext {
+    return this.eventContext_;
   }
 
   // ── PresentationViewOwner (viewAPI) ──────────────────────────────────────

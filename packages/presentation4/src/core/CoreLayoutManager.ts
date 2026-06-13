@@ -14,6 +14,8 @@ export class CoreLayoutManager implements LayoutManager {
   private activeLayout_: CoreLayout;
   private layoutPicker_: LayoutPicker | null = null;
   private layoutAddedCallback_: ((layout: Layout) => void) | null = null;
+  private layoutActiveChangedCallback_: ((layout: Layout) => void) | null =
+    null;
 
   constructor(defaultLayoutOptions: LayoutOptions) {
     const defaultLayout = new CoreLayout(defaultLayoutOptions);
@@ -27,6 +29,11 @@ export class CoreLayoutManager implements LayoutManager {
    */
   setLayoutAddedCallback(callback: (layout: Layout) => void): void {
     this.layoutAddedCallback_ = callback;
+  }
+
+  /** Registers a callback invoked each time setActiveLayout() succeeds. */
+  setLayoutActiveChangedCallback(callback: (layout: Layout) => void): void {
+    this.layoutActiveChangedCallback_ = callback;
   }
 
   // ── LayoutManager (clientAPI) ────────────────────────────────────────────
@@ -54,6 +61,7 @@ export class CoreLayoutManager implements LayoutManager {
     const found = this.layouts_.find((l) => l === layout);
     if (!found) throw new Error("Layout does not belong to this manager.");
     this.activeLayout_ = found;
+    this.layoutActiveChangedCallback_?.(found);
   }
 
   get hasLayoutPicker(): boolean {

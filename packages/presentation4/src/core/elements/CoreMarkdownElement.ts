@@ -31,5 +31,6 @@ export class CoreMarkdownElement
 
   setMarkdown(markdown: string): void {
     this.markdown_ = markdown;
+    this.eventContext_.emit("element:markdownChanged", { element: this, markdown });
   }
 }

@@ -34,3 +34,7 @@ export type { Element } from "./Element";
 export type { MarkdownElement } from "./elements/MarkdownElement";
 export type { BitmapImageElement } from "./elements/BitmapImageElement";
 export type { SVGImageElement } from "./elements/SVGImageElement";
+export type {
+  PresentationEvents,
+  PresentationEventSource,
+} from "./PresentationEvents";

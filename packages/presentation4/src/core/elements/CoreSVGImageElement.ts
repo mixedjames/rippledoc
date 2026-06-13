@@ -31,5 +31,6 @@ export class CoreSVGImageElement
 
   setSrc(src: string): void {
     this.src_ = src;
+    this.eventContext_.emit("element:srcChanged", { element: this, src });
   }
 }

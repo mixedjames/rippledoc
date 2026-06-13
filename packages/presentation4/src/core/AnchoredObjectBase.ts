@@ -92,6 +92,17 @@ export abstract class AnchoredObjectBase {
     entry.vCombination = source.vCombination;
 
     this.entries_.set(layout, entry);
+    this.onBagCreated_(entry.bag);
+  }
+
+  /**
+   * Called after a new layout bag is created and stored in initLayoutEntry_.
+   * Override in subclasses to perform post-creation work such as registering
+   * anchors in an ownership map. Not called for the initial bag (created in the
+   * constructor) — subclasses handle that directly after super() completes.
+   */
+  protected onBagCreated_(bag: ConcreteXYAnchors): void {
+    void bag; // no-op; subclasses override to register anchors in EventContext
   }
 
   // ── Axis constraint helpers ────────────────────────────────────────────────

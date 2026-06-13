@@ -9,6 +9,8 @@ import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { CoreSection } from "./CoreSection";
 import { NullPresentationView } from "./nullView/NullPresentationView";
 import type { CorePresentation } from "./CorePresentation";
+import type { EventContext } from "./EventContext";
+import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 
 /**
  * Concrete implementation of PresentationRoot.
@@ -24,6 +26,7 @@ export class CorePresentationRoot
   implements PresentationRoot
 {
   private readonly presentation_: CorePresentation;
+  private readonly eventContext_: EventContext;
   private readonly sections_: CoreSection[] = [];
   // Tracks the current view so sections added after attachView get a real view immediately.
   private view_: PresentationView = new NullPresentationView();
@@ -31,11 +34,23 @@ export class CorePresentationRoot
   constructor(presentation: CorePresentation) {
     super(presentation.layout);
     this.presentation_ = presentation;
+    this.eventContext_ = presentation.eventContext;
+    // Register the initial bag created during super().
+    this.eventContext_.registerAnchors(this.anchors, this);
   }
 
   /** Exposes the LayoutManager so CoreSection can thread it to AnchoredObjectBase. */
   get layoutContext(): LayoutManager {
     return this.presentation_.layout;
+  }
+
+  /** Exposes EventContext so CoreSection can access it via the root reference. */
+  get eventContext(): EventContext {
+    return this.eventContext_;
+  }
+
+  protected override onBagCreated_(bag: ConcreteXYAnchors): void {
+    this.eventContext_.registerAnchors(bag, this);
   }
 
   /** Called by CorePresentation when a layout is added to the LayoutManager. */
@@ -81,6 +96,10 @@ export class CorePresentationRoot
     // rather than leaving it with a null view until the next full attach cycle.
     section.attachView(this.view_);
     this.sections_.push(section);
+    this.eventContext_.emit("section:added", {
+      section,
+      index: this.sections_.length - 1,
+    });
     return section;
   }
 
@@ -94,5 +113,6 @@ export class CorePresentationRoot
     const coreSection = this.sections_[index]!;
     this.sections_.splice(index, 1);
     coreSection.detachView();
+    this.eventContext_.emit("section:removed", { section, index });
   }
 }
