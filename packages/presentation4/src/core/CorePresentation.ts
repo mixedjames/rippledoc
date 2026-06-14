@@ -182,6 +182,10 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     }
   }
 
+  requestLayout(): void {
+    this.performLayout();
+  }
+
   notifyViewResized(physicalWidth: number, physicalHeight: number): void {
     // scale = largest uniform scale that fits the basis page slot inside the
     // physical viewport (contain-fit, same as CSS object-fit: contain).
@@ -207,7 +211,15 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
   private performLayout(): void {
     const tx = (this.physicalWidth_ - this.basisWidth_ * this.scale_) / 2;
     this.layoutTransform_ = { scale: this.scale_, tx };
+    // Phase 1: PresentationView receives the transform (scroll container sizing etc.)
     this.view_.layout(this.layoutTransform_);
+    // Phase 2 (write): apply the constrained dimension to all content-dependent elements.
+    // All writes happen before any reads to avoid read-write interleaving reflows.
+    this.root_.performMeasureApply(this.layoutTransform_);
+    // Phase 3 (read): measure each content-dependent element and feed the result back
+    // into its size anchor via notifyMeasuredSize. Anchor values are now fully populated.
+    this.root_.performMeasureFeedback();
+    // Phase 4: normal layout cascade with all anchor values known.
     this.root_.performLayout(this.layoutTransform_);
   }
 }

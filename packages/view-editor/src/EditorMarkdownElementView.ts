@@ -30,5 +30,10 @@ export class EditorMarkdownElementView extends EditorElementView {
 
   private syncContent_(): void {
     this.element.replaceChildren(parseMarkdown(this.markdownOwner_.markdown));
+    // If the height is content-dependent, the new content may change the natural
+    // height. Request a layout pass so the measurement phase re-runs.
+    if (this.markdownOwner_.contentDependentDimension === "height") {
+      this.markdownOwner_.sectionViewOwner.presentationViewOwner.requestLayout();
+    }
   }
 }

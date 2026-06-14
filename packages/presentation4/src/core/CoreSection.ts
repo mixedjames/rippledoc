@@ -88,6 +88,16 @@ export class CoreSection
     this.elements_.forEach((e) => e.performLayout(transform));
   }
 
+  /** Write phase of content-dependent layout: applies the constrained dimension to each auto element. */
+  performMeasureApply(transform: LayoutTransform): void {
+    this.elements_.forEach((e) => e.performMeasureApply(transform));
+  }
+
+  /** Read phase of content-dependent layout: measures each auto element and feeds the result back. */
+  performMeasureFeedback(): void {
+    this.elements_.forEach((e) => e.performMeasureFeedback());
+  }
+
   // ── Section (clientAPI) ──────────────────────────────────────────────────
 
   get root(): PresentationRoot {

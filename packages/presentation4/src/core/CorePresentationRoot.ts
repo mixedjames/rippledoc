@@ -88,6 +88,16 @@ export class CorePresentationRoot
     this.sections_.forEach((s) => s.performLayout(transform));
   }
 
+  /** Write phase of content-dependent layout: cascades to all sections. */
+  performMeasureApply(transform: LayoutTransform): void {
+    this.sections_.forEach((s) => s.performMeasureApply(transform));
+  }
+
+  /** Read phase of content-dependent layout: cascades to all sections. */
+  performMeasureFeedback(): void {
+    this.sections_.forEach((s) => s.performMeasureFeedback());
+  }
+
   /** Exposes the presentation as PresentationViewOwner for section view owners to reach. */
   get presentationViewOwner(): PresentationViewOwner {
     return this.presentation_;

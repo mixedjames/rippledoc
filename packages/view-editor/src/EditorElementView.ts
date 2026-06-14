@@ -26,6 +26,36 @@ export class EditorElementView implements p4.ElementView {
     this.element_.style.height = `${anchors.height.value * scale}px`;
   }
 
+  applyConstrainedDimension({ scale }: p4.LayoutTransform): void {
+    const dim = this.owner_.contentDependentDimension;
+    if (dim === "height") {
+      // Fix width so content can reflow; clear height so the browser sizes it naturally.
+      this.element_.style.width = `${this.owner_.anchors.width.value * scale}px`;
+      this.element_.style.height = "";
+    } else if (dim === "width") {
+      // Fix height; clear width.
+      this.element_.style.height = `${this.owner_.anchors.height.value * scale}px`;
+      this.element_.style.width = "";
+    }
+  }
+
+  measureAndReport(): void {
+    const dim = this.owner_.contentDependentDimension;
+    if (dim === "none") return;
+    const rect = this.element_.getBoundingClientRect();
+    const scale =
+      this.owner_.sectionViewOwner.presentationViewOwner.layoutTransform.scale;
+    const size =
+      dim === "height"
+        ? scale > 0
+          ? rect.height / scale
+          : 0
+        : scale > 0
+          ? rect.width / scale
+          : 0;
+    this.owner_.notifyMeasuredSize(size);
+  }
+
   destroy(): void {
     this.element_.remove();
   }

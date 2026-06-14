@@ -30,7 +30,7 @@ export type { LayoutManager } from "./LayoutManager";
 export type { Layout, LayoutOptions } from "./Layout";
 export type { LayoutPicker } from "./LayoutPicker";
 export type { Section } from "./Section";
-export type { Element } from "./Element";
+export type { Element, ContentDependentDimension } from "./Element";
 export type { MarkdownElement } from "./elements/MarkdownElement";
 export type { BitmapImageElement } from "./elements/BitmapImageElement";
 export type { SVGImageElement } from "./elements/SVGImageElement";

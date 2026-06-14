@@ -36,6 +36,9 @@ class SpyElementView implements ElementView {
     this.layoutCalls.push({ ...transform });
   }
 
+  applyConstrainedDimension(): void {}
+  measureAndReport(): void {}
+
   destroy(): void {
     this.destroyCount++;
   }

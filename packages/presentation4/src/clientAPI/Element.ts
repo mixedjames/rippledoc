@@ -1,9 +1,13 @@
 import type { Section } from "./Section";
 import type { XYAnchors } from "../anchors/index";
+import type { AnchorExpression } from "../anchors/Anchor";
 import type {
   HorizontalAnchorSet,
   VerticalAnchorSet,
 } from "../anchors/AnchorSet";
+
+/** Which dimension, if any, is determined by content measurement rather than anchor expressions. */
+export type ContentDependentDimension = "none" | "width" | "height";
 
 /**
  * Element is the base interface for all content items in a presentation.
@@ -39,9 +43,43 @@ export interface Element {
   get bottom(): number;
   get height(): number;
 
+  /**
+   * Which dimension is determined by content measurement. "none" means both
+   * axes are fully anchor-expressed. At most one axis may be content-dependent.
+   */
+  get contentDependentDimension(): ContentDependentDimension;
+
   /** Set the horizontal geometry of this element. Exactly two of left/right/width must be provided. */
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void;
 
   /** Set the vertical geometry of this element. Exactly two of top/bottom/height must be provided. */
   setVerticalAnchors(descriptor: VerticalAnchorSet): void;
+
+  /**
+   * Make this element's height content-dependent. The view will measure the
+   * rendered height after the width is applied, and feed it back into the anchor
+   * system. Clears any previously set vertical anchors.
+   *
+   * Exactly one of top or bottom must be provided to fix the element's position
+   * on the vertical axis; the other edge is derived from the measured height.
+   *
+   * Throws if width is already content-dependent (both axes cannot be auto).
+   */
+  setAutoHeight(
+    options: { top: AnchorExpression } | { bottom: AnchorExpression },
+  ): void;
+
+  /**
+   * Make this element's width content-dependent. The view will measure the
+   * rendered width after the height is applied, and feed it back into the anchor
+   * system. Clears any previously set horizontal anchors.
+   *
+   * Exactly one of left or right must be provided to fix the element's position
+   * on the horizontal axis; the other edge is derived from the measured width.
+   *
+   * Throws if height is already content-dependent (both axes cannot be auto).
+   */
+  setAutoWidth(
+    options: { left: AnchorExpression } | { right: AnchorExpression },
+  ): void;
 }

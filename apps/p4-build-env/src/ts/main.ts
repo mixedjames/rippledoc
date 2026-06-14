@@ -59,6 +59,21 @@ function addText(
   return el;
 }
 
+// Like addText but the height is content-dependent — the element sizes itself
+// to fit its rendered markdown rather than requiring a fixed height.
+function addAutoText(
+  section: Section,
+  text: string,
+  topOffset: number,
+  left = 60,
+  width = 880,
+) {
+  const el = section.addMarkdownElement(text);
+  el.setHorizontalAnchors({ left: constant(left), width: constant(width) });
+  el.setAutoHeight({ top: offsetFrom(section.anchors.top, topOffset) });
+  return el;
+}
+
 addText(s1, "# Section 1 — Intro\nHeight = one viewport height.", 20, 80);
 addText(
   s1,
@@ -71,8 +86,21 @@ addText(s1, "Another element — midway through Section 1.", 400, 60);
 addText(s2, "Section 2 — Chapter 1\nHeight = one viewport height.", 20, 80);
 addText(s2, "Trigger B is active while this section is in view.", 140, 60);
 
-addText(s3, "Section 3 — Chapter 2\nHeight = one viewport height.", 20, 80);
-addText(s3, "Trigger C is active during Section 4.", 400, 60);
+addText(s3, "Section 3 — auto-height demo", 20, 80);
+addAutoText(
+  s3,
+  `## Content-dependent height
+
+This element has no fixed height — it sizes itself to fit its content.
+
+- The **width** is fixed at 880 basis units.
+- \`setAutoHeight({ top: ... })\` was called instead of \`setVerticalAnchors\`.
+- The view measures the rendered DOM after applying the width, then feeds the result back into the anchor system.
+- Resize the window and watch this element reflow without any explicit height.
+
+> The bottom edge of this box is derived automatically from the measured height.`,
+  120,
+);
 
 addText(s4, "Section 4 — Outro\nHeight = one viewport height.", 20, 80);
 addText(s4, "End of presentation.", 150, 60);

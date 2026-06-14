@@ -33,4 +33,11 @@ export interface PresentationViewOwner extends Presentation {
    * space as section and element anchors.
    */
   notifyScrolled(scrollY: number): void;
+
+  /**
+   * Request an immediate layout pass without changing the physical viewport
+   * dimensions. Element views call this when async content (e.g. an image)
+   * finishes loading and the content-dependent size needs to be re-measured.
+   */
+  requestLayout(): void;
 }

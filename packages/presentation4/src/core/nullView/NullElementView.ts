@@ -5,6 +5,7 @@ import type { ElementView } from "../../viewAPI/ElementView";
  */
 export class NullElementView implements ElementView {
   layout(): void {}
-
+  applyConstrainedDimension(): void {}
+  measureAndReport(): void {}
   destroy(): void {}
 }
