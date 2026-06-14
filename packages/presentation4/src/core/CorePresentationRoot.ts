@@ -1,5 +1,6 @@
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { Section } from "../clientAPI/Section";
+import type { Anchor } from "../anchors/Anchor";
 import type { Layout } from "../clientAPI/Layout";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { PresentationView } from "../viewAPI/PresentationView";
@@ -11,6 +12,8 @@ import { NullPresentationView } from "./nullView/NullPresentationView";
 import type { CorePresentation } from "./CorePresentation";
 import type { EventContext } from "./EventContext";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
+import { constant } from "../anchors/factories";
+import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 
 /**
  * Concrete implementation of PresentationRoot.
@@ -18,8 +21,8 @@ import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
  * The structural root of the document tree and the origin of the global virtual
  * coordinate space. Owned by CorePresentation. Owns CoreSection instances.
  *
- * TODO: the inherited AnchoredObjectBase anchors will represent the canvas bounds
- * (left=0, top=0, width=basisWidth, height=totalHeight) once layout wires them up.
+ * The inherited AnchoredObjectBase anchors represent the canvas bounds:
+ *   left=0, width=basisWidth, top=0, height=totalHeight (dynamic).
  */
 export class CorePresentationRoot
   extends AnchoredObjectBase
@@ -37,6 +40,21 @@ export class CorePresentationRoot
     this.eventContext_ = presentation.eventContext;
     // Register the initial bag created during super().
     this.eventContext_.registerAnchors(this.anchors, this);
+
+    // Wire the canvas-bounds anchors. height is dynamic: it reads totalHeight
+    // which sums section heights, so it stays current as sections are added.
+    this.setHorizontalAnchors_({
+      left: constant(0),
+      width: constant(this.basisWidth),
+    });
+    this.setVerticalAnchors_({
+      top: constant(0),
+      height: new DerivedAnchorExpression(
+        [],
+        () => this.totalHeight,
+        "totalHeight",
+      ),
+    });
   }
 
   /** Exposes the LayoutManager so CoreSection can thread it to AnchoredObjectBase. */
@@ -76,6 +94,19 @@ export class CorePresentationRoot
   }
 
   // ── PresentationRoot (clientAPI) ─────────────────────────────────────────
+
+  get viewportWidth(): Anchor {
+    return this.presentation_.viewportWidthAnchor;
+  }
+  get viewportHeight(): Anchor {
+    return this.presentation_.viewportHeightAnchor;
+  }
+  get viewportLeft(): Anchor {
+    return this.presentation_.viewportLeftAnchor;
+  }
+  get viewportRight(): Anchor {
+    return this.presentation_.viewportRightAnchor;
+  }
 
   get basisWidth(): number {
     return this.presentation_.layout.activeLayout.basisWidth;

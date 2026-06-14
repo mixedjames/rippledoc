@@ -2,27 +2,121 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>p3 Build Env</title>
+    <title>p4 Build Env</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <style>
       * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #1a1a2e;
+        font-family: system-ui, sans-serif;
+      }
+
+      /* Presentation fills the left portion of the viewport. */
+      #theContainer {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 280px;
+        bottom: 0;
+        overflow: hidden;
+      }
+
+      /* Trigger HUD — fixed right panel. */
+      #triggerHUD {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100%;
+        background: #12122a;
+        border-left: 1px solid hsl(220 30% 30%);
+        padding: 16px 12px;
+        overflow-y: auto;
+        color: #cdd;
+      }
+
+      #triggerHUD::before {
+        content: "SCROLL TRIGGERS";
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: hsl(220 40% 55%);
+        margin-bottom: 16px;
+      }
+
+      .trigger-row {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid hsl(220 20% 20%);
+      }
+      .trigger-row:last-child {
+        border-bottom: none;
+      }
+
+      .trigger-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #eef;
+        margin-bottom: 6px;
+      }
+
+      .trigger-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+
+      .trigger-state {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: hsl(220 20% 20%);
+        color: hsl(220 40% 60%);
+      }
+      .trigger-state[data-state="ACTIVE"] {
+        background: hsl(140 60% 25%);
+        color: hsl(140 80% 70%);
+      }
+      .trigger-state[data-state="AFTER"] {
+        background: hsl(30 60% 20%);
+        color: hsl(30 80% 65%);
+      }
+
+      .trigger-pill {
+        font-size: 11px;
+        color: hsl(220 30% 60%);
+        font-variant-numeric: tabular-nums;
+        min-width: 32px;
+      }
+
+      .trigger-bar-track {
+        height: 4px;
+        background: hsl(220 20% 20%);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .trigger-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: hsl(140 60% 45%);
+        border-radius: 2px;
+        transition: width 0.05s linear;
       }
     </style>
   </head>
 
   <body>
-    <div
-      id="theContainer"
-      style="
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      "
-    ></div>
+    <div id="theContainer"></div>
+    <div id="triggerHUD"></div>
   </body>
 </html>

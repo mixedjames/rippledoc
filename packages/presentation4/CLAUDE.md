@@ -23,6 +23,18 @@ Three layers with deliberate import boundaries:
 - **`core/`** — concrete `Core*` classes. Never exported from the package root.
 - **`anchors/`** — standalone geometry subsystem used by all layers.
 
+## Public Interface Changes
+
+Changes to anything in `clientAPI/`, `viewAPI/`, or `anchors/` — adding, removing,
+or modifying types, interfaces, or function signatures — are **breaking changes**.
+Do not make them without explicit approval from the user, even if the change seems
+like a natural fix or improvement. Propose the change and the rationale first, then
+wait for a go-ahead before touching the interface.
+
+This applies especially to the anchor system (`Anchor`, `AnchorExpression`,
+`XYAnchors`): these types have precise architectural meanings and their relationships
+must not be altered as a side effect of fixing a bug or unblocking a demo.
+
 ## Coding Style
 
 - **camelCase** for variables, methods, and properties

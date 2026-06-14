@@ -1,5 +1,5 @@
 import type { Section } from "./Section";
-import type { XYAnchors } from "../anchors/index";
+import type { Anchor, XYAnchors } from "../anchors/index";
 
 /**
  * PresentationRoot is the structural root of the document tree and the origin
@@ -22,6 +22,30 @@ export interface PresentationRoot {
    * these — for example, offsetting from the root's left anchor to apply a margin.
    */
   get anchors(): XYAnchors;
+
+  /** Resolved horizontal geometry in virtual coordinates. */
+  get left(): number;
+  get right(): number;
+  get width(): number;
+
+  /** Resolved vertical geometry in virtual coordinates. */
+  get top(): number;
+  get bottom(): number;
+  get height(): number;
+
+  /**
+   * Viewport dimensions in basis coordinates. These update whenever the physical
+   * viewport is resized (notifyViewResized). Use them to size or position elements
+   * relative to the visible window rather than the fixed canvas bounds.
+   *
+   * viewportLeft / viewportRight are non-zero only when the canvas is narrower than
+   * the physical viewport (i.e. pillarbox layout). In the common width-constrained
+   * case viewportLeft = 0 and viewportRight = basisWidth.
+   */
+  get viewportWidth(): Anchor;
+  get viewportHeight(): Anchor;
+  get viewportLeft(): Anchor;
+  get viewportRight(): Anchor;
 
   /**
    * Width of the virtual canvas in presentation units.

@@ -23,4 +23,14 @@ export interface PresentationViewOwner extends Presentation {
    * updated transforms back down to all views.
    */
   notifyViewResized(physicalWidth: number, physicalHeight: number): void;
+
+  /**
+   * Notify the model of the current scroll position in virtual basis-space
+   * coordinates. The view should call this on every scroll event so the model
+   * can evaluate all registered scroll triggers and emit their events.
+   *
+   * scrollY is the top edge of the visible viewport in the same coordinate
+   * space as section and element anchors.
+   */
+  notifyScrolled(scrollY: number): void;
 }

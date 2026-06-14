@@ -1,7 +1,7 @@
-import type { Anchor } from "../anchors/index";
 import type { PresentationRoot } from "./PresentationRoot";
 import type { LayoutManager } from "./LayoutManager";
 import type { PresentationEventSource } from "./PresentationEvents";
+import type { ScrollTrigger, ScrollTriggerOptions } from "./ScrollTrigger";
 
 /** Options supplied when creating a new presentation. */
 export interface PresentationOptions {
@@ -29,13 +29,16 @@ export interface Presentation {
   /** Manages the set of layouts and which layout is currently active. */
   get layout(): LayoutManager;
 
-  /**
-   * A live anchor whose value equals the current viewport height in virtual
-   * basis-space coordinates. Use it as the `height` expression for any element
-   * that should fill the visible viewport. Updates when the view is resized.
-   */
-  get viewportHeightAnchor(): Anchor;
-
   /** Subscribe to structural, content, geometry, and layout change events. */
   get events(): PresentationEventSource;
+
+  /**
+   * Create a scroll trigger that spans the given vertical range and emit
+   * typed events as the scroll position crosses its boundaries.
+   *
+   * Exactly two of top/bottom/height must be provided (the 2-of-3 rule).
+   * The trigger's vertical anchors may reference any other anchor in the
+   * presentation (e.g. offsetFrom(section.anchors.top, 100)).
+   */
+  addScrollTrigger(options: ScrollTriggerOptions): ScrollTrigger;
 }

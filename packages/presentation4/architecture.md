@@ -148,13 +148,30 @@ the system.
 
 **Key types** (`src/anchors/`):
 
-- `Anchor` — stable identity object; holds an `AnchorExpression` (the computation
-  recipe) and a cached `value: number`. Two anchors with the same expression are
-  still distinct — anchor identity matters for the DAG.
-- `AnchorExpression` — describes how a value is computed. Subtypes:
-  - `ImmutableConstantExpression` — returns a fixed number; has no dependencies.
-  - `DerivedAnchorExpression` — a function of one or more other `Anchor` values;
-    declares its dependencies explicitly so the DAG can be traversed.
+- `Anchor` — a node in the constraint DAG with stable identity. It holds an
+  `AnchorExpression` (its current computation recipe) and exposes `value: number`
+  (computed on demand — there is no cache). Two anchors with the same expression
+  are still distinct objects; anchor identity is what the DAG tracks.
+- `AnchorExpression` — an immutable, value-typed recipe for computing a number.
+  Subtypes: `ConstantAnchorExpression`, `OffsetAnchorExpression`,
+  `FractionAnchorExpression`, `DerivedAnchorExpression`.
+
+**`Anchor` and `AnchorExpression` are not interchangeable.** An `Anchor` is a DAG
+node; an `AnchorExpression` is the formula attached to a node. Do not pass an
+`Anchor` where an `AnchorExpression` is expected. To reference another anchor's
+value inside an expression, wrap it:
+
+```typescript
+// Correct — offsetFrom creates an AnchorExpression that reads the anchor's value
+section.setVerticalAnchors({
+  top: constant(0),
+  height: offsetFrom(root.viewportHeight, 0),
+});
+
+// Wrong — Anchor is not an AnchorExpression; will fail at runtime
+// section.setVerticalAnchors({ top: constant(0), height: root.viewportHeight });
+```
+
 - `XYAnchors` — a grouped bag of six anchors (`left`, `right`, `width`, `top`,
   `bottom`, `height`). Exposed on every anchored object. The bag enforces the
   2-of-3 rule per axis.

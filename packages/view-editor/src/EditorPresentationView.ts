@@ -24,6 +24,7 @@ export class EditorPresentationView implements p4.PresentationView {
   private readonly owner_: p4.PresentationViewOwner;
   private readonly dom_: PresentationDOM;
   private readonly resizeObserver_: ResizeObserver;
+  private readonly onScroll_: () => void;
 
   constructor(owner: p4.PresentationViewOwner, config: EditorViewConfig) {
     this.owner_ = owner;
@@ -34,6 +35,16 @@ export class EditorPresentationView implements p4.PresentationView {
       this.owner_.notifyViewResized(clientWidth, clientHeight);
     });
     this.resizeObserver_.observe(this.dom_.containerElement);
+
+    // Convert physical scrollTop to virtual basis-space coordinates before
+    // notifying the model, so trigger ranges align with anchor values.
+    this.onScroll_ = () => {
+      const scale = this.owner_.layoutTransform.scale;
+      const scrollY =
+        scale > 0 ? this.dom_.viewportContainer.scrollTop / scale : 0;
+      this.owner_.notifyScrolled(scrollY);
+    };
+    this.dom_.viewportContainer.addEventListener("scroll", this.onScroll_);
   }
 
   get width(): number {
@@ -54,6 +65,7 @@ export class EditorPresentationView implements p4.PresentationView {
 
   destroy(): void {
     this.resizeObserver_.disconnect();
+    this.dom_.viewportContainer.removeEventListener("scroll", this.onScroll_);
     this.dom_.destroy();
   }
 

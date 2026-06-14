@@ -12,7 +12,10 @@ export type PresentationEvents = {
   "element:added": { element: Element; section: Section; index: number };
   "element:removed": { element: Element; section: Section; index: number };
   "element:markdownChanged": { element: MarkdownElement; markdown: string };
-  "element:srcChanged": { element: BitmapImageElement | SVGImageElement; src: string };
+  "element:srcChanged": {
+    element: BitmapImageElement | SVGImageElement;
+    src: string;
+  };
   "element:altChanged": { element: BitmapImageElement; alt: string };
   /**
    * Emitted when an object's anchor expressions are updated, and for every object

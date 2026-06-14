@@ -60,9 +60,21 @@ describe("element:added / element:removed", () => {
     const svg = s.addSVGImageElement();
 
     expect(listener).toHaveBeenCalledTimes(3);
-    expect(listener).toHaveBeenNthCalledWith(1, { element: md, section: s, index: 0 });
-    expect(listener).toHaveBeenNthCalledWith(2, { element: bmp, section: s, index: 1 });
-    expect(listener).toHaveBeenNthCalledWith(3, { element: svg, section: s, index: 2 });
+    expect(listener).toHaveBeenNthCalledWith(1, {
+      element: md,
+      section: s,
+      index: 0,
+    });
+    expect(listener).toHaveBeenNthCalledWith(2, {
+      element: bmp,
+      section: s,
+      index: 1,
+    });
+    expect(listener).toHaveBeenNthCalledWith(3, {
+      element: svg,
+      section: s,
+      index: 2,
+    });
   });
 
   it("fires element:removed with the element, its section, and its former index", () => {
@@ -75,7 +87,11 @@ describe("element:added / element:removed", () => {
     s.removeElement(el);
 
     expect(listener).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenCalledWith({ element: el, section: s, index: 0 });
+    expect(listener).toHaveBeenCalledWith({
+      element: el,
+      section: s,
+      index: 0,
+    });
   });
 });
 
@@ -92,7 +108,10 @@ describe("element:markdownChanged", () => {
     el.setMarkdown("# New content");
 
     expect(listener).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenCalledWith({ element: el, markdown: "# New content" });
+    expect(listener).toHaveBeenCalledWith({
+      element: el,
+      markdown: "# New content",
+    });
   });
 });
 
@@ -120,7 +139,10 @@ describe("element:srcChanged / element:altChanged", () => {
     el.setAlt("A descriptive label");
 
     expect(listener).toHaveBeenCalledOnce();
-    expect(listener).toHaveBeenCalledWith({ element: el, alt: "A descriptive label" });
+    expect(listener).toHaveBeenCalledWith({
+      element: el,
+      alt: "A descriptive label",
+    });
   });
 
   it("fires element:srcChanged for SVGImageElement", () => {

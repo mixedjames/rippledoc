@@ -38,3 +38,8 @@ export type {
   PresentationEvents,
   PresentationEventSource,
 } from "./PresentationEvents";
+export type {
+  ScrollTrigger,
+  ScrollTriggerEvents,
+  ScrollTriggerOptions,
+} from "./ScrollTrigger";

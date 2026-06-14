@@ -15,7 +15,9 @@ class TestObject extends AnchoredObjectBase {
   // Default layout manager so `new TestObject()` works in single-layout tests.
   readonly lm: CoreLayoutManager;
 
-  constructor(lm = new CoreLayoutManager({ basisWidth: 1000, basisHeight: 1000 })) {
+  constructor(
+    lm = new CoreLayoutManager({ basisWidth: 1000, basisHeight: 1000 }),
+  ) {
     super(lm);
     this.lm = lm;
   }

@@ -230,8 +230,9 @@ describe("view lifecycle — attachView", () => {
     const spy = new SpyPresentationView(800, 600);
     p.attachView(() => spy);
 
-    // The default transform before ScaleHelper is implemented is { scale: 1, tx: 0 }.
-    const expectedTransform: LayoutTransform = { scale: 1, tx: 0 };
+    // SpyPresentationView is 800×600; default basis is 1000×1000.
+    // scale = min(800/1000, 600/1000) = 0.6; tx = (800 − 1000×0.6) / 2 = 100.
+    const expectedTransform: LayoutTransform = { scale: 0.6, tx: 100 };
     const sectionSpy = spy.sectionViewsCreated[0]!.view;
     const elementSpy = sectionSpy.markdownViewsCreated[0]!.view;
 

@@ -29,6 +29,16 @@ export interface Element {
    */
   get anchors(): XYAnchors;
 
+  /** Resolved horizontal geometry in virtual coordinates. */
+  get left(): number;
+  get right(): number;
+  get width(): number;
+
+  /** Resolved vertical geometry in virtual coordinates. */
+  get top(): number;
+  get bottom(): number;
+  get height(): number;
+
   /** Set the horizontal geometry of this element. Exactly two of left/right/width must be provided. */
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void;
 

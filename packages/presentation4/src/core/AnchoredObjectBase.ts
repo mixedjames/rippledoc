@@ -50,6 +50,25 @@ export abstract class AnchoredObjectBase {
     return this.activeEntry_().bag;
   }
 
+  get left(): number {
+    return this.anchors.left.value;
+  }
+  get right(): number {
+    return this.anchors.right.value;
+  }
+  get width(): number {
+    return this.anchors.width.value;
+  }
+  get top(): number {
+    return this.anchors.top.value;
+  }
+  get bottom(): number {
+    return this.anchors.bottom.value;
+  }
+  get height(): number {
+    return this.anchors.height.value;
+  }
+
   // ── Layout lifecycle ──────────────────────────────────────────────────────
 
   /**

@@ -103,6 +103,38 @@ export class PresentationDOM {
     this.overlay_.classList.add("overlay");
     this.pins_.classList.add("pins");
 
+    this.styles_.textContent = `
+      /* Section boundaries — alternating tints so each section is visually distinct. */
+      .section-background {
+        border-top: 2px solid hsl(220 50% 60% / 0.4);
+        box-sizing: border-box;
+      }
+      .section-background:nth-child(odd) {
+        background: hsl(220 60% 95%);
+      }
+      .section-background:nth-child(even) {
+        background: hsl(270 60% 95%);
+      }
+
+      /* Element boundaries — dashed outline and a slight white fill. */
+      .element {
+        border: 1px dashed hsl(220 50% 50% / 0.5);
+        background: hsl(0 0% 100% / 0.75);
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .markdown-element {
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 8px 12px;
+      }
+      .bitmap-image-element,
+      .svg-image-element {
+        background: hsl(40 80% 95%);
+      }
+    `;
+
     // All layers fill the container absolutely.
     for (const el of [
       this.viewport_,

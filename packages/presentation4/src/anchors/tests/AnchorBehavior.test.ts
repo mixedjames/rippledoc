@@ -76,7 +76,7 @@ describe("anchor behaviour", () => {
   });
 
   describe("viewport anchors", () => {
-    it("uses viewportHeightAnchor as a dynamic basis-space anchor expression", () => {
+    it("root.viewportHeight tracks physical viewport size in basis coordinates", () => {
       const presentation = new CorePresentation({
         basisWidth: 1000,
         basisHeight: 800,
@@ -84,9 +84,11 @@ describe("anchor behaviour", () => {
       const section = presentation.root.addSection();
       const element = section.addMarkdownElement();
 
+      // root.viewportHeight is an Anchor; wrap with offsetFrom to use it as an
+      // AnchorExpression (Anchor and AnchorExpression are distinct concepts).
       element.setVerticalAnchors({
         top: constant(0),
-        height: offsetFrom(presentation.viewportHeightAnchor, 0),
+        height: offsetFrom(presentation.root.viewportHeight, 0),
       });
 
       // Before any resize, viewportHeight equals basisHeight (1:1 mapping).
