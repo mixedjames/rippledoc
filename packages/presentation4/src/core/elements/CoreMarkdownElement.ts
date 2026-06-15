@@ -2,8 +2,10 @@ import type { MarkdownElement } from "../../clientAPI/elements/MarkdownElement";
 import type { MarkdownElementViewOwner } from "../../viewAPI/ElementViewOwner";
 import type { ElementView } from "../../viewAPI/ElementView";
 import type { SectionView } from "../../viewAPI/SectionView";
+import type { MarkdownElementMemento } from "../../clientAPI/serialize/PresentationMemento";
 import { CoreElement } from "../CoreElement";
 import type { CoreSection } from "../CoreSection";
+import type { SerializeContext } from "../serialize/SerializeContext";
 
 /**
  * Concrete implementation of MarkdownElement and MarkdownElementViewOwner.
@@ -35,5 +37,9 @@ export class CoreMarkdownElement
       element: this,
       markdown,
     });
+  }
+
+  toMemento(ctx: SerializeContext): MarkdownElementMemento {
+    return { type: "markdown", markdown: this.markdown_, ...this.elementMementoBase_(ctx) };
   }
 }

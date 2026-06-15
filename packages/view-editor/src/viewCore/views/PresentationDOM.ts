@@ -1,5 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
-import type { EditorPresentationView } from "../EditorPresentationView";
+import type { EditorPresentationView } from "./EditorPresentationView";
+import type { ViewMode } from "../../clientAPI/ViewMode";
 
 /**
  * Manages the DOM structure for an editor presentation view.
@@ -10,7 +11,7 @@ import type { EditorPresentationView } from "../EditorPresentationView";
  *     root (div)
  *       shadowRoot
  *         styles (style)
- *         viewport (div, overflow-y:auto — the scroll container)
+ *         viewport (div, overflow-y:auto, tabIndex=0 — the scroll and keyboard container)
  *           backgrounds (div — one child per section, for section backgrounds)
  *           elements   (div — one child per element, in global virtual coords)
  *         overlay (div, pointer-events:none — future: anchor handles, selection UI)
@@ -20,6 +21,10 @@ import type { EditorPresentationView } from "../EditorPresentationView";
  * basisWidth × totalHeight (scaled). Elements use global virtual coordinates, so
  * they are positioned directly within the elements div regardless of which section
  * owns them.
+ *
+ * Mode is surfaced as a data-mode attribute on the viewport. CSS rules inside this
+ * shadow root use it to change rendering without requiring a JS cascade through
+ * the view hierarchy (e.g. hiding element content in anchors mode).
  */
 export class PresentationDOM {
   private readonly presentationView_: EditorPresentationView;
@@ -58,6 +63,11 @@ export class PresentationDOM {
     }
   }
 
+  /** Set the current view mode. CSS rules react to this to adjust rendering. */
+  setMode(mode: ViewMode): void {
+    this.viewport_.dataset.mode = mode;
+  }
+
   destroy(): void {
     this.root_.remove();
   }
@@ -76,6 +86,10 @@ export class PresentationDOM {
 
   get elementsContainer(): HTMLElement {
     return this.elements_;
+  }
+
+  get pinsContainer(): HTMLElement {
+    return this.pins_;
   }
 
   private resolveContainer_(container: HTMLElement | string): HTMLElement {
@@ -103,6 +117,12 @@ export class PresentationDOM {
     this.overlay_.classList.add("overlay");
     this.pins_.classList.add("pins");
 
+    // tabIndex allows the viewport to receive keyboard focus when the user
+    // clicks inside the presentation. outline:none suppresses the focus ring
+    // (the editor provides its own selection chrome).
+    this.viewport_.tabIndex = 0;
+    this.viewport_.style.outline = "none";
+
     this.styles_.textContent = `
       /* Section boundaries — alternating tints so each section is visually distinct. */
       .section-background {
@@ -123,6 +143,14 @@ export class PresentationDOM {
         box-sizing: border-box;
         overflow: hidden;
       }
+
+      /* Selection chrome is an editor concept — suppress it in player mode. */
+      .viewport:not([data-mode="player"]) .element.selected {
+        border: 2px solid hsl(220 80% 55%);
+        background: hsl(220 100% 98% / 0.9);
+      }
+
+      /* Type-specific styling on the outer element (CSS class set by subclasses). */
       .markdown-element {
         font-family: system-ui, sans-serif;
         font-size: 14px;
@@ -132,6 +160,12 @@ export class PresentationDOM {
       .bitmap-image-element,
       .svg-image-element {
         background: hsl(40 80% 95%);
+      }
+
+      /* Anchors mode: hide all rendered content so only element boxes are visible.
+         The outer .element div (border, position) remains visible. */
+      [data-mode="anchors"] .element-content {
+        display: none;
       }
     `;
 

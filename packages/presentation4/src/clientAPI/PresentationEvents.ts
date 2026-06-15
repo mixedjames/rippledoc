@@ -5,6 +5,8 @@ import type { BitmapImageElement } from "./elements/BitmapImageElement";
 import type { SVGImageElement } from "./elements/SVGImageElement";
 import type { PresentationRoot } from "./PresentationRoot";
 import type { Layout } from "./Layout";
+import type { Pin } from "./animation/Pin";
+import type { KeyFrameAnimation } from "./animation/KeyFrameAnimation";
 
 export type PresentationEvents = {
   "section:added": { section: Section; index: number };
@@ -24,6 +26,10 @@ export type PresentationEvents = {
   "anchors:changed": { target: PresentationRoot | Section | Element };
   "layout:added": { layout: Layout };
   "layout:activeChanged": { layout: Layout };
+  "element:pinAdded": { element: Element; pin: Pin };
+  "element:animationAdded": { element: Element; animation: KeyFrameAnimation };
+  "section:animationAdded": { section: Section; animation: KeyFrameAnimation };
+  "animation:keyFramesChanged": { animation: KeyFrameAnimation };
 };
 
 /**

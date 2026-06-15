@@ -5,6 +5,7 @@ import type {
   HorizontalAnchorSet,
   VerticalAnchorSet,
 } from "../anchors/AnchorSet";
+import type { ElementAnimations } from "./animation/ElementAnimations";
 
 /** Which dimension, if any, is determined by content measurement rather than anchor expressions. */
 export type ContentDependentDimension = "none" | "width" | "height";
@@ -48,6 +49,9 @@ export interface Element {
    * axes are fully anchor-expressed. At most one axis may be content-dependent.
    */
   get contentDependentDimension(): ContentDependentDimension;
+
+  /** Pins and animations attached to this element. */
+  get animations(): ElementAnimations;
 
   /** Set the horizontal geometry of this element. Exactly two of left/right/width must be provided. */
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void;

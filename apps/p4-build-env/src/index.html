@@ -27,8 +27,8 @@
         overflow: hidden;
       }
 
-      /* Trigger HUD — fixed right panel. */
-      #triggerHUD {
+      /* Right panel — editor controls and trigger HUD. */
+      #rightPanel {
         position: fixed;
         top: 0;
         right: 0;
@@ -41,15 +41,121 @@
         color: #cdd;
       }
 
-      #triggerHUD::before {
-        content: "SCROLL TRIGGERS";
-        display: block;
+      .panel-label {
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.1em;
         color: hsl(220 40% 55%);
+        margin-bottom: 10px;
+      }
+
+      /* ── Mode switcher ────────────────────────────────── */
+
+      .mode-buttons {
+        display: flex;
+        gap: 4px;
         margin-bottom: 16px;
       }
+
+      .mode-buttons button {
+        flex: 1;
+        padding: 5px 4px;
+        border: 1px solid hsl(220 30% 30%);
+        border-radius: 4px;
+        background: hsl(220 20% 15%);
+        color: hsl(220 30% 60%);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.1s, color 0.1s, border-color 0.1s;
+      }
+
+      .mode-buttons button[data-active="true"] {
+        background: hsl(220 60% 30%);
+        color: #eef;
+        border-color: hsl(220 60% 50%);
+      }
+
+      .mode-buttons button:hover:not([data-active="true"]) {
+        background: hsl(220 25% 20%);
+        color: #cdd;
+      }
+
+      /* ── Selection panel ──────────────────────────────── */
+
+      .selection-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .selection-header .panel-label {
+        margin: 0;
+      }
+
+      #selectionCount {
+        font-size: 10px;
+        font-weight: 700;
+        color: hsl(220 80% 70%);
+        background: hsl(220 40% 22%);
+        padding: 1px 6px;
+        border-radius: 10px;
+      }
+
+      .sel-empty {
+        font-size: 11px;
+        color: hsl(220 20% 45%);
+        font-style: italic;
+        margin-bottom: 4px;
+      }
+
+      .sel-item {
+        font-size: 11px;
+        color: #cdd;
+        padding: 4px 6px;
+        margin-bottom: 4px;
+        background: hsl(220 25% 18%);
+        border-radius: 3px;
+        border-left: 2px solid hsl(220 70% 55%);
+      }
+
+      .panel-hint {
+        font-size: 10px;
+        color: hsl(220 20% 38%);
+        margin-top: 6px;
+        margin-bottom: 4px;
+      }
+
+      .panel-divider {
+        height: 1px;
+        background: hsl(220 20% 22%);
+        margin: 16px 0;
+      }
+
+      /* ── Utility buttons ──────────────────────────────── */
+
+      .util-button {
+        display: block;
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid hsl(220 30% 30%);
+        border-radius: 4px;
+        background: hsl(220 20% 15%);
+        color: hsl(220 30% 65%);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.1s, color 0.1s;
+      }
+
+      .util-button:hover {
+        background: hsl(220 25% 22%);
+        color: #eef;
+      }
+
+      /* ── Trigger rows ─────────────────────────────────── */
 
       .trigger-row {
         margin-bottom: 20px;
@@ -117,6 +223,32 @@
 
   <body>
     <div id="theContainer"></div>
-    <div id="triggerHUD"></div>
+
+    <div id="rightPanel">
+      <p class="panel-label">EDITOR</p>
+
+      <div class="mode-buttons">
+        <button id="modeEditor">Editor</button>
+        <button id="modeAnchors">Anchors</button>
+        <button id="modePlayer">Player</button>
+      </div>
+
+      <div class="selection-header">
+        <p class="panel-label">SELECTION</p>
+        <span id="selectionCount">0</span>
+      </div>
+      <div id="selectionList"></div>
+      <p class="panel-hint">Click to select &nbsp;·&nbsp; Shift+click to add &nbsp;·&nbsp; Esc to clear</p>
+
+      <div class="panel-divider"></div>
+
+      <p class="panel-label">SERIALISATION</p>
+      <button id="btnLogMemento" class="util-button">Log memento to console</button>
+
+      <div class="panel-divider"></div>
+
+      <p class="panel-label">SCROLL TRIGGERS</p>
+      <div id="triggerHUD"></div>
+    </div>
   </body>
 </html>

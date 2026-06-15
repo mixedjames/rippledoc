@@ -5,6 +5,7 @@ import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { MarkdownElement } from "./elements/MarkdownElement";
 import type { BitmapImageElement } from "./elements/BitmapImageElement";
 import type { SVGImageElement } from "./elements/SVGImageElement";
+import type { SectionAnimations } from "./animation/SectionAnimations";
 
 /**
  * A Section is a horizontal slice of a RippleDoc presentation.
@@ -42,6 +43,9 @@ export interface Section {
 
   /** Set the vertical geometry of this section. Exactly two of top/bottom/height must be provided. */
   setVerticalAnchors(descriptor: VerticalAnchorSet): void;
+
+  /** Keyframe animations attached to this section. */
+  get animations(): SectionAnimations;
 
   /** Adds a new markdown element owned by this section. */
   addMarkdownElement(markdown?: string): MarkdownElement;

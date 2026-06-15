@@ -36,6 +36,9 @@
     },
     {
       "path": "./apps/p3-build-env"
+    },
+    {
+      "path": "./apps/p4-build-env"
     }
   ]
 }

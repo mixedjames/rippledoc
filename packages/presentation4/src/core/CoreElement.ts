@@ -1,7 +1,7 @@
 import type { Element, ContentDependentDimension } from "../clientAPI/Element";
 import type { Section } from "../clientAPI/Section";
 import type { Layout } from "../clientAPI/Layout";
-import type { AnchorExpression } from "../anchors/Anchor";
+import type { AnchorExpression, Anchor } from "../anchors/Anchor";
 import type {
   HorizontalAnchorSet,
   VerticalAnchorSet,
@@ -12,12 +12,17 @@ import type { SectionViewOwner } from "../viewAPI/SectionViewOwner";
 import type { SectionView } from "../viewAPI/SectionView";
 import type { LayoutTransform } from "../viewAPI/LayoutTransform";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
+import type { ElementAnimations } from "../clientAPI/animation/ElementAnimations";
+import type { AnchorRef, ElementMemento, ElementLayoutGeometryMemento } from "../clientAPI/serialize/PresentationMemento";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { NullElementView } from "./nullView/NullElementView";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 import { GeometryConstraintError } from "../anchors/GeometryConstraintError";
+import { CoreElementAnimations } from "./animation/CoreElementAnimations";
 import type { CoreSection } from "./CoreSection";
 import type { EventContext } from "./EventContext";
+import { ANCHOR_SLOTS, type SerializeContext } from "./serialize/SerializeContext";
+import { serializeElementLayoutGeometry } from "./serialize/serializeGeometry";
 
 /**
  * Abstract base for all concrete element types.
@@ -33,6 +38,7 @@ export abstract class CoreElement
   private readonly section_: CoreSection;
   protected readonly eventContext_: EventContext;
   private view_: ElementView;
+  private readonly animations_: CoreElementAnimations;
 
   // ── Content-dependent dimension state ────────────────────────────────────
   //
@@ -49,6 +55,7 @@ export abstract class CoreElement
     this.section_ = section;
     this.eventContext_ = section.eventContext;
     this.view_ = new NullElementView();
+    this.animations_ = new CoreElementAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
     this.eventContext_.registerAnchors(this.anchors, this);
   }
@@ -87,6 +94,45 @@ export abstract class CoreElement
 
   protected abstract createView(sectionView: SectionView): ElementView;
 
+  abstract toMemento(ctx: SerializeContext): ElementMemento;
+
+  addToAnchorLookup(
+    layout: Layout,
+    sectionIndex: number,
+    elementIndex: number,
+    lookup: Map<Anchor, AnchorRef>,
+  ): void {
+    const bag = this.getLayoutBag_(layout);
+    if (!bag) return;
+    for (const slot of ANCHOR_SLOTS) {
+      lookup.set(bag[slot], { node: "element", sectionIndex, elementIndex, slot });
+    }
+  }
+
+  /** Serializes the geometry and animation state common to all element types. */
+  protected elementMementoBase_(ctx: SerializeContext): {
+    layouts: readonly ElementLayoutGeometryMemento[];
+    keyFrameAnimations: ReturnType<CoreElementAnimations["toMemento"]>["keyFrameAnimations"];
+    pins: ReturnType<CoreElementAnimations["toMemento"]>["pins"];
+  } {
+    const { keyFrameAnimations, pins } = this.animations_.toMemento(ctx.triggerIndex);
+    return {
+      layouts: ctx.layouts.map((layout, li) => {
+        const bag = this.getLayoutBag_(layout);
+        if (!bag) throw new Error("CoreElement.toMemento: missing layout bag.");
+        return serializeElementLayoutGeometry(
+          bag,
+          this.isHorizontalGeometrySet_(layout),
+          this.isVerticalGeometrySet_(layout),
+          this.contentDependentDimension_,
+          ctx.anchorLookups[li]!,
+        );
+      }),
+      keyFrameAnimations,
+      pins,
+    };
+  }
+
   protected override onBagCreated_(bag: ConcreteXYAnchors): void {
     this.eventContext_.registerAnchors(bag, this);
   }
@@ -99,6 +145,10 @@ export abstract class CoreElement
 
   get contentDependentDimension(): ContentDependentDimension {
     return this.contentDependentDimension_;
+  }
+
+  get animations(): ElementAnimations {
+    return this.animations_;
   }
 
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void {

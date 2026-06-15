@@ -4,6 +4,9 @@ import type {
 } from "../clientAPI/Presentation";
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
+import type { Layout } from "../clientAPI/Layout";
+import type { Anchor } from "../anchors/Anchor";
+import type { AnchorRef, PresentationMemento } from "../clientAPI/serialize/PresentationMemento";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
 import type {
   PresentationView,
@@ -24,6 +27,7 @@ import { ConcreteAnchor } from "../anchors/ConcreteAnchor";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 import { EventController } from "../common/EventController";
 import { EventContext } from "./EventContext";
+import type { SerializeContext } from "./serialize/SerializeContext";
 
 const DEFAULT_BASIS_WIDTH = 1000;
 const DEFAULT_BASIS_HEIGHT = 1000;
@@ -162,6 +166,35 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     const trigger = new CoreScrollTrigger(this.layout_, options);
     this.triggers_.push(trigger);
     return trigger;
+  }
+
+  toMemento(): PresentationMemento {
+    const layouts = this.layout_.layouts;
+    const anchorLookups = layouts.map((layout) => this.buildAnchorLookup_(layout));
+    const triggerIndex: ReadonlyMap<ScrollTrigger, number> = new Map(
+      this.triggers_.map((t, i) => [t, i] as const),
+    );
+    const ctx: SerializeContext = { layouts, anchorLookups, triggerIndex };
+    return {
+      version: 1,
+      layouts: layouts.map((l) => ({ basisWidth: l.basisWidth, basisHeight: l.basisHeight })),
+      triggers: this.triggers_.map((t) => t.toMemento(ctx)),
+      sections: this.root_.coreSections.map((s) => s.toMemento(ctx)),
+    };
+  }
+
+  private buildAnchorLookup_(layout: Layout): Map<Anchor, AnchorRef> {
+    const lookup = new Map<Anchor, AnchorRef>();
+    // Root XYAnchors plus all sections and elements
+    this.root_.addToAnchorLookup(layout, lookup);
+    // Viewport anchors are single ConcreteAnchor instances shared across all layouts
+    lookup.set(this.viewportWidthAnchor, { node: "root", slot: "viewportWidth" });
+    lookup.set(this.viewportHeightAnchor, { node: "root", slot: "viewportHeight" });
+    lookup.set(this.viewportLeftAnchor, { node: "root", slot: "viewportLeft" });
+    lookup.set(this.viewportRightAnchor, { node: "root", slot: "viewportRight" });
+    // Triggers
+    this.triggers_.forEach((t, i) => t.addToAnchorLookup(layout, i, lookup));
+    return lookup;
   }
 
   // ── Internal accessors for the Core* tree ────────────────────────────────

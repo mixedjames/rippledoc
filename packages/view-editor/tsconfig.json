@@ -6,7 +6,7 @@
     "rootDir": "src"
   },
 
-  "references": [{ "path": "../presentation4" }],
+  "references": [{ "path": "../presentation4" }, { "path": "../sanitizer" }],
 
   "include": ["src"]
 }

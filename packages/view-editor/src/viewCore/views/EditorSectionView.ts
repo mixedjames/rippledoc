@@ -3,6 +3,7 @@ import type { EditorPresentationView } from "./EditorPresentationView";
 import { EditorMarkdownElementView } from "./EditorMarkdownElementView";
 import { EditorBitmapImageElementView } from "./EditorBitmapImageElementView";
 import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
+import type { EditorElementView } from "./EditorElementView";
 
 /**
  * Section view for the editor.
@@ -15,15 +16,22 @@ import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
  *
  * Elements are positioned in global virtual coordinates, so contentElement_ stays
  * at the origin and individual element views carry their own left/top offsets.
+ *
+ * elementViews_ is tracked so destroy() can cascade to element views in the
+ * full-tree replacement path (where the model does not call elementView.destroy()).
  */
 export class EditorSectionView implements p4.SectionView {
   private readonly owner_: p4.SectionViewOwner;
+  private readonly presentationView_: EditorPresentationView;
   private readonly backgroundElement_: HTMLElement =
     document.createElement("div");
   private readonly contentElement_: HTMLElement = document.createElement("div");
 
+  private readonly elementViews_: EditorElementView[] = [];
+
   constructor(owner: p4.SectionViewOwner, parent: EditorPresentationView) {
     this.owner_ = owner;
+    this.presentationView_ = parent;
     this.initDOM_(parent);
   }
 
@@ -35,29 +43,49 @@ export class EditorSectionView implements p4.SectionView {
   createMarkdownElementView(
     owner: p4.MarkdownElementViewOwner,
   ): p4.ElementView {
-    return new EditorMarkdownElementView(owner, this);
+    const ev = new EditorMarkdownElementView(owner, this);
+    this.elementViews_.push(ev);
+    return ev;
   }
 
   createBitmapImageElementView(
     owner: p4.BitmapImageElementViewOwner,
   ): p4.ElementView {
-    return new EditorBitmapImageElementView(owner, this);
+    const ev = new EditorBitmapImageElementView(owner, this);
+    this.elementViews_.push(ev);
+    return ev;
   }
 
   createSVGImageElementView(
     owner: p4.SVGImageElementViewOwner,
   ): p4.ElementView {
-    return new EditorSVGImageElementView(owner, this);
+    const ev = new EditorSVGImageElementView(owner, this);
+    this.elementViews_.push(ev);
+    return ev;
+  }
+
+  // Called by EditorElementView.destroy() on single-node removal so the dead
+  // view is not included in future destroy() cascades.
+  onElementViewDestroyed(ev: EditorElementView): void {
+    const i = this.elementViews_.indexOf(ev);
+    if (i >= 0) this.elementViews_.splice(i, 1);
   }
 
   destroy(): void {
+    // Full-tree cascade. Spread so that each ev.destroy() can safely call
+    // onElementViewDestroyed() (mutating elementViews_) without corrupting iteration.
+    for (const ev of [...this.elementViews_]) ev.destroy();
     this.backgroundElement_.remove();
     this.contentElement_.remove();
+    this.presentationView_.onSectionViewDestroyed(this);
   }
 
-  /** The container into which this section's element views append their DOM nodes. */
   get contentContainer(): HTMLElement {
     return this.contentElement_;
+  }
+
+  get presentationView(): EditorPresentationView {
+    return this.presentationView_;
   }
 
   private initDOM_(parent: EditorPresentationView): void {

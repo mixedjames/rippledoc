@@ -43,3 +43,13 @@ export type {
   ScrollTriggerEvents,
   ScrollTriggerOptions,
 } from "./ScrollTrigger";
+export type { SubComponentTarget } from "./animation/SubComponentTarget";
+export type { KeyFrame } from "./animation/KeyFrame";
+export type { Animation } from "./animation/Animation";
+export type {
+  KeyFrameAnimation,
+  KeyFrameAnimationOptions,
+} from "./animation/KeyFrameAnimation";
+export type { Pin } from "./animation/Pin";
+export type { SectionAnimations } from "./animation/SectionAnimations";
+export type { ElementAnimations } from "./animation/ElementAnimations";

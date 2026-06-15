@@ -3,6 +3,7 @@ import type { Section } from "../clientAPI/Section";
 import type { Anchor } from "../anchors/Anchor";
 import type { Layout } from "../clientAPI/Layout";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
+import type { AnchorRef } from "../clientAPI/serialize/PresentationMemento";
 import type { PresentationView } from "../viewAPI/PresentationView";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
 import type { LayoutTransform } from "../viewAPI/LayoutTransform";
@@ -14,6 +15,7 @@ import type { EventContext } from "./EventContext";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 import { constant } from "../anchors/factories";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
+import { ANCHOR_SLOTS } from "./serialize/SerializeContext";
 
 /**
  * Concrete implementation of PresentationRoot.
@@ -155,5 +157,21 @@ export class CorePresentationRoot
     this.sections_.splice(index, 1);
     coreSection.detachView();
     this.eventContext_.emit("section:removed", { section, index });
+  }
+
+  // ── Internal serialization helpers ───────────────────────────────────────
+
+  get coreSections(): readonly CoreSection[] {
+    return this.sections_;
+  }
+
+  addToAnchorLookup(layout: Layout, lookup: Map<Anchor, AnchorRef>): void {
+    const bag = this.getLayoutBag_(layout);
+    if (bag) {
+      for (const slot of ANCHOR_SLOTS) {
+        lookup.set(bag[slot], { node: "root", slot });
+      }
+    }
+    this.sections_.forEach((s, si) => s.addToAnchorLookup(layout, si, lookup));
   }
 }

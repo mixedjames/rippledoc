@@ -2,8 +2,10 @@ import type { BitmapImageElement } from "../../clientAPI/elements/BitmapImageEle
 import type { BitmapImageElementViewOwner } from "../../viewAPI/ElementViewOwner";
 import type { ElementView } from "../../viewAPI/ElementView";
 import type { SectionView } from "../../viewAPI/SectionView";
+import type { BitmapImageElementMemento } from "../../clientAPI/serialize/PresentationMemento";
 import { CoreElement } from "../CoreElement";
 import type { CoreSection } from "../CoreSection";
+import type { SerializeContext } from "../serialize/SerializeContext";
 
 /**
  * Concrete implementation of BitmapImageElement and BitmapImageElementViewOwner.
@@ -43,5 +45,14 @@ export class CoreBitmapImageElement
   setAlt(alt: string): void {
     this.alt_ = alt;
     this.eventContext_.emit("element:altChanged", { element: this, alt });
+  }
+
+  toMemento(ctx: SerializeContext): BitmapImageElementMemento {
+    return {
+      type: "bitmap",
+      src: this.src_,
+      alt: this.alt_,
+      ...this.elementMementoBase_(ctx),
+    };
   }
 }

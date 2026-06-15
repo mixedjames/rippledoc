@@ -180,6 +180,25 @@ export abstract class AnchoredObjectBase {
     };
   }
 
+  // ── Serialization helpers ─────────────────────────────────────────────────
+
+  /** Returns the anchor bag for a specific layout, or undefined if it was never initialised. */
+  protected getLayoutBag_(layout: Layout): ConcreteXYAnchors | undefined {
+    return this.entries_.get(layout)?.bag;
+  }
+
+  /** True if setHorizontalAnchors_ (or setAutoWidth_) was ever called for this layout. */
+  protected isHorizontalGeometrySet_(layout: Layout): boolean {
+    return (this.entries_.get(layout)?.hCombination ?? "none") !== "none";
+  }
+
+  /** True if setVerticalAnchors_ (or setAutoHeight_) was ever called for this layout. */
+  protected isVerticalGeometrySet_(layout: Layout): boolean {
+    return (this.entries_.get(layout)?.vCombination ?? "none") !== "none";
+  }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
+
   /**
    * Returns the bag for the active layout. If the object was created before a
    * layout was added (and the cascade hasn't reached it yet), lazily creates a

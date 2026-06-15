@@ -7,6 +7,9 @@ import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { MarkdownElement } from "../clientAPI/elements/MarkdownElement";
 import type { BitmapImageElement } from "../clientAPI/elements/BitmapImageElement";
 import type { SVGImageElement } from "../clientAPI/elements/SVGImageElement";
+import type { SectionAnimations } from "../clientAPI/animation/SectionAnimations";
+import type { Anchor } from "../anchors/Anchor";
+import type { AnchorRef, SectionMemento } from "../clientAPI/serialize/PresentationMemento";
 import type { PresentationView } from "../viewAPI/PresentationView";
 import type { SectionView } from "../viewAPI/SectionView";
 import type { SectionViewOwner } from "../viewAPI/SectionViewOwner";
@@ -18,9 +21,12 @@ import { NullSectionView } from "./nullView/NullSectionView";
 import { CoreMarkdownElement } from "./elements/CoreMarkdownElement";
 import { CoreBitmapImageElement } from "./elements/CoreBitmapImageElement";
 import { CoreSVGImageElement } from "./elements/CoreSVGImageElement";
+import { CoreSectionAnimations } from "./animation/CoreSectionAnimations";
 import type { CorePresentationRoot } from "./CorePresentationRoot";
 import type { CoreElement } from "./CoreElement";
 import type { EventContext } from "./EventContext";
+import { ANCHOR_SLOTS, type SerializeContext } from "./serialize/SerializeContext";
+import { serializeSectionLayoutGeometry } from "./serialize/serializeGeometry";
 
 /**
  * Concrete implementation of Section and SectionViewOwner.
@@ -37,12 +43,14 @@ export class CoreSection
   private readonly eventContext_: EventContext;
   private readonly elements_: CoreElement[] = [];
   private view_: SectionView;
+  private readonly animations_: CoreSectionAnimations;
 
   constructor(root: CorePresentationRoot) {
     super(root.layoutContext);
     this.root_ = root;
     this.eventContext_ = root.eventContext;
     this.view_ = new NullSectionView();
+    this.animations_ = new CoreSectionAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
     this.eventContext_.registerAnchors(this.anchors, this);
   }
@@ -102,6 +110,10 @@ export class CoreSection
 
   get root(): PresentationRoot {
     return this.root_;
+  }
+
+  get animations(): SectionAnimations {
+    return this.animations_;
   }
 
   setVerticalAnchors(descriptor: VerticalAnchorSet): void {
@@ -167,5 +179,37 @@ export class CoreSection
 
   get presentationViewOwner(): PresentationViewOwner {
     return this.root_.presentationViewOwner;
+  }
+
+  // ── Internal serialization helpers ───────────────────────────────────────
+
+  get coreElements(): readonly CoreElement[] {
+    return this.elements_;
+  }
+
+  addToAnchorLookup(layout: Layout, sectionIndex: number, lookup: Map<Anchor, AnchorRef>): void {
+    const bag = this.getLayoutBag_(layout);
+    if (bag) {
+      for (const slot of ANCHOR_SLOTS) {
+        lookup.set(bag[slot], { node: "section", index: sectionIndex, slot });
+      }
+    }
+    this.elements_.forEach((el, ei) => el.addToAnchorLookup(layout, sectionIndex, ei, lookup));
+  }
+
+  toMemento(ctx: SerializeContext): SectionMemento {
+    return {
+      layouts: ctx.layouts.map((layout, li) => {
+        const bag = this.getLayoutBag_(layout);
+        if (!bag) throw new Error("CoreSection.toMemento: missing layout bag.");
+        return serializeSectionLayoutGeometry(
+          bag,
+          this.isVerticalGeometrySet_(layout),
+          ctx.anchorLookups[li]!,
+        );
+      }),
+      keyFrameAnimations: this.animations_.toMemento(ctx.triggerIndex),
+      elements: this.elements_.map((el) => el.toMemento(ctx)),
+    };
   }
 }

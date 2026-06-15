@@ -10,8 +10,8 @@ export class EditorMarkdownElementView extends EditorElementView {
   constructor(owner: p4.MarkdownElementViewOwner, parent: EditorSectionView) {
     super(owner, parent);
     this.markdownOwner_ = owner;
+    // CSS class on the outer element for type-specific styling (font, padding).
     this.element.classList.add("markdown-element");
-    this.element.style.overflow = "hidden";
     this.syncContent_();
 
     this.unsubscribeMarkdown_ =
@@ -29,7 +29,11 @@ export class EditorMarkdownElementView extends EditorElementView {
   }
 
   private syncContent_(): void {
-    this.element.replaceChildren(parseMarkdown(this.markdownOwner_.markdown));
+    // Render into the content wrapper so anchors mode can hide it without
+    // hiding the element's outer box (border, position).
+    this.contentElement.replaceChildren(
+      parseMarkdown(this.markdownOwner_.markdown),
+    );
     // If the height is content-dependent, the new content may change the natural
     // height. Request a layout pass so the measurement phase re-runs.
     if (this.markdownOwner_.contentDependentDimension === "height") {

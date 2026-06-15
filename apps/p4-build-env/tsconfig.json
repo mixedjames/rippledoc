@@ -7,7 +7,10 @@
     "noEmit": true
   },
 
-  "references": [],
+  "references": [
+    { "path": "../../packages/presentation4" },
+    { "path": "../../packages/view-editor" }
+  ],
 
   "include": ["src"]
 }
