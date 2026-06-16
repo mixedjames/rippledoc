@@ -4,9 +4,13 @@ import type {
 } from "../clientAPI/Presentation";
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
+import type { StyleRegistry } from "../clientAPI/styles/StyleRegistry";
 import type { Layout } from "../clientAPI/Layout";
 import type { Anchor } from "../anchors/Anchor";
-import type { AnchorRef, PresentationMemento } from "../clientAPI/serialize/PresentationMemento";
+import type {
+  AnchorRef,
+  PresentationMemento,
+} from "../clientAPI/serialize/PresentationMemento";
 import type { PresentationViewOwner } from "../viewAPI/PresentationViewOwner";
 import type {
   PresentationView,
@@ -22,6 +26,7 @@ import type {
 import { CorePresentationRoot } from "./CorePresentationRoot";
 import { CoreLayoutManager } from "./CoreLayoutManager";
 import { CoreScrollTrigger } from "./CoreScrollTrigger";
+import { CoreStyleRegistry } from "./CoreStyleRegistry";
 import { NullPresentationView } from "./nullView/NullPresentationView";
 import { ConcreteAnchor } from "../anchors/ConcreteAnchor";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
@@ -45,6 +50,7 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
   private readonly eventController_: EventController<PresentationEvents>;
   private readonly eventContext_: EventContext;
   private readonly triggers_: CoreScrollTrigger[] = [];
+  private readonly styles_: CoreStyleRegistry;
   private view_: PresentationView = new NullPresentationView();
   private layoutTransform_: LayoutTransform = { scale: 1, tx: 0 };
 
@@ -131,6 +137,11 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     this.eventController_ = new EventController<PresentationEvents>();
     this.eventContext_ = new EventContext(this.eventController_);
 
+    this.styles_ = new CoreStyleRegistry(
+      () => this.onAllElementStylesChanged_(),
+      () => this.onAllSectionStylesChanged_(),
+    );
+
     this.root_ = new CorePresentationRoot(this);
 
     // Wire the layout-added callback to cascade new layouts through the document
@@ -162,6 +173,10 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     return this.eventController_;
   }
 
+  get styles(): StyleRegistry {
+    return this.styles_;
+  }
+
   addScrollTrigger(options: ScrollTriggerOptions): ScrollTrigger {
     const trigger = new CoreScrollTrigger(this.layout_, options);
     this.triggers_.push(trigger);
@@ -170,14 +185,19 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
 
   toMemento(): PresentationMemento {
     const layouts = this.layout_.layouts;
-    const anchorLookups = layouts.map((layout) => this.buildAnchorLookup_(layout));
+    const anchorLookups = layouts.map((layout) =>
+      this.buildAnchorLookup_(layout),
+    );
     const triggerIndex: ReadonlyMap<ScrollTrigger, number> = new Map(
       this.triggers_.map((t, i) => [t, i] as const),
     );
     const ctx: SerializeContext = { layouts, anchorLookups, triggerIndex };
     return {
       version: 1,
-      layouts: layouts.map((l) => ({ basisWidth: l.basisWidth, basisHeight: l.basisHeight })),
+      layouts: layouts.map((l) => ({
+        basisWidth: l.basisWidth,
+        basisHeight: l.basisHeight,
+      })),
       triggers: this.triggers_.map((t) => t.toMemento(ctx)),
       sections: this.root_.coreSections.map((s) => s.toMemento(ctx)),
     };
@@ -188,10 +208,19 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     // Root XYAnchors plus all sections and elements
     this.root_.addToAnchorLookup(layout, lookup);
     // Viewport anchors are single ConcreteAnchor instances shared across all layouts
-    lookup.set(this.viewportWidthAnchor, { node: "root", slot: "viewportWidth" });
-    lookup.set(this.viewportHeightAnchor, { node: "root", slot: "viewportHeight" });
+    lookup.set(this.viewportWidthAnchor, {
+      node: "root",
+      slot: "viewportWidth",
+    });
+    lookup.set(this.viewportHeightAnchor, {
+      node: "root",
+      slot: "viewportHeight",
+    });
     lookup.set(this.viewportLeftAnchor, { node: "root", slot: "viewportLeft" });
-    lookup.set(this.viewportRightAnchor, { node: "root", slot: "viewportRight" });
+    lookup.set(this.viewportRightAnchor, {
+      node: "root",
+      slot: "viewportRight",
+    });
     // Triggers
     this.triggers_.forEach((t, i) => t.addToAnchorLookup(layout, i, lookup));
     return lookup;
@@ -201,6 +230,28 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
 
   get eventContext(): EventContext {
     return this.eventContext_;
+  }
+
+  get coreStyleRegistry(): CoreStyleRegistry {
+    return this.styles_;
+  }
+
+  private onAllElementStylesChanged_(): void {
+    this.eventController_.beginSession();
+    for (const section of this.root_.coreSections) {
+      for (const element of section.coreElements) {
+        element.notifyStyleRegistryChanged();
+      }
+    }
+    this.eventController_.endSession();
+  }
+
+  private onAllSectionStylesChanged_(): void {
+    this.eventController_.beginSession();
+    for (const section of this.root_.coreSections) {
+      section.notifyStyleRegistryChanged();
+    }
+    this.eventController_.endSession();
   }
 
   // ── PresentationViewOwner (viewAPI) ──────────────────────────────────────

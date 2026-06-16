@@ -8,11 +8,17 @@ import type { VerticalAnchorSet } from "../anchors/AnchorSet";
 import type { Layout } from "../clientAPI/Layout";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { Anchor } from "../anchors/Anchor";
-import type { AnchorRef, ScrollTriggerMemento } from "../clientAPI/serialize/PresentationMemento";
+import type {
+  AnchorRef,
+  ScrollTriggerMemento,
+} from "../clientAPI/serialize/PresentationMemento";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { TypedEmitter } from "../common/TypedEmitter";
 import { constant } from "../anchors/factories";
-import { ANCHOR_SLOTS, type SerializeContext } from "./serialize/SerializeContext";
+import {
+  ANCHOR_SLOTS,
+  type SerializeContext,
+} from "./serialize/SerializeContext";
 import { serializeTriggerLayoutGeometry } from "./serialize/serializeGeometry";
 
 enum TriggerState {
@@ -82,7 +88,11 @@ export class CoreScrollTrigger
     this.initLayoutEntry_(layout);
   }
 
-  addToAnchorLookup(layout: Layout, index: number, lookup: Map<Anchor, AnchorRef>): void {
+  addToAnchorLookup(
+    layout: Layout,
+    index: number,
+    lookup: Map<Anchor, AnchorRef>,
+  ): void {
     const bag = this.getLayoutBag_(layout);
     if (!bag) return;
     for (const slot of ANCHOR_SLOTS) {
@@ -94,7 +104,8 @@ export class CoreScrollTrigger
     return {
       layouts: ctx.layouts.map((layout, li) => {
         const bag = this.getLayoutBag_(layout);
-        if (!bag) throw new Error("CoreScrollTrigger.toMemento: missing layout bag.");
+        if (!bag)
+          throw new Error("CoreScrollTrigger.toMemento: missing layout bag.");
         return serializeTriggerLayoutGeometry(bag, ctx.anchorLookups[li]!);
       }),
       ...(this.name_ ? { name: this.name_ } : {}),

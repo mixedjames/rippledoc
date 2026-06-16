@@ -1,4 +1,5 @@
 import type { LayoutTransform } from "./LayoutTransform";
+import type { ComputedSectionStyle } from "../clientAPI/styles/SectionStyleProps";
 import type { ElementView } from "./ElementView";
 import type {
   BitmapImageElementViewOwner,
@@ -25,6 +26,13 @@ export interface SectionView {
 
   /** Create a view for an SVG image element owned by this section. */
   createSVGImageElementView(owner: SVGImageElementViewOwner): ElementView;
+
+  /**
+   * Apply a new computed style to this view. Called by the model whenever the
+   * section's cascade result changes. Also called immediately after the view
+   * is first attached.
+   */
+  applyStyle(style: ComputedSectionStyle): void;
 
   /**
    * Tear down this view and all element views it created, bottom-up.

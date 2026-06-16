@@ -16,7 +16,9 @@ export class CorePin implements Pin {
   toMemento(triggerIndex: ReadonlyMap<ScrollTrigger, number>): PinMemento {
     const idx = triggerIndex.get(this.trigger_);
     if (idx === undefined) {
-      throw new Error("CorePin.toMemento: trigger not registered in this presentation.");
+      throw new Error(
+        "CorePin.toMemento: trigger not registered in this presentation.",
+      );
     }
     return { triggerIndex: idx };
   }

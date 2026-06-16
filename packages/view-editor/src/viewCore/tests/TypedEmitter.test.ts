@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { TypedEmitter } from "../TypedEmitter";
 
 type Events = {
-  "a": { value: number };
-  "b": { label: string };
+  a: { value: number };
+  b: { label: string };
 };
 
 describe("TypedEmitter — on / emit", () => {

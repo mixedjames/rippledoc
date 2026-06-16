@@ -1,5 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorPresentationView } from "./EditorPresentationView";
+import { fillToCss, borderToCss } from "./colorToCss";
 import { EditorMarkdownElementView } from "./EditorMarkdownElementView";
 import { EditorBitmapImageElementView } from "./EditorBitmapImageElementView";
 import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
@@ -28,6 +29,7 @@ export class EditorSectionView implements p4.SectionView {
   private readonly contentElement_: HTMLElement = document.createElement("div");
 
   private readonly elementViews_: EditorElementView[] = [];
+  private computedStyle_: p4.ComputedSectionStyle | null = null;
 
   constructor(owner: p4.SectionViewOwner, parent: EditorPresentationView) {
     this.owner_ = owner;
@@ -35,9 +37,24 @@ export class EditorSectionView implements p4.SectionView {
     this.initDOM_(parent);
   }
 
+  applyStyle(style: p4.ComputedSectionStyle): void {
+    this.computedStyle_ = style;
+    this.applyStyles_();
+  }
+
   layout({ scale }: p4.LayoutTransform): void {
     this.backgroundElement_.style.top = `${this.owner_.anchors.top.value * scale}px`;
     this.backgroundElement_.style.height = `${this.owner_.anchors.height.value * scale}px`;
+    this.applyStyles_();
+  }
+
+  private applyStyles_(): void {
+    const style = this.computedStyle_;
+    if (!style) return;
+    const scale = this.owner_.presentationViewOwner.layoutTransform.scale;
+
+    this.backgroundElement_.style.background = fillToCss(style.fill);
+    this.backgroundElement_.style.border = borderToCss(style.border, scale);
   }
 
   createMarkdownElementView(

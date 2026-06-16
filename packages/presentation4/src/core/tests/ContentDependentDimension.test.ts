@@ -68,6 +68,8 @@ class MeasuringElementView implements ElementView {
     this.layoutCalls.push({ ...transform });
   }
 
+  applyStyle(): void {}
+
   destroy(): void {
     this.destroyCount++;
   }
@@ -94,6 +96,8 @@ class MeasuringSectionView implements SectionView {
   layout(transform: LayoutTransform): void {
     this.layoutCalls.push({ ...transform });
   }
+
+  applyStyle(): void {}
 
   createMarkdownElementView(owner: MarkdownElementViewOwner): ElementView {
     const idx = this.measuringViews.length;
@@ -128,6 +132,7 @@ function plainNoop(): ElementView {
     layout() {},
     applyConstrainedDimension() {},
     measureAndReport() {},
+    applyStyle() {},
     destroy() {},
   };
 }

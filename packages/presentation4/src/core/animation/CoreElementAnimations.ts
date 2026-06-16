@@ -1,7 +1,10 @@
 import type { Element } from "../../clientAPI/Element";
 import type { ScrollTrigger } from "../../clientAPI/ScrollTrigger";
 import type { ElementAnimations } from "../../clientAPI/animation/ElementAnimations";
-import type { KeyFrameAnimation, KeyFrameAnimationOptions } from "../../clientAPI/animation/KeyFrameAnimation";
+import type {
+  KeyFrameAnimation,
+  KeyFrameAnimationOptions,
+} from "../../clientAPI/animation/KeyFrameAnimation";
 import type { Pin } from "../../clientAPI/animation/Pin";
 import type {
   KeyFrameAnimationMemento,
@@ -55,7 +58,9 @@ export class CoreElementAnimations implements ElementAnimations {
     readonly pins: readonly PinMemento[];
   } {
     return {
-      keyFrameAnimations: this.keyFrameAnimations_.map((a) => a.toMemento(triggerIndex)),
+      keyFrameAnimations: this.keyFrameAnimations_.map((a) =>
+        a.toMemento(triggerIndex),
+      ),
       pins: this.pins_.map((p) => p.toMemento(triggerIndex)),
     };
   }

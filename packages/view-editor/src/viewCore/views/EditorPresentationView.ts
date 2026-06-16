@@ -19,7 +19,9 @@ export type EditorViewConfig = {
  *   editor.events.on("element:picked", ({ element }) => { ... });
  *   editor.selection.add(someElement);
  */
-export function createEditorView(config: EditorViewConfig): EditorViewController {
+export function createEditorView(
+  config: EditorViewConfig,
+): EditorViewController {
   const ctrl = new EditorViewControllerImpl();
   // The factory closure captures ctrl by reference. ctrl is fully initialised
   // by the time presentation.attachView() ever calls this factory.

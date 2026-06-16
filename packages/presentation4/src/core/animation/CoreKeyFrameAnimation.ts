@@ -1,4 +1,7 @@
-import type { KeyFrameAnimation, KeyFrameAnimationOptions } from "../../clientAPI/animation/KeyFrameAnimation";
+import type {
+  KeyFrameAnimation,
+  KeyFrameAnimationOptions,
+} from "../../clientAPI/animation/KeyFrameAnimation";
 import type { KeyFrame } from "../../clientAPI/animation/KeyFrame";
 import type { SubComponentTarget } from "../../clientAPI/animation/SubComponentTarget";
 import type { ScrollTrigger } from "../../clientAPI/ScrollTrigger";
@@ -56,10 +59,14 @@ export class CoreKeyFrameAnimation implements KeyFrameAnimation {
     return this.target_;
   }
 
-  toMemento(triggerIndex: ReadonlyMap<ScrollTrigger, number>): KeyFrameAnimationMemento {
+  toMemento(
+    triggerIndex: ReadonlyMap<ScrollTrigger, number>,
+  ): KeyFrameAnimationMemento {
     const idx = triggerIndex.get(this.trigger_);
     if (idx === undefined) {
-      throw new Error("CoreKeyFrameAnimation.toMemento: trigger not registered in this presentation.");
+      throw new Error(
+        "CoreKeyFrameAnimation.toMemento: trigger not registered in this presentation.",
+      );
     }
     return {
       triggerIndex: idx,

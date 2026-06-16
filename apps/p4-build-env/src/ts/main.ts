@@ -4,7 +4,12 @@ import {
   offsetFrom,
   fractionOf,
 } from "@rippledoc/presentation4";
-import type { AnchorExpression, Section, ScrollTrigger, Element } from "@rippledoc/presentation4";
+import type {
+  AnchorExpression,
+  Section,
+  ScrollTrigger,
+  Element,
+} from "@rippledoc/presentation4";
 import { createEditorView } from "@rippledoc/view-editor";
 import type { ViewMode } from "@rippledoc/view-editor";
 
@@ -20,13 +25,22 @@ const s1 = presentation.root.addSection();
 s1.setVerticalAnchors({ top: constant(0), height: offsetFrom(vh, 0) });
 
 const s2 = presentation.root.addSection();
-s2.setVerticalAnchors({ top: offsetFrom(s1.anchors.bottom, 0), height: offsetFrom(vh, 0) });
+s2.setVerticalAnchors({
+  top: offsetFrom(s1.anchors.bottom, 0),
+  height: offsetFrom(vh, 0),
+});
 
 const s3 = presentation.root.addSection();
-s3.setVerticalAnchors({ top: offsetFrom(s2.anchors.bottom, 0), height: offsetFrom(vh, 0) });
+s3.setVerticalAnchors({
+  top: offsetFrom(s2.anchors.bottom, 0),
+  height: offsetFrom(vh, 0),
+});
 
 const s4 = presentation.root.addSection();
-s4.setVerticalAnchors({ top: offsetFrom(s3.anchors.bottom, 0), height: offsetFrom(vh, 0) });
+s4.setVerticalAnchors({
+  top: offsetFrom(s3.anchors.bottom, 0),
+  height: offsetFrom(vh, 0),
+});
 
 // ── Elements ──────────────────────────────────────────────────────────────────
 
@@ -48,16 +62,28 @@ function addText(
 }
 
 // s1
-const s1Title = addText(s1, "# Section 1 — Intro", offsetFrom(s1.anchors.top, 30));
+const s1Title = addText(
+  s1,
+  "# Section 1 — Intro",
+  offsetFrom(s1.anchors.top, 30),
+);
 const s1Body = addText(
   s1,
   "Scroll down to move through the four sections. Each trigger zone is shown in the panel on the right.",
   offsetFrom(s1Title.anchors.bottom, GAP),
 );
-addText(s1, "Another element further down Section 1.", offsetFrom(s1Body.anchors.bottom, 200));
+addText(
+  s1,
+  "Another element further down Section 1.",
+  offsetFrom(s1Body.anchors.bottom, 200),
+);
 
 // s2
-const s2Title = addText(s2, "## Section 2 — Chapter 1", offsetFrom(s2.anchors.top, 30));
+const s2Title = addText(
+  s2,
+  "## Section 2 — Chapter 1",
+  offsetFrom(s2.anchors.top, 30),
+);
 addText(
   s2,
   "The SVG to the right is pinned — it stays on screen while Section 3 scrolls by.",
@@ -73,7 +99,10 @@ const SVG_SIZE = 300;
 
 const svgEl = s2.addSVGImageElement();
 svgEl.setSrc("img/test.svg");
-svgEl.setHorizontalAnchors({ left: constant(SVG_LEFT), width: constant(SVG_SIZE) });
+svgEl.setHorizontalAnchors({
+  left: constant(SVG_LEFT),
+  width: constant(SVG_SIZE),
+});
 svgEl.setVerticalAnchors({
   top: offsetFrom(s2.anchors.top, SVG_TOP_OFFSET),
   height: constant(SVG_SIZE),
@@ -88,7 +117,11 @@ addText(
 );
 
 // s4
-const s4Title = addText(s4, "## Section 4 — Outro", offsetFrom(s4.anchors.top, 30));
+const s4Title = addText(
+  s4,
+  "## Section 4 — Outro",
+  offsetFrom(s4.anchors.top, 30),
+);
 addText(s4, "End of presentation.", offsetFrom(s4Title.anchors.bottom, GAP));
 
 // ── Scroll triggers ───────────────────────────────────────────────────────────
@@ -143,9 +176,9 @@ function setMode(mode: ViewMode): void {
 }
 
 for (const [mode, id] of Object.entries(modeButtonIds)) {
-  document.getElementById(id)!.addEventListener("click", () =>
-    setMode(mode as ViewMode),
-  );
+  document
+    .getElementById(id)!
+    .addEventListener("click", () => setMode(mode as ViewMode));
 }
 setMode("editor");
 

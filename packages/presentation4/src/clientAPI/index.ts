@@ -53,3 +53,21 @@ export type {
 export type { Pin } from "./animation/Pin";
 export type { SectionAnimations } from "./animation/SectionAnimations";
 export type { ElementAnimations } from "./animation/ElementAnimations";
+export type {
+  Color,
+  Fill,
+  StyleValue,
+  BorderEdgeStyle,
+  Border,
+  ComputedBorder,
+  FontWeight,
+  ElementStyleProps,
+  ComputedElementStyle,
+  SectionStyleProps,
+  ComputedSectionStyle,
+  StyleRegistry,
+} from "./styles/index";
+export {
+  SYSTEM_DEFAULT_ELEMENT_STYLE,
+  SYSTEM_DEFAULT_SECTION_STYLE,
+} from "./styles/index";

@@ -13,15 +13,27 @@ import type { SectionView } from "../viewAPI/SectionView";
 import type { LayoutTransform } from "../viewAPI/LayoutTransform";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 import type { ElementAnimations } from "../clientAPI/animation/ElementAnimations";
-import type { AnchorRef, ElementMemento, ElementLayoutGeometryMemento } from "../clientAPI/serialize/PresentationMemento";
+import type {
+  AnchorRef,
+  ElementMemento,
+  ElementLayoutGeometryMemento,
+} from "../clientAPI/serialize/PresentationMemento";
+import type {
+  ElementStyleProps,
+  ComputedElementStyle,
+} from "../clientAPI/styles/ElementStyleProps";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { NullElementView } from "./nullView/NullElementView";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
 import { GeometryConstraintError } from "../anchors/GeometryConstraintError";
 import { CoreElementAnimations } from "./animation/CoreElementAnimations";
+import { resolveElementStyle } from "./styles/styleResolver";
 import type { CoreSection } from "./CoreSection";
 import type { EventContext } from "./EventContext";
-import { ANCHOR_SLOTS, type SerializeContext } from "./serialize/SerializeContext";
+import {
+  ANCHOR_SLOTS,
+  type SerializeContext,
+} from "./serialize/SerializeContext";
 import { serializeElementLayoutGeometry } from "./serialize/serializeGeometry";
 
 /**
@@ -39,6 +51,9 @@ export abstract class CoreElement
   protected readonly eventContext_: EventContext;
   private view_: ElementView;
   private readonly animations_: CoreElementAnimations;
+  private ownStyle_: ElementStyleProps = {};
+  private namedStyles_: string[] = [];
+  private computedStyle_: ComputedElementStyle;
 
   // ── Content-dependent dimension state ────────────────────────────────────
   //
@@ -58,6 +73,7 @@ export abstract class CoreElement
     this.animations_ = new CoreElementAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
     this.eventContext_.registerAnchors(this.anchors, this);
+    this.computedStyle_ = this.buildComputedStyle_();
   }
 
   /** Called by CoreSection when a layout is added to the LayoutManager. */
@@ -68,6 +84,7 @@ export abstract class CoreElement
   /** Called by CoreSection when a view is being attached. */
   attachView(sectionView: SectionView): void {
     this.view_ = this.createView(sectionView);
+    this.view_.applyStyle(this.computedStyle_);
   }
 
   /** Called by CoreSection.removeElement. Destroys this element's view. */
@@ -105,17 +122,26 @@ export abstract class CoreElement
     const bag = this.getLayoutBag_(layout);
     if (!bag) return;
     for (const slot of ANCHOR_SLOTS) {
-      lookup.set(bag[slot], { node: "element", sectionIndex, elementIndex, slot });
+      lookup.set(bag[slot], {
+        node: "element",
+        sectionIndex,
+        elementIndex,
+        slot,
+      });
     }
   }
 
   /** Serializes the geometry and animation state common to all element types. */
   protected elementMementoBase_(ctx: SerializeContext): {
     layouts: readonly ElementLayoutGeometryMemento[];
-    keyFrameAnimations: ReturnType<CoreElementAnimations["toMemento"]>["keyFrameAnimations"];
+    keyFrameAnimations: ReturnType<
+      CoreElementAnimations["toMemento"]
+    >["keyFrameAnimations"];
     pins: ReturnType<CoreElementAnimations["toMemento"]>["pins"];
   } {
-    const { keyFrameAnimations, pins } = this.animations_.toMemento(ctx.triggerIndex);
+    const { keyFrameAnimations, pins } = this.animations_.toMemento(
+      ctx.triggerIndex,
+    );
     return {
       layouts: ctx.layouts.map((layout, li) => {
         const bag = this.getLayoutBag_(layout);
@@ -149,6 +175,57 @@ export abstract class CoreElement
 
   get animations(): ElementAnimations {
     return this.animations_;
+  }
+
+  get computedStyle(): ComputedElementStyle {
+    return this.computedStyle_;
+  }
+
+  setStyle(style: ElementStyleProps): void {
+    this.ownStyle_ = style;
+    this.recomputeAndPushStyle_();
+  }
+
+  addNamedStyle(name: string): void {
+    if (!this.namedStyles_.includes(name)) {
+      this.namedStyles_.push(name);
+      this.recomputeAndPushStyle_();
+    }
+  }
+
+  removeNamedStyle(name: string): void {
+    const index = this.namedStyles_.indexOf(name);
+    if (index >= 0) {
+      this.namedStyles_.splice(index, 1);
+      this.recomputeAndPushStyle_();
+    }
+  }
+
+  get namedStyles(): readonly string[] {
+    return this.namedStyles_;
+  }
+
+  /** Called by CorePresentation when any element-level registry entry changes. */
+  notifyStyleRegistryChanged(): void {
+    this.recomputeAndPushStyle_();
+  }
+
+  private recomputeAndPushStyle_(): void {
+    this.computedStyle_ = this.buildComputedStyle_();
+    this.view_.applyStyle(this.computedStyle_);
+    this.eventContext_.emit("element:styleChanged", { element: this });
+  }
+
+  private buildComputedStyle_(): ComputedElementStyle {
+    const registry = this.section_.styleRegistry;
+    const namedProps = this.namedStyles_.map(
+      (name) => registry.lookupElementStyle(name) ?? {},
+    );
+    return resolveElementStyle(
+      this.ownStyle_,
+      namedProps,
+      registry.globalElementStyle,
+    );
   }
 
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void {

@@ -1,7 +1,10 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import { TypedEmitter } from "./TypedEmitter";
 import type { ViewMode } from "../clientAPI/ViewMode";
-import type { EditorViewEvents, EditorViewEventSource } from "../clientAPI/EditorViewEvents";
+import type {
+  EditorViewEvents,
+  EditorViewEventSource,
+} from "../clientAPI/EditorViewEvents";
 import type { EditorSelectionController } from "../clientAPI/EditorSelectionController";
 import type { EditorViewController } from "../clientAPI/EditorViewController";
 

@@ -38,6 +38,7 @@ class SpyElementView implements ElementView {
 
   applyConstrainedDimension(): void {}
   measureAndReport(): void {}
+  applyStyle(): void {}
 
   destroy(): void {
     this.destroyCount++;
@@ -66,6 +67,8 @@ class SpySectionView implements SectionView {
   layout(transform: LayoutTransform): void {
     this.layoutCalls.push({ ...transform });
   }
+
+  applyStyle(): void {}
 
   createMarkdownElementView(owner: MarkdownElementViewOwner): ElementView {
     const view = new SpyElementView();

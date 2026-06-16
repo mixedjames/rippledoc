@@ -11,6 +11,7 @@ import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { CoreSection } from "./CoreSection";
 import { NullPresentationView } from "./nullView/NullPresentationView";
 import type { CorePresentation } from "./CorePresentation";
+import type { CoreStyleRegistry } from "./CoreStyleRegistry";
 import type { EventContext } from "./EventContext";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 import { constant } from "../anchors/factories";
@@ -67,6 +68,11 @@ export class CorePresentationRoot
   /** Exposes EventContext so CoreSection can access it via the root reference. */
   get eventContext(): EventContext {
     return this.eventContext_;
+  }
+
+  /** Exposes the style registry so CoreSection and CoreElement can resolve cascades. */
+  get styleRegistry(): CoreStyleRegistry {
+    return this.presentation_.coreStyleRegistry;
   }
 
   protected override onBagCreated_(bag: ConcreteXYAnchors): void {

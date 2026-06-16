@@ -1,6 +1,7 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorSectionView } from "./EditorSectionView";
 import { EditorPinManager, NullEditorPinManager } from "./EditorPinManager";
+import { fillToCss, borderToCss } from "./colorToCss";
 
 /**
  * Base element view for the editor. Renders a single absolutely-positioned
@@ -30,6 +31,7 @@ export class EditorElementView implements p4.ElementView {
   private readonly element_: HTMLElement = document.createElement("div");
   private readonly contentWrapper_: HTMLElement = document.createElement("div");
 
+  private computedStyle_: p4.ComputedElementStyle | null = null;
   private readonly pinManager_: EditorPinManager | NullEditorPinManager;
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
@@ -64,10 +66,7 @@ export class EditorElementView implements p4.ElementView {
       },
     );
     // Apply current selection state — the event won't fire retroactively.
-    this.element_.classList.toggle(
-      "selected",
-      ctrl.selection.has(this.owner_),
-    );
+    this.element_.classList.toggle("selected", ctrl.selection.has(this.owner_));
 
     this.initDOM_(parent);
 
@@ -81,12 +80,37 @@ export class EditorElementView implements p4.ElementView {
         : new NullEditorPinManager();
   }
 
+  applyStyle(style: p4.ComputedElementStyle): void {
+    this.computedStyle_ = style;
+    this.applyStyles_();
+  }
+
   layout({ scale }: p4.LayoutTransform): void {
     const anchors = this.owner_.anchors;
     this.element_.style.left = `${anchors.left.value * scale}px`;
     this.element_.style.top = `${anchors.top.value * scale}px`;
     this.element_.style.width = `${anchors.width.value * scale}px`;
     this.element_.style.height = `${anchors.height.value * scale}px`;
+    this.applyStyles_();
+    this.pinManager_.layout();
+  }
+
+  private applyStyles_(): void {
+    const style = this.computedStyle_;
+    if (!style) return;
+    const scale =
+      this.owner_.sectionViewOwner.presentationViewOwner.layoutTransform.scale;
+
+    this.element_.style.background = fillToCss(style.fill);
+    this.element_.style.border = borderToCss(style.border, scale);
+
+    this.contentWrapper_.style.fontFamily = style.fontFamily;
+    this.contentWrapper_.style.fontSize = `${style.fontSize * scale}px`;
+    this.contentWrapper_.style.fontWeight = String(style.fontWeight);
+    this.contentWrapper_.style.color = `rgba(${style.fontColor.r}, ${style.fontColor.g}, ${style.fontColor.b}, ${style.fontColor.a})`;
+    this.contentWrapper_.style.fontStyle = style.fontItalic
+      ? "italic"
+      : "normal";
   }
 
   applyConstrainedDimension({ scale }: p4.LayoutTransform): void {

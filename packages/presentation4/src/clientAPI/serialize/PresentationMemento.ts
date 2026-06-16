@@ -14,7 +14,13 @@ import type { KeyFrame } from "../animation/KeyFrame";
 // ── Anchor addressing ─────────────────────────────────────────────────────────
 
 /** The six named slots present on every anchored object's XYAnchors bag. */
-export type AnchorSlot = "left" | "right" | "width" | "top" | "bottom" | "height";
+export type AnchorSlot =
+  | "left"
+  | "right"
+  | "width"
+  | "top"
+  | "bottom"
+  | "height";
 
 /**
  * The additional named anchors exposed directly on PresentationRoot (not part
@@ -40,14 +46,22 @@ export type RootViewportSlot =
  */
 export type AnchorRef =
   | { readonly node: "root"; readonly slot: AnchorSlot | RootViewportSlot }
-  | { readonly node: "section"; readonly index: number; readonly slot: AnchorSlot }
+  | {
+      readonly node: "section";
+      readonly index: number;
+      readonly slot: AnchorSlot;
+    }
   | {
       readonly node: "element";
       readonly sectionIndex: number;
       readonly elementIndex: number;
       readonly slot: AnchorSlot;
     }
-  | { readonly node: "trigger"; readonly index: number; readonly slot: AnchorSlot };
+  | {
+      readonly node: "trigger";
+      readonly index: number;
+      readonly slot: AnchorSlot;
+    };
 
 // ── Anchor expression mementos ────────────────────────────────────────────────
 

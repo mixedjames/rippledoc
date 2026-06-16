@@ -30,6 +30,10 @@ export type PresentationEvents = {
   "element:animationAdded": { element: Element; animation: KeyFrameAnimation };
   "section:animationAdded": { section: Section; animation: KeyFrameAnimation };
   "animation:keyFramesChanged": { animation: KeyFrameAnimation };
+  /** Emitted when an element's computed style changes for any reason. */
+  "element:styleChanged": { element: Element };
+  /** Emitted when a section's computed style changes for any reason. */
+  "section:styleChanged": { section: Section };
 };
 
 /**

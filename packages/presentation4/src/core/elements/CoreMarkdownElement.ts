@@ -40,6 +40,10 @@ export class CoreMarkdownElement
   }
 
   toMemento(ctx: SerializeContext): MarkdownElementMemento {
-    return { type: "markdown", markdown: this.markdown_, ...this.elementMementoBase_(ctx) };
+    return {
+      type: "markdown",
+      markdown: this.markdown_,
+      ...this.elementMementoBase_(ctx),
+    };
   }
 }

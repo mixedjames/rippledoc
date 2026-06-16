@@ -40,8 +40,18 @@ export function serializeElementLayoutGeometry(
   lookup: Lookup,
 ): ElementLayoutGeometryMemento {
   return {
-    horizontal: serializeElementHorizontal(bag, hIsSet, contentDependentDimension, lookup),
-    vertical: serializeElementVertical(bag, vIsSet, contentDependentDimension, lookup),
+    horizontal: serializeElementHorizontal(
+      bag,
+      hIsSet,
+      contentDependentDimension,
+      lookup,
+    ),
+    vertical: serializeElementVertical(
+      bag,
+      vIsSet,
+      contentDependentDimension,
+      lookup,
+    ),
   };
 }
 
@@ -56,15 +66,24 @@ function serializeElementHorizontal(
     if (!isDerived(bag.left.expression)) {
       return {
         mode: "contentWidth",
-        fixed: { fixedEdge: "left", expr: serializeExpr(bag.left.expression, lookup) },
+        fixed: {
+          fixedEdge: "left",
+          expr: serializeExpr(bag.left.expression, lookup),
+        },
       };
     }
     return {
       mode: "contentWidth",
-      fixed: { fixedEdge: "right", expr: serializeExpr(bag.right.expression, lookup) },
+      fixed: {
+        fixedEdge: "right",
+        expr: serializeExpr(bag.right.expression, lookup),
+      },
     };
   }
-  return { mode: "anchored", anchors: hIsSet ? serializeHorizontalAnchors(bag, lookup) : {} };
+  return {
+    mode: "anchored",
+    anchors: hIsSet ? serializeHorizontalAnchors(bag, lookup) : {},
+  };
 }
 
 function serializeElementVertical(
@@ -78,20 +97,34 @@ function serializeElementVertical(
     if (!isDerived(bag.top.expression)) {
       return {
         mode: "contentHeight",
-        fixed: { fixedEdge: "top", expr: serializeExpr(bag.top.expression, lookup) },
+        fixed: {
+          fixedEdge: "top",
+          expr: serializeExpr(bag.top.expression, lookup),
+        },
       };
     }
     return {
       mode: "contentHeight",
-      fixed: { fixedEdge: "bottom", expr: serializeExpr(bag.bottom.expression, lookup) },
+      fixed: {
+        fixedEdge: "bottom",
+        expr: serializeExpr(bag.bottom.expression, lookup),
+      },
     };
   }
-  return { mode: "anchored", anchors: vIsSet ? serializeVerticalAnchors(bag, lookup) : {} };
+  return {
+    mode: "anchored",
+    anchors: vIsSet ? serializeVerticalAnchors(bag, lookup) : {},
+  };
 }
 
-function serializeVerticalAnchors(bag: ConcreteXYAnchors, lookup: Lookup): VerticalAnchorsMemento {
+function serializeVerticalAnchors(
+  bag: ConcreteXYAnchors,
+  lookup: Lookup,
+): VerticalAnchorsMemento {
   return {
-    top: isUserSet(bag.top.expression) ? serializeExpr(bag.top.expression, lookup) : undefined,
+    top: isUserSet(bag.top.expression)
+      ? serializeExpr(bag.top.expression, lookup)
+      : undefined,
     bottom: isUserSet(bag.bottom.expression)
       ? serializeExpr(bag.bottom.expression, lookup)
       : undefined,
@@ -106,7 +139,9 @@ function serializeHorizontalAnchors(
   lookup: Lookup,
 ): HorizontalAnchorsMemento {
   return {
-    left: isUserSet(bag.left.expression) ? serializeExpr(bag.left.expression, lookup) : undefined,
+    left: isUserSet(bag.left.expression)
+      ? serializeExpr(bag.left.expression, lookup)
+      : undefined,
     right: isUserSet(bag.right.expression)
       ? serializeExpr(bag.right.expression, lookup)
       : undefined,

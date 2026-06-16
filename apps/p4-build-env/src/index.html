@@ -67,7 +67,10 @@
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.1s, color 0.1s, border-color 0.1s;
+        transition:
+          background 0.1s,
+          color 0.1s,
+          border-color 0.1s;
       }
 
       .mode-buttons button[data-active="true"] {
@@ -147,7 +150,9 @@
         font-weight: 600;
         cursor: pointer;
         text-align: left;
-        transition: background 0.1s, color 0.1s;
+        transition:
+          background 0.1s,
+          color 0.1s;
       }
 
       .util-button:hover {
@@ -238,12 +243,17 @@
         <span id="selectionCount">0</span>
       </div>
       <div id="selectionList"></div>
-      <p class="panel-hint">Click to select &nbsp;·&nbsp; Shift+click to add &nbsp;·&nbsp; Esc to clear</p>
+      <p class="panel-hint">
+        Click to select &nbsp;·&nbsp; Shift+click to add &nbsp;·&nbsp; Esc to
+        clear
+      </p>
 
       <div class="panel-divider"></div>
 
       <p class="panel-label">SERIALISATION</p>
-      <button id="btnLogMemento" class="util-button">Log memento to console</button>
+      <button id="btnLogMemento" class="util-button">
+        Log memento to console
+      </button>
 
       <div class="panel-divider"></div>
 

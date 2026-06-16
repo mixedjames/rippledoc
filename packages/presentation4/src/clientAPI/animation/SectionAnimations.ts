@@ -1,4 +1,7 @@
-import type { KeyFrameAnimation, KeyFrameAnimationOptions } from "./KeyFrameAnimation";
+import type {
+  KeyFrameAnimation,
+  KeyFrameAnimationOptions,
+} from "./KeyFrameAnimation";
 
 /**
  * The animation bag exposed on a Section via section.animations.

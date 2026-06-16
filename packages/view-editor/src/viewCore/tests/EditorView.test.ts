@@ -72,7 +72,8 @@ describe("pre-attach validity", () => {
     presentation.attachView(editor.viewFactory);
 
     // The element view should have self-initialised from controller.selection.has().
-    const selected = getViewport(container).querySelectorAll(".element.selected");
+    const selected =
+      getViewport(container).querySelectorAll(".element.selected");
     expect(selected).toHaveLength(1);
   });
 });
@@ -115,38 +116,49 @@ describe("selection — CSS class on element divs", () => {
   });
 
   it("no element div has the selected class initially", () => {
-    expect(getViewport(container).querySelector(".element.selected")).toBeNull();
+    expect(
+      getViewport(container).querySelector(".element.selected"),
+    ).toBeNull();
   });
 
   it("selection.add() adds the selected class to the matching element div", () => {
     editor.selection.add(el1);
-    expect(getViewport(container).querySelectorAll(".element.selected")).toHaveLength(1);
+    expect(
+      getViewport(container).querySelectorAll(".element.selected"),
+    ).toHaveLength(1);
   });
 
   it("selection.add() on two elements selects both divs", () => {
     editor.selection.add(el1);
     editor.selection.add(el2);
-    expect(getViewport(container).querySelectorAll(".element.selected")).toHaveLength(2);
+    expect(
+      getViewport(container).querySelectorAll(".element.selected"),
+    ).toHaveLength(2);
   });
 
   it("selection.remove() clears the selected class", () => {
     editor.selection.add(el1);
     editor.selection.remove(el1);
-    expect(getViewport(container).querySelector(".element.selected")).toBeNull();
+    expect(
+      getViewport(container).querySelector(".element.selected"),
+    ).toBeNull();
   });
 
   it("selection.clear() removes selected class from all elements", () => {
     editor.selection.add(el1);
     editor.selection.add(el2);
     editor.selection.clear();
-    expect(getViewport(container).querySelector(".element.selected")).toBeNull();
+    expect(
+      getViewport(container).querySelector(".element.selected"),
+    ).toBeNull();
   });
 
   it("selection.set() selects exactly the specified elements", () => {
     editor.selection.add(el1);
     editor.selection.set([el2]);
 
-    const selected = getViewport(container).querySelectorAll(".element.selected");
+    const selected =
+      getViewport(container).querySelectorAll(".element.selected");
     expect(selected).toHaveLength(1);
     // el1 deselected, el2 selected — verify by checking element count vs. selected count
     expect(getElementDivs(container)).toHaveLength(2);
@@ -168,7 +180,9 @@ describe("anchors mode — element content visibility", () => {
     // is sufficient to confirm the CSS rule will apply — computed styles are not
     // available in happy-dom.
     expect(getViewport(container).getAttribute("data-mode")).toBe("anchors");
-    expect(getViewport(container).querySelector(".element-content")).not.toBeNull();
+    expect(
+      getViewport(container).querySelector(".element-content"),
+    ).not.toBeNull();
   });
 
   it("switching back from anchors to editor restores data-mode", () => {

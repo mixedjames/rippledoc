@@ -1,4 +1,5 @@
 import type { LayoutTransform } from "./LayoutTransform";
+import type { ComputedElementStyle } from "../clientAPI/styles/ElementStyleProps";
 
 /**
  * ElementView is the view-side interface for a single element.
@@ -41,6 +42,14 @@ export interface ElementView {
    * No-op for non-content-dependent elements.
    */
   measureAndReport(): void;
+
+  /**
+   * Apply a new computed style to this view. Called by the model whenever the
+   * element's cascade result changes (own style, named style, or global style update).
+   * Also called immediately after the view is first attached so the initial style
+   * is applied without waiting for a layout pass.
+   */
+  applyStyle(style: ComputedElementStyle): void;
 
   /**
    * Tear down this view.

@@ -2,6 +2,7 @@ import type { PresentationRoot } from "./PresentationRoot";
 import type { LayoutManager } from "./LayoutManager";
 import type { PresentationEventSource } from "./PresentationEvents";
 import type { ScrollTrigger, ScrollTriggerOptions } from "./ScrollTrigger";
+import type { StyleRegistry } from "./styles/StyleRegistry";
 
 /** Options supplied when creating a new presentation. */
 export interface PresentationOptions {
@@ -29,8 +30,11 @@ export interface Presentation {
   /** Manages the set of layouts and which layout is currently active. */
   get layout(): LayoutManager;
 
-  /** Subscribe to structural, content, geometry, and layout change events. */
+  /** Subscribe to structural, content, geometry, layout, and style change events. */
   get events(): PresentationEventSource;
+
+  /** Named style registry and global style overrides for this presentation. */
+  get styles(): StyleRegistry;
 
   /**
    * Create a scroll trigger that spans the given vertical range and emit

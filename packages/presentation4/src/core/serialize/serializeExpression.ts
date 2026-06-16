@@ -36,7 +36,10 @@ export function serializeExpr(
   );
 }
 
-function requireRef(anchor: Anchor, lookup: ReadonlyMap<Anchor, AnchorRef>): AnchorRef {
+function requireRef(
+  anchor: Anchor,
+  lookup: ReadonlyMap<Anchor, AnchorRef>,
+): AnchorRef {
   const ref = lookup.get(anchor);
   if (ref === undefined) {
     throw new Error(

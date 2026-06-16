@@ -51,6 +51,9 @@ export class EditorPinManager {
    */
   private deltaY_: number = 0;
 
+  // Non-null while a pin transition is active (clone visible, original hidden).
+  private activePin_: p4.Pin | null = null;
+
   constructor(options: {
     elementDiv: HTMLElement;
     owner: p4.ElementViewOwner;
@@ -68,13 +71,35 @@ export class EditorPinManager {
 
     this.buildDOM_();
     this.buildPins_();
+
+    // Keep the clone's "selected" class in sync with the original while a pin
+    // is active. Stored in unsubscribe_ so disconnect() cleans it up.
+    const ctrl = this.presentationView_.controller;
+    this.unsubscribe_.push(
+      ctrl.events.on("selection:changed", ({ selection }) => {
+        if (this.activePin_ !== null) {
+          this.clone_.classList.toggle("selected", selection.has(this.owner_));
+        }
+      }),
+    );
   }
 
   get hasPins(): boolean {
     return true;
   }
 
-  layout(): void {}
+  layout(): void {
+    if (this.activePin_ !== null) {
+      // Clone is live — re-position it at the new scale.
+      this.positionClone_(this.activePin_);
+    } else {
+      // Original is visible — deltaY_ is in basis-space, so multiplying by the
+      // new scale gives the correct physical offset after a resize.
+      const { scale } = this.layoutTransform_();
+      const dy = scale * this.deltaY_;
+      this.targetWrapper_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+    }
+  }
 
   /**
    * Called when the element's DOM content has changed asynchronously (e.g. SVG
@@ -117,6 +142,8 @@ export class EditorPinManager {
   private initCloneStyles_(clone: HTMLElement): void {
     clone.style.position = "absolute";
     clone.style.visibility = "hidden";
+    // Override the overlay's pointer-events:none so the clone is clickable.
+    clone.style.pointerEvents = "auto";
     clone.classList.add("rdoc-pin-clone");
   }
 
@@ -137,6 +164,7 @@ export class EditorPinManager {
   // ── Pin state transitions ────────────────────────────────────────────────
 
   private pinForward_(pin: p4.Pin): void {
+    this.activePin_ = pin;
     this.refreshClone_();
     this.positionClone_(pin);
     this.showClone_();
@@ -147,6 +175,7 @@ export class EditorPinManager {
     // Decrement before positioning: positionClone_ assumes deltaY_ excludes
     // the current pin's height, so we undo it first.
     this.deltaY_ -= pin.trigger.height;
+    this.activePin_ = pin;
     this.refreshClone_();
     this.positionClone_(pin);
     this.showClone_();
@@ -157,21 +186,22 @@ export class EditorPinManager {
     // Translate the wrapper by the total accumulated offset including this pin.
     // Using the trigger's exact height (not current scroll position) avoids a
     // visible jump when the end boundary is crossed at high scroll speed.
+    this.deltaY_ += pin.trigger.height;
+    this.activePin_ = null;
+
     const { scale } = this.layoutTransform_();
-    const dy = scale * (this.deltaY_ + pin.trigger.height);
-    this.targetWrapper_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+    this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;
 
     this.showOriginal_();
     this.hideClone_();
-
-    this.deltaY_ += pin.trigger.height;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private unpinReverse_(_pin: p4.Pin): void {
+    this.activePin_ = null;
+
     const { scale } = this.layoutTransform_();
-    const dy = scale * this.deltaY_;
-    this.targetWrapper_.style.transform = `translateY(${dy.toFixed(STYLE_PRECISION)}px)`;
+    this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;
 
     this.showOriginal_();
     this.hideClone_();
@@ -210,8 +240,30 @@ export class EditorPinManager {
   private refreshClone_(): void {
     const fresh = this.elementDiv_.cloneNode(true) as HTMLElement;
     this.initCloneStyles_(fresh);
+    this.attachCloneInteraction_(fresh);
     this.clone_.replaceWith(fresh);
     this.clone_ = fresh;
+  }
+
+  /**
+   * Attaches pointer event listeners to a freshly-created clone.
+   *
+   * The listeners close over `this` but the clone itself is not retained by
+   * EditorPinManager after it is replaced — old clones become GC-eligible
+   * along with their listeners, so no explicit removeEventListener is needed.
+   */
+  private attachCloneInteraction_(clone: HTMLElement): void {
+    const ctrl = this.presentationView_.controller;
+    clone.addEventListener("pointerdown", (e: PointerEvent) => {
+      this.presentationView_.dom.viewportContainer.focus({
+        preventScroll: true,
+      });
+      ctrl.emit("element:picked", { element: this.owner_, source: e });
+      ctrl.emit("element:pointerDown", { element: this.owner_, source: e });
+    });
+    clone.addEventListener("pointerup", (e: PointerEvent) => {
+      ctrl.emit("element:pointerUp", { element: this.owner_, source: e });
+    });
   }
 
   private layoutTransform_(): p4.LayoutTransform {

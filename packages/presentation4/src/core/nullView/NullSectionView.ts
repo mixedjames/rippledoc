@@ -7,6 +7,7 @@ import { NullElementView } from "./NullElementView";
  */
 export class NullSectionView implements SectionView {
   layout(): void {}
+  applyStyle(): void {}
 
   createMarkdownElementView(): ElementView {
     return new NullElementView();

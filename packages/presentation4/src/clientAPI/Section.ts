@@ -6,6 +6,10 @@ import type { MarkdownElement } from "./elements/MarkdownElement";
 import type { BitmapImageElement } from "./elements/BitmapImageElement";
 import type { SVGImageElement } from "./elements/SVGImageElement";
 import type { SectionAnimations } from "./animation/SectionAnimations";
+import type {
+  SectionStyleProps,
+  ComputedSectionStyle,
+} from "./styles/SectionStyleProps";
 
 /**
  * A Section is a horizontal slice of a RippleDoc presentation.
@@ -46,6 +50,24 @@ export interface Section {
 
   /** Keyframe animations attached to this section. */
   get animations(): SectionAnimations;
+
+  /** The fully resolved style for this section after cascade evaluation. */
+  get computedStyle(): ComputedSectionStyle;
+
+  /** Set the section's own style. Overrides named and global styles for any property specified. */
+  setStyle(style: SectionStyleProps): void;
+
+  /**
+   * Append a named style to this section's style list.
+   * Named styles are evaluated in the order they were added; earlier entries take priority.
+   */
+  addNamedStyle(name: string): void;
+
+  /** Remove a previously added named style. No-op if the name is not present. */
+  removeNamedStyle(name: string): void;
+
+  /** The named styles currently applied to this section, in priority order. */
+  get namedStyles(): readonly string[];
 
   /** Adds a new markdown element owned by this section. */
   addMarkdownElement(markdown?: string): MarkdownElement;

@@ -7,5 +7,6 @@ export class NullElementView implements ElementView {
   layout(): void {}
   applyConstrainedDimension(): void {}
   measureAndReport(): void {}
+  applyStyle(): void {}
   destroy(): void {}
 }

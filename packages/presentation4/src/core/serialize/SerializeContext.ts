@@ -1,6 +1,9 @@
 import type { Layout } from "../../clientAPI/Layout";
 import type { Anchor } from "../../anchors/Anchor";
-import type { AnchorRef, AnchorSlot } from "../../clientAPI/serialize/PresentationMemento";
+import type {
+  AnchorRef,
+  AnchorSlot,
+} from "../../clientAPI/serialize/PresentationMemento";
 import type { ScrollTrigger } from "../../clientAPI/ScrollTrigger";
 
 export type SerializeContext = {

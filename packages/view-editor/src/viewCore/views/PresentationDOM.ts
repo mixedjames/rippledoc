@@ -66,6 +66,7 @@ export class PresentationDOM {
   /** Set the current view mode. CSS rules react to this to adjust rendering. */
   setMode(mode: ViewMode): void {
     this.viewport_.dataset.mode = mode;
+    this.pins_.dataset.mode = mode;
   }
 
   destroy(): void {
@@ -124,46 +125,24 @@ export class PresentationDOM {
     this.viewport_.style.outline = "none";
 
     this.styles_.textContent = `
-      /* Section boundaries — alternating tints so each section is visually distinct. */
-      .section-background {
-        border-top: 2px solid hsl(220 50% 60% / 0.4);
-        box-sizing: border-box;
-      }
-      .section-background:nth-child(odd) {
-        background: hsl(220 60% 95%);
-      }
-      .section-background:nth-child(even) {
-        background: hsl(270 60% 95%);
-      }
-
-      /* Element boundaries — dashed outline and a slight white fill. */
       .element {
-        border: 1px dashed hsl(220 50% 50% / 0.5);
-        background: hsl(0 0% 100% / 0.75);
         box-sizing: border-box;
         overflow: hidden;
       }
 
-      /* Selection chrome is an editor concept — suppress it in player mode. */
-      .viewport:not([data-mode="player"]) .element.selected {
-        border: 2px solid hsl(220 80% 55%);
-        background: hsl(220 100% 98% / 0.9);
+      .section-background {
+        box-sizing: border-box;
       }
 
-      /* Type-specific styling on the outer element (CSS class set by subclasses). */
-      .markdown-element {
-        font-family: system-ui, sans-serif;
-        font-size: 14px;
-        line-height: 1.5;
-        padding: 8px 12px;
-      }
-      .bitmap-image-element,
-      .svg-image-element {
-        background: hsl(40 80% 95%);
+      /* Selection chrome: outline sits above author border without affecting layout.
+         Suppressed in player mode where editor chrome should not be visible. */
+      .viewport:not([data-mode="player"]) .element.selected,
+      .pins:not([data-mode="player"]) .element.selected {
+        outline: 2px solid hsl(220 80% 55%);
+        outline-offset: 1px;
       }
 
-      /* Anchors mode: hide all rendered content so only element boxes are visible.
-         The outer .element div (border, position) remains visible. */
+      /* Anchors mode: hide rendered content so only element boxes are visible. */
       [data-mode="anchors"] .element-content {
         display: none;
       }

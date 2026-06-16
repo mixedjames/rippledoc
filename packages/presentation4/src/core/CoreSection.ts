@@ -9,7 +9,15 @@ import type { BitmapImageElement } from "../clientAPI/elements/BitmapImageElemen
 import type { SVGImageElement } from "../clientAPI/elements/SVGImageElement";
 import type { SectionAnimations } from "../clientAPI/animation/SectionAnimations";
 import type { Anchor } from "../anchors/Anchor";
-import type { AnchorRef, SectionMemento } from "../clientAPI/serialize/PresentationMemento";
+import type {
+  AnchorRef,
+  SectionMemento,
+} from "../clientAPI/serialize/PresentationMemento";
+import type {
+  SectionStyleProps,
+  ComputedSectionStyle,
+} from "../clientAPI/styles/SectionStyleProps";
+import type { CoreStyleRegistry } from "./CoreStyleRegistry";
 import type { PresentationView } from "../viewAPI/PresentationView";
 import type { SectionView } from "../viewAPI/SectionView";
 import type { SectionViewOwner } from "../viewAPI/SectionViewOwner";
@@ -18,6 +26,7 @@ import type { LayoutTransform } from "../viewAPI/LayoutTransform";
 import type { ConcreteXYAnchors } from "../anchors/ConcreteXYAnchors";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { NullSectionView } from "./nullView/NullSectionView";
+import { resolveSectionStyle } from "./styles/styleResolver";
 import { CoreMarkdownElement } from "./elements/CoreMarkdownElement";
 import { CoreBitmapImageElement } from "./elements/CoreBitmapImageElement";
 import { CoreSVGImageElement } from "./elements/CoreSVGImageElement";
@@ -25,7 +34,10 @@ import { CoreSectionAnimations } from "./animation/CoreSectionAnimations";
 import type { CorePresentationRoot } from "./CorePresentationRoot";
 import type { CoreElement } from "./CoreElement";
 import type { EventContext } from "./EventContext";
-import { ANCHOR_SLOTS, type SerializeContext } from "./serialize/SerializeContext";
+import {
+  ANCHOR_SLOTS,
+  type SerializeContext,
+} from "./serialize/SerializeContext";
 import { serializeSectionLayoutGeometry } from "./serialize/serializeGeometry";
 
 /**
@@ -44,6 +56,9 @@ export class CoreSection
   private readonly elements_: CoreElement[] = [];
   private view_: SectionView;
   private readonly animations_: CoreSectionAnimations;
+  private ownStyle_: SectionStyleProps = {};
+  private namedStyles_: string[] = [];
+  private computedStyle_: ComputedSectionStyle;
 
   constructor(root: CorePresentationRoot) {
     super(root.layoutContext);
@@ -53,6 +68,7 @@ export class CoreSection
     this.animations_ = new CoreSectionAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
     this.eventContext_.registerAnchors(this.anchors, this);
+    this.computedStyle_ = this.buildComputedStyle_();
   }
 
   /** Exposes the LayoutManager so CoreElement can thread it to AnchoredObjectBase. */
@@ -78,6 +94,7 @@ export class CoreSection
   /** Called by CorePresentationRoot when a view is being attached. */
   attachView(presentationView: PresentationView): void {
     this.view_ = presentationView.createSectionView(this);
+    this.view_.applyStyle(this.computedStyle_);
     this.elements_.forEach((e) => e.attachView(this.view_));
   }
 
@@ -114,6 +131,34 @@ export class CoreSection
 
   get animations(): SectionAnimations {
     return this.animations_;
+  }
+
+  get computedStyle(): ComputedSectionStyle {
+    return this.computedStyle_;
+  }
+
+  setStyle(style: SectionStyleProps): void {
+    this.ownStyle_ = style;
+    this.recomputeAndPushStyle_();
+  }
+
+  addNamedStyle(name: string): void {
+    if (!this.namedStyles_.includes(name)) {
+      this.namedStyles_.push(name);
+      this.recomputeAndPushStyle_();
+    }
+  }
+
+  removeNamedStyle(name: string): void {
+    const index = this.namedStyles_.indexOf(name);
+    if (index >= 0) {
+      this.namedStyles_.splice(index, 1);
+      this.recomputeAndPushStyle_();
+    }
+  }
+
+  get namedStyles(): readonly string[] {
+    return this.namedStyles_;
   }
 
   setVerticalAnchors(descriptor: VerticalAnchorSet): void {
@@ -181,20 +226,56 @@ export class CoreSection
     return this.root_.presentationViewOwner;
   }
 
+  // ── Internal style helpers ────────────────────────────────────────────────
+
+  /** Exposes the style registry so CoreElement can resolve cascades. */
+  get styleRegistry(): CoreStyleRegistry {
+    return this.root_.styleRegistry;
+  }
+
+  /** Called by CorePresentation when any section-level registry entry changes. */
+  notifyStyleRegistryChanged(): void {
+    this.recomputeAndPushStyle_();
+  }
+
+  private recomputeAndPushStyle_(): void {
+    this.computedStyle_ = this.buildComputedStyle_();
+    this.view_.applyStyle(this.computedStyle_);
+    this.eventContext_.emit("section:styleChanged", { section: this });
+  }
+
+  private buildComputedStyle_(): ComputedSectionStyle {
+    const registry = this.root_.styleRegistry;
+    const namedProps = this.namedStyles_.map(
+      (name) => registry.lookupSectionStyle(name) ?? {},
+    );
+    return resolveSectionStyle(
+      this.ownStyle_,
+      namedProps,
+      registry.globalSectionStyle,
+    );
+  }
+
   // ── Internal serialization helpers ───────────────────────────────────────
 
   get coreElements(): readonly CoreElement[] {
     return this.elements_;
   }
 
-  addToAnchorLookup(layout: Layout, sectionIndex: number, lookup: Map<Anchor, AnchorRef>): void {
+  addToAnchorLookup(
+    layout: Layout,
+    sectionIndex: number,
+    lookup: Map<Anchor, AnchorRef>,
+  ): void {
     const bag = this.getLayoutBag_(layout);
     if (bag) {
       for (const slot of ANCHOR_SLOTS) {
         lookup.set(bag[slot], { node: "section", index: sectionIndex, slot });
       }
     }
-    this.elements_.forEach((el, ei) => el.addToAnchorLookup(layout, sectionIndex, ei, lookup));
+    this.elements_.forEach((el, ei) =>
+      el.addToAnchorLookup(layout, sectionIndex, ei, lookup),
+    );
   }
 
   toMemento(ctx: SerializeContext): SectionMemento {

@@ -1,6 +1,9 @@
 import type { Section } from "../../clientAPI/Section";
 import type { SectionAnimations } from "../../clientAPI/animation/SectionAnimations";
-import type { KeyFrameAnimation, KeyFrameAnimationOptions } from "../../clientAPI/animation/KeyFrameAnimation";
+import type {
+  KeyFrameAnimation,
+  KeyFrameAnimationOptions,
+} from "../../clientAPI/animation/KeyFrameAnimation";
 import type { ScrollTrigger } from "../../clientAPI/ScrollTrigger";
 import type { KeyFrameAnimationMemento } from "../../clientAPI/serialize/PresentationMemento";
 import type { EventContext } from "../EventContext";
