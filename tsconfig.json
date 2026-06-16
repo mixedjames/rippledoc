@@ -23,6 +23,9 @@
       "path": "./packages/view-editor"
     },
     {
+      "path": "./packages/editor-component"
+    },
+    {
       "path": "./apps/expressions-demo"
     },
     {
@@ -39,6 +42,9 @@
     },
     {
       "path": "./apps/p4-build-env"
+    },
+    {
+      "path": "./apps/editor-build-env"
     }
   ]
 }

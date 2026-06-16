@@ -71,3 +71,4 @@ export {
   SYSTEM_DEFAULT_ELEMENT_STYLE,
   SYSTEM_DEFAULT_SECTION_STYLE,
 } from "./styles/index";
+export type { PresentationMemento } from "./serialize/index";

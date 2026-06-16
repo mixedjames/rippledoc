@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": true
+  },
+
+  "references": [
+    { "path": "../../packages/presentation4" },
+    { "path": "../../packages/view-editor" },
+    { "path": "../../packages/editor-component" }
+  ],
+
+  "include": ["src"]
+}

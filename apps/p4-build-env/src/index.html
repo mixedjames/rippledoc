@@ -17,10 +17,24 @@
         font-family: system-ui, sans-serif;
       }
 
-      /* Presentation fills the left portion of the viewport. */
-      #theContainer {
+      /* Left panel — style editor. */
+      #leftPanel {
         position: fixed;
         left: 0;
+        top: 0;
+        width: 220px;
+        height: 100%;
+        background: #12122a;
+        border-right: 1px solid hsl(220 30% 30%);
+        padding: 16px 12px;
+        overflow-y: auto;
+        color: #cdd;
+      }
+
+      /* Presentation fills the centre of the viewport. */
+      #theContainer {
+        position: fixed;
+        left: 220px;
         top: 0;
         right: 280px;
         bottom: 0;
@@ -223,10 +237,171 @@
         border-radius: 2px;
         transition: width 0.05s linear;
       }
+
+      /* ── Style editor (left panel) ───────────────────── */
+
+      .style-section-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: hsl(220 40% 55%);
+        margin-top: 14px;
+        margin-bottom: 8px;
+      }
+      .style-section-label:first-child {
+        margin-top: 0;
+      }
+
+      .style-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 7px;
+      }
+
+      .style-label {
+        font-size: 10px;
+        color: hsl(220 20% 55%);
+        min-width: 44px;
+        flex-shrink: 0;
+      }
+
+      .style-row select,
+      .style-row input[type="number"] {
+        flex: 1;
+        background: hsl(220 20% 15%);
+        border: 1px solid hsl(220 30% 30%);
+        border-radius: 3px;
+        color: #cdd;
+        font-size: 11px;
+        padding: 3px 5px;
+        min-width: 0;
+      }
+
+      .style-row input[type="color"] {
+        flex: 1;
+        height: 24px;
+        border: 1px solid hsl(220 30% 30%);
+        border-radius: 3px;
+        padding: 1px;
+        background: hsl(220 20% 15%);
+        cursor: pointer;
+        min-width: 0;
+      }
+
+      .style-row input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+        accent-color: hsl(220 70% 60%);
+      }
+
+      #styleEditorEmpty {
+        font-size: 11px;
+        color: hsl(220 20% 40%);
+        font-style: italic;
+        margin-top: 10px;
+      }
+
+      #styleEditorForm {
+        display: none;
+      }
+      #styleEditorForm.active {
+        display: block;
+      }
     </style>
   </head>
 
   <body>
+    <div id="leftPanel">
+      <p class="panel-label">STYLES</p>
+      <p id="styleEditorEmpty">Select an element to edit its style.</p>
+
+      <div id="styleEditorForm">
+        <p class="style-section-label">FILL</p>
+        <div class="style-row">
+          <label class="style-label" for="fillType">Type</label>
+          <select id="fillType">
+            <option value="none">None</option>
+            <option value="solid">Solid</option>
+          </select>
+        </div>
+        <div class="style-row" id="fillColorRow">
+          <label class="style-label" for="fillColor">Color</label>
+          <input type="color" id="fillColor" value="#ffffff" />
+        </div>
+
+        <p class="style-section-label">FONT</p>
+        <div class="style-row">
+          <label class="style-label" for="fontColor">Color</label>
+          <input type="color" id="fontColor" value="#000000" />
+        </div>
+        <div class="style-row">
+          <label class="style-label" for="fontSize">Size</label>
+          <input
+            type="number"
+            id="fontSize"
+            value="18"
+            min="1"
+            max="300"
+            step="1"
+          />
+        </div>
+        <div class="style-row">
+          <label class="style-label" for="fontWeight">Weight</label>
+          <select id="fontWeight">
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="300">300</option>
+            <option value="400">400</option>
+            <option value="500">500</option>
+            <option value="600">600</option>
+            <option value="700">700</option>
+            <option value="800">800</option>
+            <option value="900">900</option>
+          </select>
+        </div>
+        <div class="style-row">
+          <label class="style-label" for="fontItalic">Italic</label>
+          <input type="checkbox" id="fontItalic" />
+        </div>
+
+        <p class="style-section-label">BORDER</p>
+        <div class="style-row">
+          <label class="style-label" for="borderType">Type</label>
+          <select id="borderType">
+            <option value="none">None</option>
+            <option value="border">Border</option>
+          </select>
+        </div>
+        <div id="borderDetails">
+          <div class="style-row">
+            <label class="style-label" for="borderWidth">Width</label>
+            <input
+              type="number"
+              id="borderWidth"
+              value="1"
+              min="0"
+              max="50"
+              step="1"
+            />
+          </div>
+          <div class="style-row">
+            <label class="style-label" for="borderStyle">Style</label>
+            <select id="borderStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+            </select>
+          </div>
+          <div class="style-row">
+            <label class="style-label" for="borderColor">Color</label>
+            <input type="color" id="borderColor" value="#000000" />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="theContainer"></div>
 
     <div id="rightPanel">

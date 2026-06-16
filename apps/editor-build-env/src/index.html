@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Editor Build Env</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        background: #1a1a2e;
+        font-family: system-ui, sans-serif;
+      }
+
+      /* ── Toolbar ──────────────────────────────────────── */
+
+      #toolbar {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        height: 40px;
+        padding: 0 12px;
+        background: #12122a;
+        border-bottom: 1px solid hsl(220 30% 25%);
+      }
+
+      .toolbar-divider {
+        width: 1px;
+        height: 20px;
+        background: hsl(220 30% 28%);
+        margin: 0 4px;
+      }
+
+      .toolbar-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid hsl(220 30% 30%);
+        border-radius: 4px;
+        background: hsl(220 20% 15%);
+        color: hsl(220 30% 60%);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.1s,
+          color 0.1s,
+          border-color 0.1s;
+        white-space: nowrap;
+      }
+
+      .toolbar-btn:hover:not(:disabled):not([data-active="true"]) {
+        background: hsl(220 25% 22%);
+        color: #eef;
+      }
+
+      .toolbar-btn[data-active="true"] {
+        background: hsl(220 60% 30%);
+        color: #eef;
+        border-color: hsl(220 60% 50%);
+      }
+
+      .toolbar-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      /* ── Editor mount ─────────────────────────────────── */
+
+      #editorMount {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+
+      /* Style the editor component's root so it fills the mount. */
+      .rippledoc-editor {
+        position: absolute;
+        inset: 0;
+      }
+
+      .rippledoc-editor__canvas {
+        position: absolute;
+        inset: 0;
+        overflow-y: scroll;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="toolbar">
+      <button class="toolbar-btn" id="btnSingleSelect">Single Select</button>
+      <button class="toolbar-btn" id="btnMultiSelect">Multi Select</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" id="btnUndo">Undo</button>
+      <button class="toolbar-btn" id="btnRedo">Redo</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" id="btnNew">New Presentation</button>
+    </div>
+
+    <div id="editorMount"></div>
+  </body>
+</html>

@@ -18,7 +18,8 @@
       "@rippledoc/presentation4/viewAPI": [
         "packages/presentation4/src/viewAPI"
       ],
-      "@rippledoc/view-editor": ["packages/view-editor"]
+      "@rippledoc/view-editor": ["packages/view-editor"],
+      "@rippledoc/editor-component": ["packages/editor-component"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

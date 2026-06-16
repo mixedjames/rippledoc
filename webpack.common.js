@@ -35,6 +35,10 @@ module.exports = {
         __dirname,
         "./packages/view-editor/src",
       ),
+      "@rippledoc/editor-component": path.resolve(
+        __dirname,
+        "./packages/editor-component/src",
+      ),
     },
   },
 

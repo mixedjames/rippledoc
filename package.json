@@ -36,7 +36,9 @@
     "build:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js",
     "watch:p3-build-env": "webpack --config apps/p3-build-env/webpack.config.js --watch",
     "build:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js",
-    "watch:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js --watch"
+    "watch:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js --watch",
+    "build:editor-build-env": "webpack --config apps/editor-build-env/webpack.config.js",
+    "watch:editor-build-env": "webpack --config apps/editor-build-env/webpack.config.js --watch"
   },
   "private": true,
   "workspaces": [

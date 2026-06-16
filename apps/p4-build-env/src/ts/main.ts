@@ -9,6 +9,10 @@ import type {
   Section,
   ScrollTrigger,
   Element,
+  Color,
+  ElementStyleProps,
+  FontWeight,
+  BorderEdgeStyle,
 } from "@rippledoc/presentation4";
 import { createEditorView } from "@rippledoc/view-editor";
 import type { ViewMode } from "@rippledoc/view-editor";
@@ -182,6 +186,138 @@ for (const [mode, id] of Object.entries(modeButtonIds)) {
 }
 setMode("editor");
 
+// ── Style editor ──────────────────────────────────────────────────────────────
+
+const styleEditorEmpty = document.getElementById("styleEditorEmpty")!;
+const styleEditorForm = document.getElementById("styleEditorForm")!;
+const fillTypeEl = document.getElementById("fillType")! as HTMLSelectElement;
+const fillColorEl = document.getElementById("fillColor")! as HTMLInputElement;
+const fillColorRow = document.getElementById("fillColorRow")!;
+const fontColorEl = document.getElementById("fontColor")! as HTMLInputElement;
+const fontSizeEl = document.getElementById("fontSize")! as HTMLInputElement;
+const fontWeightEl = document.getElementById(
+  "fontWeight",
+)! as HTMLSelectElement;
+const fontItalicEl = document.getElementById("fontItalic")! as HTMLInputElement;
+const borderTypeEl = document.getElementById(
+  "borderType",
+)! as HTMLSelectElement;
+const borderDetails = document.getElementById("borderDetails")!;
+const borderWidthEl = document.getElementById(
+  "borderWidth",
+)! as HTMLInputElement;
+const borderStyleEl = document.getElementById(
+  "borderStyle",
+)! as HTMLSelectElement;
+const borderColorEl = document.getElementById(
+  "borderColor",
+)! as HTMLInputElement;
+
+function colorToHex(c: Color): string {
+  const hex = (n: number) =>
+    Math.round(Math.max(0, Math.min(255, n)))
+      .toString(16)
+      .padStart(2, "0");
+  return `#${hex(c.r)}${hex(c.g)}${hex(c.b)}`;
+}
+
+function hexToColor(hex: string, a = 1): Color {
+  return {
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16),
+    a,
+  };
+}
+
+function populateStylePanel(el: Element | null): void {
+  if (el === null) {
+    styleEditorEmpty.style.display = "";
+    styleEditorForm.classList.remove("active");
+    return;
+  }
+
+  styleEditorEmpty.style.display = "none";
+  styleEditorForm.classList.add("active");
+
+  const s = el.computedStyle;
+
+  fillTypeEl.value = s.fill.type;
+  fillColorRow.style.display = s.fill.type === "solid" ? "" : "none";
+  if (s.fill.type === "solid") fillColorEl.value = colorToHex(s.fill.color);
+
+  fontColorEl.value = colorToHex(s.fontColor);
+  fontSizeEl.value = String(Math.round(s.fontSize));
+  fontWeightEl.value = String(s.fontWeight);
+  fontItalicEl.checked = s.fontItalic;
+
+  borderTypeEl.value = s.border.type;
+  borderDetails.style.display = s.border.type === "border" ? "" : "none";
+  if (s.border.type === "border") {
+    borderWidthEl.value = String(Math.round(s.border.width));
+    borderStyleEl.value = s.border.style;
+    borderColorEl.value = colorToHex(s.border.color);
+  }
+}
+
+function readStyleFromPanel(): ElementStyleProps {
+  const fill =
+    fillTypeEl.value === "solid"
+      ? { type: "solid" as const, color: hexToColor(fillColorEl.value) }
+      : { type: "none" as const };
+
+  const border =
+    borderTypeEl.value === "border"
+      ? {
+          type: "border" as const,
+          width: { unit: "basis" as const, value: Number(borderWidthEl.value) },
+          style: borderStyleEl.value as BorderEdgeStyle,
+          color: hexToColor(borderColorEl.value),
+        }
+      : { type: "none" as const };
+
+  return {
+    fill,
+    border,
+    fontColor: hexToColor(fontColorEl.value),
+    fontSize: { unit: "basis" as const, value: Number(fontSizeEl.value) },
+    fontWeight: Number(fontWeightEl.value) as FontWeight,
+    fontItalic: fontItalicEl.checked,
+  };
+}
+
+function applyStyleToSelection(): void {
+  const style = readStyleFromPanel();
+  for (const el of editor.selection.elements) {
+    el.setStyle(style);
+  }
+}
+
+// Show/hide dependent rows when type selects change.
+fillTypeEl.addEventListener("change", () => {
+  fillColorRow.style.display = fillTypeEl.value === "solid" ? "" : "none";
+  applyStyleToSelection();
+});
+borderTypeEl.addEventListener("change", () => {
+  borderDetails.style.display = borderTypeEl.value === "border" ? "" : "none";
+  applyStyleToSelection();
+});
+
+// Apply on every other input change.
+for (const input of [
+  fillColorEl,
+  fontColorEl,
+  fontSizeEl,
+  fontWeightEl,
+  fontItalicEl,
+  borderWidthEl,
+  borderStyleEl,
+  borderColorEl,
+]) {
+  input.addEventListener("change", applyStyleToSelection);
+  input.addEventListener("input", applyStyleToSelection);
+}
+
 // ── Selection display ─────────────────────────────────────────────────────────
 
 const selectionCount = document.getElementById("selectionCount")!;
@@ -209,6 +345,7 @@ function refreshSelectionPanel(): void {
     empty.className = "sel-empty";
     empty.textContent = "nothing selected — click an element";
     selectionList.appendChild(empty);
+    populateStylePanel(null);
     return;
   }
 
@@ -218,6 +355,8 @@ function refreshSelectionPanel(): void {
     item.textContent = describeElement(el);
     selectionList.appendChild(item);
   }
+
+  populateStylePanel(elements[0] ?? null);
 }
 
 refreshSelectionPanel();
