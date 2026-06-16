@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true, // allow describe(), it(), expect() without import
     environment: "happy-dom", // browser-like DOM
-    //root: path.resolve(__dirname, "apps"), // optional: root for test discovery
+    root: path.resolve(__dirname, "packages"), // optional: root for test discovery
     include: ["**/*.test.ts"], // pattern for test files
     coverage: {
       reporter: ["text", "lcov"],
@@ -13,20 +13,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@rippledoc/expressions": path.resolve(
-        __dirname,
-        "packages/expressions/src",
-      ),
       "@rippledoc/sanitizer": path.resolve(__dirname, "packages/sanitizer/src"),
       "@rippledoc/markdown": path.resolve(__dirname, "packages/markdown/src"),
-      "@rippledoc/presentation2": path.resolve(
-        __dirname,
-        "packages/presentation2/src",
-      ),
-      "@rippledoc/presentation3": path.resolve(
-        __dirname,
-        "packages/presentation3/src",
-      ),
       "@rippledoc/presentation4": path.resolve(
         __dirname,
         "packages/presentation4/src",
@@ -38,6 +26,10 @@ export default defineConfig({
       "@rippledoc/view-editor": path.resolve(
         __dirname,
         "packages/view-editor/src",
+      ),
+      "@rippledoc/editor-component": path.resolve(
+        __dirname,
+        "packages/editor-component/src",
       ),
     },
   },

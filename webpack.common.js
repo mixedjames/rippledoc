@@ -6,23 +6,11 @@ module.exports = {
     extensions: [".ts", ".js"],
 
     alias: {
-      "@rippledoc/expressions": path.resolve(
-        __dirname,
-        "./packages/expressions/src",
-      ),
       "@rippledoc/sanitizer": path.resolve(
         __dirname,
         "./packages/sanitizer/src",
       ),
       "@rippledoc/markdown": path.resolve(__dirname, "./packages/markdown/src"),
-      "@rippledoc/presentation2": path.resolve(
-        __dirname,
-        "./packages/presentation2/src",
-      ),
-      "@rippledoc/presentation3": path.resolve(
-        __dirname,
-        "./packages/presentation3/src",
-      ),
       "@rippledoc/presentation4": path.resolve(
         __dirname,
         "./packages/presentation4/src",

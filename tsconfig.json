@@ -2,19 +2,10 @@
   "files": [],
   "references": [
     {
-      "path": "./packages/expressions"
-    },
-    {
       "path": "./packages/sanitizer"
     },
     {
       "path": "./packages/markdown"
-    },
-    {
-      "path": "./packages/presentation2"
-    },
-    {
-      "path": "./packages/presentation3"
     },
     {
       "path": "./packages/presentation4"
@@ -24,21 +15,6 @@
     },
     {
       "path": "./packages/editor-component"
-    },
-    {
-      "path": "./apps/expressions-demo"
-    },
-    {
-      "path": "./apps/just-messing"
-    },
-    {
-      "path": "./apps/demo-site"
-    },
-    {
-      "path": "./apps/electron-test"
-    },
-    {
-      "path": "./apps/p3-build-env"
     },
     {
       "path": "./apps/p4-build-env"
