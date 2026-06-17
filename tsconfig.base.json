@@ -9,24 +9,14 @@
     "composite": true,
     "declaration": true,
     "paths": {
-      "@rippledoc/sanitizer": [
-        "packages/sanitizer"
-      ],
-      "@rippledoc/markdown": [
-        "packages/markdown"
-      ],
-      "@rippledoc/presentation4": [
-        "packages/presentation4"
-      ],
+      "@rippledoc/sanitizer": ["packages/sanitizer"],
+      "@rippledoc/markdown": ["packages/markdown"],
+      "@rippledoc/presentation4": ["packages/presentation4"],
       "@rippledoc/presentation4/viewAPI": [
         "packages/presentation4/src/viewAPI"
       ],
-      "@rippledoc/view-editor": [
-        "packages/view-editor"
-      ],
-      "@rippledoc/editor-component": [
-        "packages/editor-component"
-      ]
+      "@rippledoc/view-editor": ["packages/view-editor"],
+      "@rippledoc/editor-component": ["packages/editor-component"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

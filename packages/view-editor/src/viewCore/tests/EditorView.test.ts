@@ -52,7 +52,9 @@ describe("pre-attach validity", () => {
   it("mode, selection, and events are all usable before attachView", () => {
     expect(editor.mode).toBe("editor");
     expect(() => editor.setMode("anchors")).not.toThrow();
-    expect(() => editor.selection.add({} as unknown as Element)).not.toThrow();
+    expect(() =>
+      editor.selection.addElement({} as unknown as Element),
+    ).not.toThrow();
     expect(() => editor.events.on("selection:changed", () => {})).not.toThrow();
   });
 
@@ -68,10 +70,10 @@ describe("pre-attach validity", () => {
     const el = section.addMarkdownElement("hello");
 
     // Select before attaching — the element view doesn't exist yet.
-    editor.selection.add(el);
+    editor.selection.addElement(el);
     presentation.attachView(editor.viewFactory);
 
-    // The element view should have self-initialised from controller.selection.has().
+    // The element view should have self-initialised from controller.selection.hasElement().
     const selected =
       getViewport(container).querySelectorAll(".element.selected");
     expect(selected).toHaveLength(1);
@@ -121,41 +123,41 @@ describe("selection — CSS class on element divs", () => {
     ).toBeNull();
   });
 
-  it("selection.add() adds the selected class to the matching element div", () => {
-    editor.selection.add(el1);
+  it("addElement() adds the selected class to the matching element div", () => {
+    editor.selection.addElement(el1);
     expect(
       getViewport(container).querySelectorAll(".element.selected"),
     ).toHaveLength(1);
   });
 
-  it("selection.add() on two elements selects both divs", () => {
-    editor.selection.add(el1);
-    editor.selection.add(el2);
+  it("addElement() on two elements selects both divs", () => {
+    editor.selection.addElement(el1);
+    editor.selection.addElement(el2);
     expect(
       getViewport(container).querySelectorAll(".element.selected"),
     ).toHaveLength(2);
   });
 
-  it("selection.remove() clears the selected class", () => {
-    editor.selection.add(el1);
-    editor.selection.remove(el1);
+  it("removeElement() clears the selected class", () => {
+    editor.selection.addElement(el1);
+    editor.selection.removeElement(el1);
     expect(
       getViewport(container).querySelector(".element.selected"),
     ).toBeNull();
   });
 
-  it("selection.clear() removes selected class from all elements", () => {
-    editor.selection.add(el1);
-    editor.selection.add(el2);
+  it("clear() removes selected class from all elements", () => {
+    editor.selection.addElement(el1);
+    editor.selection.addElement(el2);
     editor.selection.clear();
     expect(
       getViewport(container).querySelector(".element.selected"),
     ).toBeNull();
   });
 
-  it("selection.set() selects exactly the specified elements", () => {
-    editor.selection.add(el1);
-    editor.selection.set([el2]);
+  it("setElements() selects exactly the specified elements", () => {
+    editor.selection.addElement(el1);
+    editor.selection.setElements([el2]);
 
     const selected =
       getViewport(container).querySelectorAll(".element.selected");

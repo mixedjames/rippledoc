@@ -4,6 +4,11 @@ import {
   type EditorCommandId,
   type EditorToolId,
 } from "@rippledoc/editor-component";
+import {
+  constant,
+  offsetFrom,
+  type Presentation,
+} from "@rippledoc/presentation4";
 
 // ── Delegate ──────────────────────────────────────────────────────────────────
 
@@ -57,8 +62,31 @@ btnSingleSelect.addEventListener("click", () => exec("tool:singleSelect"));
 btnMultiSelect.addEventListener("click", () => exec("tool:multiSelect"));
 btnUndo.addEventListener("click", () => exec("undo"));
 btnRedo.addEventListener("click", () => exec("redo"));
-btnNew.addEventListener("click", () => editor.newPresentation());
+btnNew.addEventListener("click", () =>
+  seedPresentation(editor.newPresentation()),
+);
 
+const selectionStatus = document.getElementById(
+  "selectionStatus",
+)! as HTMLSpanElement;
+
+function refreshSelectionStatus({
+  elements,
+  sections,
+}: {
+  elements: ReadonlySet<unknown>;
+  sections: ReadonlySet<unknown>;
+}): void {
+  if (elements.size > 0) {
+    selectionStatus.textContent = `${elements.size} element${elements.size === 1 ? "" : "s"} selected`;
+  } else if (sections.size > 0) {
+    selectionStatus.textContent = `${sections.size} section${sections.size === 1 ? "" : "s"} selected`;
+  } else {
+    selectionStatus.textContent = "Nothing selected";
+  }
+}
+
+editor.events.on("selectionChanged", refreshSelectionStatus);
 editor.events.on("commandStateChanged", refreshToolbar);
 
 editor.events.on("toolChanged", ({ tool }) => {
@@ -67,8 +95,43 @@ editor.events.on("toolChanged", ({ tool }) => {
   }
 });
 
+// ── Demo content ─────────────────────────────────────────────────────────────
+
+function seedPresentation(p: Presentation): void {
+  const vh = p.root.viewportHeight;
+
+  const s1 = p.root.addSection();
+  s1.setVerticalAnchors({ top: constant(0), height: offsetFrom(vh, 0) });
+
+  const s2 = p.root.addSection();
+  s2.setVerticalAnchors({
+    top: offsetFrom(s1.anchors.bottom, 0),
+    height: offsetFrom(vh, 0),
+  });
+
+  const s1title = s1.addMarkdownElement("# Section One");
+  s1title.setHorizontalAnchors({ left: constant(60), width: constant(600) });
+  s1title.setAutoHeight({ top: offsetFrom(s1.anchors.top, 40) });
+
+  const s1body = s1.addMarkdownElement(
+    "A demo paragraph for the first section. Click me to select.",
+  );
+  s1body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
+  s1body.setAutoHeight({ top: offsetFrom(s1title.anchors.bottom, 20) });
+
+  const s2title = s2.addMarkdownElement("## Section Two");
+  s2title.setHorizontalAnchors({ left: constant(60), width: constant(600) });
+  s2title.setAutoHeight({ top: offsetFrom(s2.anchors.top, 40) });
+
+  const s2body = s2.addMarkdownElement(
+    "A demo paragraph for the second section. Click me to select.",
+  );
+  s2body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
+  s2body.setAutoHeight({ top: offsetFrom(s2title.anchors.bottom, 20) });
+}
+
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-editor.newPresentation();
+seedPresentation(editor.newPresentation());
 refreshToolbar();
 btnSingleSelect.dataset.active = "true";

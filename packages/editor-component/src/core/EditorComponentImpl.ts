@@ -1,5 +1,6 @@
 import {
   createPresentation,
+  type Presentation,
   type PresentationOptions,
   type PresentationMemento,
 } from "@rippledoc/presentation4";
@@ -18,13 +19,17 @@ import { TypedEmitter } from "./TypedEmitter";
 import { EditorState } from "./EditorState";
 import { OperationHistory } from "./history/OperationHistory";
 import { EditorLayout } from "./ui/EditorLayout";
+import { Sidebar } from "./ui/Sidebar";
+import { injectEditorStyles } from "./ui/EditorStyles";
 import type { EditorTool, EditorToolContext } from "./tools/EditorTool";
+import type { EditOperation } from "./history/EditOperation";
 import { SingleSelectorTool } from "./tools/SingleSelectorTool";
 import { MultiSelectorTool } from "./tools/MultiSelectorTool";
 
 export class EditorComponentImpl implements EditorComponent {
   private readonly delegate_: EditorDelegate;
   private readonly layout_: EditorLayout;
+  private readonly sidebar_: Sidebar;
   private readonly state_: EditorState;
   private readonly history_: OperationHistory;
   private readonly emitter_: TypedEmitter<EditorEvents>;
@@ -38,6 +43,10 @@ export class EditorComponentImpl implements EditorComponent {
     this.state_ = new EditorState();
     this.history_ = new OperationHistory();
     this.emitter_ = new TypedEmitter();
+
+    injectEditorStyles();
+    this.sidebar_ = new Sidebar(this.state_, (op) => this.pushOperation_(op));
+    this.layout_.element.appendChild(this.sidebar_.element);
   }
 
   get element(): HTMLElement {
@@ -48,7 +57,7 @@ export class EditorComponentImpl implements EditorComponent {
     return this.emitter_;
   }
 
-  newPresentation(options?: PresentationOptions): void {
+  newPresentation(options?: PresentationOptions): Presentation {
     this.teardownPresentation_();
 
     const presentation = createPresentation(options);
@@ -61,17 +70,22 @@ export class EditorComponentImpl implements EditorComponent {
 
     this.selectionUnsub_ = viewController.events.on(
       "selection:changed",
-      ({ selection }) => {
-        this.emitter_.emit("selectionChanged", { selection });
+      ({ elements, sections }) => {
+        this.emitter_.emit("selectionChanged", { elements, sections });
+        this.sidebar_.update();
       },
     );
 
     this.activateTool_(this.state_.activeToolId);
     this.history_.clear();
+    this.sidebar_.update();
     this.emitter_.emit("dirty", { isDirty: false });
     this.emitter_.emit("commandStateChanged", {});
+
+    return presentation;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadPresentation(_memento: PresentationMemento): void {
     throw new Error("loadPresentation not yet implemented");
   }
@@ -124,13 +138,15 @@ export class EditorComponentImpl implements EditorComponent {
       viewEvents: vc.events,
       selection: vc.selection,
       state: this.state_,
-      pushOperation: (op) => {
-        this.history_.push(op);
-        this.markDirty_();
-        this.emitter_.emit("commandStateChanged", {});
-      },
+      pushOperation: (op) => this.pushOperation_(op),
     };
     this.activeTool_.activate(context);
+  }
+
+  private pushOperation_(op: EditOperation): void {
+    this.history_.push(op);
+    this.markDirty_();
+    this.emitter_.emit("commandStateChanged", {});
   }
 
   private createTool_(id: EditorToolId): EditorTool {
@@ -156,5 +172,6 @@ export class EditorComponentImpl implements EditorComponent {
     this.selectionUnsub_ = null;
     this.state_.presentation = null;
     this.state_.viewController = null;
+    this.sidebar_.update();
   }
 }

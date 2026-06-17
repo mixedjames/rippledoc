@@ -34,22 +34,22 @@ export function serializeTriggerLayoutGeometry(
 
 export function serializeElementLayoutGeometry(
   bag: ConcreteXYAnchors,
-  hIsSet: boolean,
-  vIsSet: boolean,
-  contentDependentDimension: ContentDependentDimension,
+  geometry: {
+    hIsSet: boolean;
+    vIsSet: boolean;
+    contentDependentDimension: ContentDependentDimension;
+  },
   lookup: Lookup,
 ): ElementLayoutGeometryMemento {
   return {
     horizontal: serializeElementHorizontal(
       bag,
-      hIsSet,
-      contentDependentDimension,
+      { isSet: geometry.hIsSet, mode: geometry.contentDependentDimension },
       lookup,
     ),
     vertical: serializeElementVertical(
       bag,
-      vIsSet,
-      contentDependentDimension,
+      { isSet: geometry.vIsSet, mode: geometry.contentDependentDimension },
       lookup,
     ),
   };
@@ -57,10 +57,10 @@ export function serializeElementLayoutGeometry(
 
 function serializeElementHorizontal(
   bag: ConcreteXYAnchors,
-  hIsSet: boolean,
-  mode: ContentDependentDimension,
+  context: { isSet: boolean; mode: ContentDependentDimension },
   lookup: Lookup,
 ): ElementHorizontalGeometryMemento {
+  const { isSet: hIsSet, mode } = context;
   if (mode === "width") {
     // The user set exactly one of left/right; the other is derived. Width is measured.
     if (!isDerived(bag.left.expression)) {
@@ -88,10 +88,10 @@ function serializeElementHorizontal(
 
 function serializeElementVertical(
   bag: ConcreteXYAnchors,
-  vIsSet: boolean,
-  mode: ContentDependentDimension,
+  context: { isSet: boolean; mode: ContentDependentDimension },
   lookup: Lookup,
 ): ElementVerticalGeometryMemento {
+  const { isSet: vIsSet, mode } = context;
   if (mode === "height") {
     // The user set exactly one of top/bottom; the other is derived. Height is measured.
     if (!isDerived(bag.top.expression)) {

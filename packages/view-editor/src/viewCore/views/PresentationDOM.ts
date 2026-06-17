@@ -128,6 +128,10 @@ export class PresentationDOM {
       .element {
         box-sizing: border-box;
         overflow: hidden;
+        /* Prefixed forms required: Safari lacks unprefixed support as of 2026. */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
       }
 
       .section-background {
@@ -170,6 +174,11 @@ export class PresentationDOM {
 
     // elements layer must overflow to show content beyond the viewport height.
     this.elements_.style.overflow = "visible";
+
+    // elements itself must not capture pointer events — only its child element
+    // divs should. This lets clicks on empty space fall through to the
+    // backgrounds layer, where section views listen for picking.
+    this.elements_.style.pointerEvents = "none";
 
     // overlay must not intercept pointer events (contains non-interactive chrome).
     this.overlay_.style.pointerEvents = "none";

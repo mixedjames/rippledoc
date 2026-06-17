@@ -1,9 +1,12 @@
-import type { Element } from "@rippledoc/presentation4";
+import type { Element, Section } from "@rippledoc/presentation4";
 import type { EditorToolId } from "./EditorCommands";
 
 export type EditorEvents = {
   toolChanged: { tool: EditorToolId };
-  selectionChanged: { selection: ReadonlySet<Element> };
+  selectionChanged: {
+    elements: ReadonlySet<Element>;
+    sections: ReadonlySet<Section>;
+  };
   dirty: { isDirty: boolean };
   /** Fired when command availability may have changed; shell should re-query canExec. */
   commandStateChanged: Record<never, never>;

@@ -61,12 +61,15 @@ export class EditorElementView implements p4.ElementView {
     // cascade, so elements added/removed at runtime are always in sync.
     this.unsubscribeSelection_ = ctrl.events.on(
       "selection:changed",
-      ({ selection }) => {
-        this.element_.classList.toggle("selected", selection.has(this.owner_));
+      ({ elements }) => {
+        this.element_.classList.toggle("selected", elements.has(this.owner_));
       },
     );
     // Apply current selection state — the event won't fire retroactively.
-    this.element_.classList.toggle("selected", ctrl.selection.has(this.owner_));
+    this.element_.classList.toggle(
+      "selected",
+      ctrl.selection.hasElement(this.owner_),
+    );
 
     this.initDOM_(parent);
 
@@ -178,6 +181,8 @@ export class EditorElementView implements p4.ElementView {
   private initDOM_(parent: EditorSectionView): void {
     this.element_.style.position = "absolute";
     this.element_.style.boxSizing = "border-box";
+    // Opt back into pointer events — the parent elements layer has none.
+    this.element_.style.pointerEvents = "auto";
     this.element_.classList.add("element");
 
     this.contentWrapper_.classList.add("element-content");

@@ -16,6 +16,17 @@ import { GeometryConstraintError } from "../anchors/GeometryConstraintError";
 // "none" = setAxis_ was never called for this layout entry on this axis.
 type AxisCombination = "start+size" | "start+end" | "end+size" | "none";
 
+type AxisAnchors = {
+  start: ConcreteAnchor;
+  end: ConcreteAnchor;
+  size: ConcreteAnchor;
+};
+type AxisExprs = {
+  start: AnchorExpression | undefined;
+  end: AnchorExpression | undefined;
+  size: AnchorExpression | undefined;
+};
+
 type LayoutEntry = {
   bag: ConcreteXYAnchors;
   hCombination: AxisCombination;
@@ -88,24 +99,18 @@ export abstract class AnchoredObjectBase {
     const entry = this.newEntry_();
 
     this.copyAxisAsConstants_(
-      source.bag.left,
-      source.bag.right,
-      source.bag.width,
-      entry.bag.left,
-      entry.bag.right,
-      entry.bag.width,
-      source.hCombination,
-      "horizontal",
+      { start: source.bag.left, end: source.bag.right, size: source.bag.width },
+      { start: entry.bag.left, end: entry.bag.right, size: entry.bag.width },
+      { combination: source.hCombination, axis: "horizontal" },
     );
     this.copyAxisAsConstants_(
-      source.bag.top,
-      source.bag.bottom,
-      source.bag.height,
-      entry.bag.top,
-      entry.bag.bottom,
-      entry.bag.height,
-      source.vCombination,
-      "vertical",
+      {
+        start: source.bag.top,
+        end: source.bag.bottom,
+        size: source.bag.height,
+      },
+      { start: entry.bag.top, end: entry.bag.bottom, size: entry.bag.height },
+      { combination: source.vCombination, axis: "vertical" },
     );
     entry.hCombination = source.hCombination;
     entry.vCombination = source.vCombination;
@@ -133,12 +138,8 @@ export abstract class AnchoredObjectBase {
   protected setHorizontalAnchors_(descriptor: HorizontalAnchorSet): void {
     const entry = this.activeEntry_();
     this.setAxis_(
-      entry.bag.left,
-      entry.bag.right,
-      entry.bag.width,
-      descriptor.left,
-      descriptor.right,
-      descriptor.width,
+      { start: entry.bag.left, end: entry.bag.right, size: entry.bag.width },
+      { start: descriptor.left, end: descriptor.right, size: descriptor.width },
       "horizontal",
     );
     entry.hCombination = this.combination_(
@@ -155,12 +156,12 @@ export abstract class AnchoredObjectBase {
   protected setVerticalAnchors_(descriptor: VerticalAnchorSet): void {
     const entry = this.activeEntry_();
     this.setAxis_(
-      entry.bag.top,
-      entry.bag.bottom,
-      entry.bag.height,
-      descriptor.top,
-      descriptor.bottom,
-      descriptor.height,
+      { start: entry.bag.top, end: entry.bag.bottom, size: entry.bag.height },
+      {
+        start: descriptor.top,
+        end: descriptor.bottom,
+        size: descriptor.height,
+      },
       "vertical",
     );
     entry.vCombination = this.combination_(
@@ -245,15 +246,13 @@ export abstract class AnchoredObjectBase {
    * zeros, since zeros may never have been intentionally set.
    */
   private copyAxisAsConstants_(
-    srcStart: ConcreteAnchor,
-    srcEnd: ConcreteAnchor,
-    srcSize: ConcreteAnchor,
-    dstStart: ConcreteAnchor,
-    dstEnd: ConcreteAnchor,
-    dstSize: ConcreteAnchor,
-    combination: AxisCombination,
-    axis: "horizontal" | "vertical",
+    src: AxisAnchors,
+    dst: AxisAnchors,
+    spec: { combination: AxisCombination; axis: "horizontal" | "vertical" },
   ): void {
+    const { start: srcStart, end: srcEnd, size: srcSize } = src;
+    const { start: dstStart, end: dstEnd, size: dstSize } = dst;
+    const { combination, axis } = spec;
     if (combination === "none") return;
 
     const constStart = new ConstantAnchorExpression(srcStart.value);
@@ -342,14 +341,12 @@ export abstract class AnchoredObjectBase {
    * a GeometryConstraintError is thrown and nothing changes.
    */
   private setAxis_(
-    startAnchor: ConcreteAnchor,
-    endAnchor: ConcreteAnchor,
-    sizeAnchor: ConcreteAnchor,
-    startExpr: AnchorExpression | undefined,
-    endExpr: AnchorExpression | undefined,
-    sizeExpr: AnchorExpression | undefined,
+    anchors: AxisAnchors,
+    exprs: AxisExprs,
     axis: "horizontal" | "vertical",
   ): void {
+    const { start: startAnchor, end: endAnchor, size: sizeAnchor } = anchors;
+    const { start: startExpr, end: endExpr, size: sizeExpr } = exprs;
     const constraintCount = [startExpr, endExpr, sizeExpr].filter(
       (v) => v !== undefined,
     ).length;

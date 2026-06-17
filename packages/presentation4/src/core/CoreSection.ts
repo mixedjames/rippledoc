@@ -249,11 +249,11 @@ export class CoreSection
     const namedProps = this.namedStyles_.map(
       (name) => registry.lookupSectionStyle(name) ?? {},
     );
-    return resolveSectionStyle(
-      this.ownStyle_,
-      namedProps,
-      registry.globalSectionStyle,
-    );
+    return resolveSectionStyle({
+      own: this.ownStyle_,
+      named: namedProps,
+      authorGlobal: registry.globalSectionStyle,
+    });
   }
 
   // ── Internal serialization helpers ───────────────────────────────────────
@@ -274,7 +274,7 @@ export class CoreSection
       }
     }
     this.elements_.forEach((el, ei) =>
-      el.addToAnchorLookup(layout, sectionIndex, ei, lookup),
+      el.addToAnchorLookup(layout, { sectionIndex, elementIndex: ei }, lookup),
     );
   }
 

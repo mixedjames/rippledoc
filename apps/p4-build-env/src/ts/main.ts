@@ -366,9 +366,9 @@ editor.events.on("selection:changed", refreshSelectionPanel);
 
 editor.events.on("element:picked", ({ element, source }) => {
   if (source.shiftKey) {
-    editor.selection.add(element);
+    editor.selection.addElement(element);
   } else {
-    editor.selection.set([element]);
+    editor.selection.setElements([element]);
   }
 });
 

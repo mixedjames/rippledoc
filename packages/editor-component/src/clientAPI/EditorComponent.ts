@@ -1,4 +1,5 @@
 import type {
+  Presentation,
   PresentationOptions,
   PresentationMemento,
 } from "@rippledoc/presentation4";
@@ -9,8 +10,8 @@ export interface EditorComponent {
   /** The root DOM element to mount in the shell's layout. */
   readonly element: HTMLElement;
 
-  /** Replace the current presentation with a fresh empty one. */
-  newPresentation(options?: PresentationOptions): void;
+  /** Replace the current presentation with a fresh empty one and return it for seeding. */
+  newPresentation(options?: PresentationOptions): Presentation;
 
   /** Restore a presentation from a previously saved memento. */
   loadPresentation(memento: PresentationMemento): void;

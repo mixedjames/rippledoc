@@ -82,11 +82,14 @@ function borderWidthBasisFor(
  * single, predictable reference — they do not compound across cascade levels.
  */
 export function resolveElementStyle(
-  own: ElementStyleProps,
-  named: readonly ElementStyleProps[],
-  authorGlobal: ElementStyleProps,
+  cascade: {
+    own: ElementStyleProps;
+    named: readonly ElementStyleProps[];
+    authorGlobal: ElementStyleProps;
+  },
   systemDefault: ComputedElementStyle = SYSTEM_DEFAULT_ELEMENT_STYLE,
 ): ComputedElementStyle {
+  const { own, named, authorGlobal } = cascade;
   const sources = [own, ...named, authorGlobal];
 
   // Find the first source that provides a value for the given key.
@@ -138,11 +141,14 @@ export function resolveElementStyle(
  * Same cascade order and relative-unit semantics as resolveElementStyle.
  */
 export function resolveSectionStyle(
-  own: SectionStyleProps,
-  named: readonly SectionStyleProps[],
-  authorGlobal: SectionStyleProps,
+  cascade: {
+    own: SectionStyleProps;
+    named: readonly SectionStyleProps[];
+    authorGlobal: SectionStyleProps;
+  },
   systemDefault: ComputedSectionStyle = SYSTEM_DEFAULT_SECTION_STYLE,
 ): ComputedSectionStyle {
+  const { own, named, authorGlobal } = cascade;
   const sources = [own, ...named, authorGlobal];
 
   function first<K extends keyof SectionStyleProps>(

@@ -23,7 +23,8 @@ interface AttachedView {
 export class EditorViewControllerImpl implements EditorViewController {
   // Owned state — persists across view lifecycle.
   private mode_: ViewMode = "editor";
-  private readonly selectionSet_: Set<p4.Element> = new Set();
+  private readonly elementSet_: Set<p4.Element> = new Set();
+  private readonly sectionSet_: Set<p4.Section> = new Set();
   private readonly selection_: EditorSelectionControllerImpl;
   private readonly emitter_ = new TypedEmitter<EditorViewEvents>();
 
@@ -37,7 +38,8 @@ export class EditorViewControllerImpl implements EditorViewController {
   constructor() {
     this.selection_ = new EditorSelectionControllerImpl(
       this,
-      this.selectionSet_,
+      this.elementSet_,
+      this.sectionSet_,
     );
   }
 
@@ -75,7 +77,7 @@ export class EditorViewControllerImpl implements EditorViewController {
     // consistent with whatever was set before attachView() was called.
     view.applyMode(this.mode_);
     // Selection is not replayed here — element views self-initialise from
-    // controller.selection.has() in their own constructors.
+    // controller.selection.hasElement() in their own constructors.
   }
 
   unregisterView(): void {
@@ -92,53 +94,124 @@ export class EditorViewControllerImpl implements EditorViewController {
   // ── Called by EditorSelectionControllerImpl ──────────────────────────────────
 
   onSelectionChanged(): void {
-    const s = this.selectionSet_ as ReadonlySet<p4.Element>;
-    this.emitter_.emit("selection:changed", { selection: s });
+    this.emitter_.emit("selection:changed", {
+      elements: this.elementSet_ as ReadonlySet<p4.Element>,
+      sections: this.sectionSet_ as ReadonlySet<p4.Section>,
+    });
   }
 }
 
 // Private to this module — consumers see only EditorSelectionController.
 class EditorSelectionControllerImpl implements EditorSelectionController {
   private readonly ctrl_: EditorViewControllerImpl;
-  private readonly set_: Set<p4.Element>;
+  private readonly elementSet_: Set<p4.Element>;
+  private readonly sectionSet_: Set<p4.Section>;
 
-  constructor(ctrl: EditorViewControllerImpl, set: Set<p4.Element>) {
+  constructor(
+    ctrl: EditorViewControllerImpl,
+    elementSet: Set<p4.Element>,
+    sectionSet: Set<p4.Section>,
+  ) {
     this.ctrl_ = ctrl;
-    this.set_ = set;
+    this.elementSet_ = elementSet;
+    this.sectionSet_ = sectionSet;
   }
 
-  add(element: p4.Element): void {
-    if (!this.set_.has(element)) {
-      this.set_.add(element);
+  // ── Element ops ─────────────────────────────────────────────────────────────
+
+  addElement(element: p4.Element): void {
+    const clearedSections = this.clearSectionsIfNeeded_();
+    if (!this.elementSet_.has(element)) {
+      this.elementSet_.add(element);
+      this.ctrl_.onSelectionChanged();
+    } else if (clearedSections) {
       this.ctrl_.onSelectionChanged();
     }
   }
 
-  remove(element: p4.Element): void {
-    if (this.set_.has(element)) {
-      this.set_.delete(element);
+  removeElement(element: p4.Element): void {
+    if (this.elementSet_.has(element)) {
+      this.elementSet_.delete(element);
       this.ctrl_.onSelectionChanged();
     }
   }
 
-  set(elements: Iterable<p4.Element>): void {
-    this.set_.clear();
-    for (const el of elements) this.set_.add(el);
+  setElements(elements: Iterable<p4.Element>): void {
+    this.sectionSet_.clear();
+    this.elementSet_.clear();
+    for (const el of elements) this.elementSet_.add(el);
     this.ctrl_.onSelectionChanged();
   }
 
-  clear(): void {
-    if (this.set_.size > 0) {
-      this.set_.clear();
+  hasElement(element: p4.Element): boolean {
+    return this.elementSet_.has(element);
+  }
+
+  get elements(): ReadonlySet<p4.Element> {
+    return this.elementSet_;
+  }
+
+  // ── Section ops ─────────────────────────────────────────────────────────────
+
+  addSection(section: p4.Section): void {
+    const clearedElements = this.clearElementsIfNeeded_();
+    if (!this.sectionSet_.has(section)) {
+      this.sectionSet_.add(section);
+      this.ctrl_.onSelectionChanged();
+    } else if (clearedElements) {
       this.ctrl_.onSelectionChanged();
     }
   }
 
-  has(element: p4.Element): boolean {
-    return this.set_.has(element);
+  removeSection(section: p4.Section): void {
+    if (this.sectionSet_.has(section)) {
+      this.sectionSet_.delete(section);
+      this.ctrl_.onSelectionChanged();
+    }
   }
 
-  get elements(): ReadonlySet<p4.Element> {
-    return this.set_;
+  setSections(sections: Iterable<p4.Section>): void {
+    this.elementSet_.clear();
+    this.sectionSet_.clear();
+    for (const s of sections) this.sectionSet_.add(s);
+    this.ctrl_.onSelectionChanged();
+  }
+
+  hasSection(section: p4.Section): boolean {
+    return this.sectionSet_.has(section);
+  }
+
+  get sections(): ReadonlySet<p4.Section> {
+    return this.sectionSet_;
+  }
+
+  // ── Combined ops ────────────────────────────────────────────────────────────
+
+  clear(): void {
+    if (this.elementSet_.size > 0 || this.sectionSet_.size > 0) {
+      this.elementSet_.clear();
+      this.sectionSet_.clear();
+      this.ctrl_.onSelectionChanged();
+    }
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  /** Clears sections if any are selected. Returns true if anything was cleared. */
+  private clearSectionsIfNeeded_(): boolean {
+    if (this.sectionSet_.size > 0) {
+      this.sectionSet_.clear();
+      return true;
+    }
+    return false;
+  }
+
+  /** Clears elements if any are selected. Returns true if anything was cleared. */
+  private clearElementsIfNeeded_(): boolean {
+    if (this.elementSet_.size > 0) {
+      this.elementSet_.clear();
+      return true;
+    }
+    return false;
   }
 }

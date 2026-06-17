@@ -115,12 +115,12 @@ export abstract class CoreElement
 
   addToAnchorLookup(
     layout: Layout,
-    sectionIndex: number,
-    elementIndex: number,
+    position: { sectionIndex: number; elementIndex: number },
     lookup: Map<Anchor, AnchorRef>,
   ): void {
     const bag = this.getLayoutBag_(layout);
     if (!bag) return;
+    const { sectionIndex, elementIndex } = position;
     for (const slot of ANCHOR_SLOTS) {
       lookup.set(bag[slot], {
         node: "element",
@@ -148,9 +148,11 @@ export abstract class CoreElement
         if (!bag) throw new Error("CoreElement.toMemento: missing layout bag.");
         return serializeElementLayoutGeometry(
           bag,
-          this.isHorizontalGeometrySet_(layout),
-          this.isVerticalGeometrySet_(layout),
-          this.contentDependentDimension_,
+          {
+            hIsSet: this.isHorizontalGeometrySet_(layout),
+            vIsSet: this.isVerticalGeometrySet_(layout),
+            contentDependentDimension: this.contentDependentDimension_,
+          },
           ctx.anchorLookups[li]!,
         );
       }),
@@ -221,11 +223,11 @@ export abstract class CoreElement
     const namedProps = this.namedStyles_.map(
       (name) => registry.lookupElementStyle(name) ?? {},
     );
-    return resolveElementStyle(
-      this.ownStyle_,
-      namedProps,
-      registry.globalElementStyle,
-    );
+    return resolveElementStyle({
+      own: this.ownStyle_,
+      named: namedProps,
+      authorGlobal: registry.globalElementStyle,
+    });
   }
 
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void {

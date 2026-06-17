@@ -20,6 +20,15 @@ import type { EditorElementView } from "./EditorElementView";
  *
  * elementViews_ is tracked so destroy() can cascade to element views in the
  * full-tree replacement path (where the model does not call elementView.destroy()).
+ *
+ * Pointer events on backgroundElement_ emit section:picked / section:pointerDown /
+ * section:pointerUp through the controller, mirroring the element view pattern.
+ * Because backgroundElement_ sits below elementsContainer in the DOM stack, a click
+ * on an element never reaches the background — element picks always win.
+ *
+ * Selection chrome: the "selected" class is toggled on backgroundElement_ in
+ * response to "selection:changed" events. The section view self-subscribes in
+ * its constructor and self-unsubscribes in destroy().
  */
 export class EditorSectionView implements p4.SectionView {
   private readonly owner_: p4.SectionViewOwner;
@@ -31,9 +40,41 @@ export class EditorSectionView implements p4.SectionView {
   private readonly elementViews_: EditorElementView[] = [];
   private computedStyle_: p4.ComputedSectionStyle | null = null;
 
+  private readonly onPointerDown_: (e: PointerEvent) => void;
+  private readonly onPointerUp_: (e: PointerEvent) => void;
+  private readonly unsubscribeSelection_: () => void;
+
   constructor(owner: p4.SectionViewOwner, parent: EditorPresentationView) {
     this.owner_ = owner;
     this.presentationView_ = parent;
+
+    const ctrl = parent.controller;
+
+    this.onPointerDown_ = (e: PointerEvent) => {
+      parent.dom.viewportContainer.focus({ preventScroll: true });
+      ctrl.emit("section:picked", { section: this.owner_, source: e });
+      ctrl.emit("section:pointerDown", { section: this.owner_, source: e });
+    };
+
+    this.onPointerUp_ = (e: PointerEvent) => {
+      ctrl.emit("section:pointerUp", { section: this.owner_, source: e });
+    };
+
+    this.unsubscribeSelection_ = ctrl.events.on(
+      "selection:changed",
+      ({ sections }) => {
+        this.backgroundElement_.classList.toggle(
+          "selected",
+          sections.has(this.owner_),
+        );
+      },
+    );
+    // Apply current selection state — the event won't fire retroactively.
+    this.backgroundElement_.classList.toggle(
+      "selected",
+      ctrl.selection.hasSection(this.owner_),
+    );
+
     this.initDOM_(parent);
   }
 
@@ -89,6 +130,13 @@ export class EditorSectionView implements p4.SectionView {
   }
 
   destroy(): void {
+    this.backgroundElement_.removeEventListener(
+      "pointerdown",
+      this.onPointerDown_,
+    );
+    this.backgroundElement_.removeEventListener("pointerup", this.onPointerUp_);
+    this.unsubscribeSelection_();
+
     // Full-tree cascade. Spread so that each ev.destroy() can safely call
     // onElementViewDestroyed() (mutating elementViews_) without corrupting iteration.
     for (const ev of [...this.elementViews_]) ev.destroy();
@@ -116,6 +164,12 @@ export class EditorSectionView implements p4.SectionView {
     this.contentElement_.style.left = "0";
     this.contentElement_.style.top = "0";
     this.contentElement_.classList.add("section-content");
+
+    this.backgroundElement_.addEventListener(
+      "pointerdown",
+      this.onPointerDown_,
+    );
+    this.backgroundElement_.addEventListener("pointerup", this.onPointerUp_);
 
     parent.dom.backgroundsContainer.appendChild(this.backgroundElement_);
     parent.dom.elementsContainer.appendChild(this.contentElement_);

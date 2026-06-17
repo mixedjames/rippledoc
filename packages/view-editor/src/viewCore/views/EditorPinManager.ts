@@ -76,9 +76,9 @@ export class EditorPinManager {
     // is active. Stored in unsubscribe_ so disconnect() cleans it up.
     const ctrl = this.presentationView_.controller;
     this.unsubscribe_.push(
-      ctrl.events.on("selection:changed", ({ selection }) => {
+      ctrl.events.on("selection:changed", ({ elements }) => {
         if (this.activePin_ !== null) {
-          this.clone_.classList.toggle("selected", selection.has(this.owner_));
+          this.clone_.classList.toggle("selected", elements.has(this.owner_));
         }
       }),
     );

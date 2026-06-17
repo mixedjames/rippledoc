@@ -77,6 +77,15 @@
         cursor: default;
       }
 
+      /* ── Selection status ────────────────────────────── */
+
+      #selectionStatus {
+        margin-left: auto;
+        font-size: 11px;
+        color: hsl(220 30% 50%);
+        white-space: nowrap;
+      }
+
       /* ── Editor mount ─────────────────────────────────── */
 
       #editorMount {
@@ -108,6 +117,7 @@
       <button class="toolbar-btn" id="btnRedo">Redo</button>
       <div class="toolbar-divider"></div>
       <button class="toolbar-btn" id="btnNew">New Presentation</button>
+      <span id="selectionStatus">Nothing selected</span>
     </div>
 
     <div id="editorMount"></div>
