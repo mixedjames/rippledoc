@@ -60,6 +60,9 @@ export interface Element {
   /** The fully resolved style for this element after cascade evaluation. */
   get computedStyle(): ComputedElementStyle;
 
+  /** The element's own style — the properties set directly on this element, before cascade. */
+  get ownStyle(): ElementStyleProps;
+
   /** Set the element's own style. Overrides named and global styles for any property specified. */
   setStyle(style: ElementStyleProps): void;
 

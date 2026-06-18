@@ -1,4 +1,8 @@
-import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
+import type {
+  Anchor,
+  Element,
+  Section,
+} from "@rippledoc/presentation4/viewAPI";
 
 export type EditorViewEvents = {
   /** Fired on pointerdown over an element. Distinct from pointerDown so
@@ -10,6 +14,8 @@ export type EditorViewEvents = {
   "section:picked": { section: Section; source: PointerEvent };
   "section:pointerDown": { section: Section; source: PointerEvent };
   "section:pointerUp": { section: Section; source: PointerEvent };
+  /** Fired when the user clicks an anchor handle in "anchors" view mode. */
+  "anchor:picked": { anchor: Anchor; source: PointerEvent };
   /** Keyboard events fired while the presentation viewport has focus. */
   "key:down": { source: KeyboardEvent };
   "key:up": { source: KeyboardEvent };

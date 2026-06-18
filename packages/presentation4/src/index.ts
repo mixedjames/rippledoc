@@ -17,3 +17,6 @@ export type * from "./clientAPI/index";
 export { createPresentation } from "./createPresentation";
 export type { ViewablePresentation } from "./createPresentation";
 export { constant, offsetFrom, fractionOf } from "./anchors/factories";
+export { ConstantAnchorExpression } from "./anchors/expressions/ConstantAnchorExpression";
+export { OffsetAnchorExpression } from "./anchors/expressions/OffsetAnchorExpression";
+export { FractionAnchorExpression } from "./anchors/expressions/FractionAnchorExpression";

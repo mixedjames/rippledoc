@@ -23,7 +23,13 @@
  * which re-exports these types alongside the view bridge interfaces.
  */
 
-export type { Anchor, AnchorExpression, XYAnchors } from "../anchors/index";
+export type {
+  Anchor,
+  AnchorExpression,
+  XYAnchors,
+  HorizontalAnchorSet,
+  VerticalAnchorSet,
+} from "../anchors/index";
 export type { Presentation, PresentationOptions } from "./Presentation";
 export type { PresentationRoot } from "./PresentationRoot";
 export type { LayoutManager } from "./LayoutManager";

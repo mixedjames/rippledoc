@@ -53,6 +53,10 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
   private readonly styles_: CoreStyleRegistry;
   private view_: PresentationView = new NullPresentationView();
   private layoutTransform_: LayoutTransform = { scale: 1, tx: 0 };
+  // True while a requestAnimationFrame-scheduled layout pass is pending.
+  // Guards against stacking multiple rAF callbacks when many anchors:changed
+  // events fire in the same synchronous call stack.
+  private layoutScheduled_ = false;
 
   // ── Viewport tracking ────────────────────────────────────────────────────
   // basisWidth_ and basisHeight_ are set from the default layout and used to
@@ -157,6 +161,17 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     this.layout_.setLayoutActiveChangedCallback((layout) => {
       this.eventController_.emit("layout:activeChanged", { layout });
     });
+
+    // Schedule a layout pass whenever any anchor value changes. Multiple events
+    // emitted in a single synchronous call stack (e.g. the BFS propagation in
+    // emitAnchorChanged) collapse into one rAF-batched pass.
+    //
+    // TODO: targeted relayout — anchors:changed carries the affected owner and
+    // EventContext's BFS already identifies the full transitive affected set.
+    // In principle only those sections/elements need re-layout, not the whole
+    // tree. Requires either returning the affected set from emitAnchorChanged
+    // or restructuring how performLayout is dispatched through the tree.
+    this.eventController_.on("anchors:changed", () => this.scheduleLayout_());
   }
 
   // ── Presentation (clientAPI) ──────────────────────────────────────────────
@@ -267,7 +282,19 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
   }
 
   requestLayout(): void {
+    // Clear the flag so the pending rAF callback (if any) becomes a no-op,
+    // avoiding a redundant second layout pass after this synchronous one.
+    this.layoutScheduled_ = false;
     this.performLayout();
+  }
+
+  private scheduleLayout_(): void {
+    if (this.layoutScheduled_) return;
+    this.layoutScheduled_ = true;
+    requestAnimationFrame(() => {
+      this.layoutScheduled_ = false;
+      this.performLayout();
+    });
   }
 
   notifyViewResized(physicalWidth: number, physicalHeight: number): void {

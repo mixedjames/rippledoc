@@ -337,16 +337,25 @@ function describeElement(el: Element): string {
 
 function refreshSelectionPanel(): void {
   const elements = [...editor.selection.elements];
-  selectionCount.textContent = String(elements.length);
+  const sections = [...editor.selection.sections];
+  const total = elements.length + sections.length;
+  selectionCount.textContent = String(total);
   selectionList.replaceChildren();
 
-  if (elements.length === 0) {
+  if (total === 0) {
     const empty = document.createElement("div");
     empty.className = "sel-empty";
-    empty.textContent = "nothing selected — click an element";
+    empty.textContent = "nothing selected — click an element or section";
     selectionList.appendChild(empty);
     populateStylePanel(null);
     return;
+  }
+
+  for (const sec of sections) {
+    const item = document.createElement("div");
+    item.className = "sel-item";
+    item.textContent = `Section  ·  h: ${sec.height.toFixed(1)}`;
+    selectionList.appendChild(item);
   }
 
   for (const el of elements) {
@@ -372,8 +381,36 @@ editor.events.on("element:picked", ({ element, source }) => {
   }
 });
 
+editor.events.on("section:picked", ({ section, source }) => {
+  if (source.shiftKey) {
+    editor.selection.addSection(section);
+  } else {
+    editor.selection.setSections([section]);
+  }
+});
+
 editor.events.on("key:down", ({ source }) => {
   if (source.key === "Escape") editor.selection.clear();
+});
+
+// ── Anchor picked ─────────────────────────────────────────────────────────────
+
+const anchorPickedEl = document.getElementById("anchorPicked")!;
+const anchorPickedEmpty = document.getElementById("anchorPickedEmpty")!;
+
+editor.events.on("anchor:picked", ({ anchor }) => {
+  const deps = anchor.expression.dependencies.length;
+  const typeLabel = deps === 0 ? "const" : deps === 1 ? "ref" : "derived";
+  const depCount = anchor.dependents.length;
+
+  anchorPickedEmpty.style.display = "none";
+
+  anchorPickedEl.querySelectorAll(".sel-item").forEach((n) => n.remove());
+
+  const item = document.createElement("div");
+  item.className = "sel-item";
+  item.textContent = `value: ${anchor.value.toFixed(2)}  ·  ${typeLabel}  ·  ${depCount} dependent${depCount !== 1 ? "s" : ""}`;
+  anchorPickedEl.appendChild(item);
 });
 
 // ── Serialisation ─────────────────────────────────────────────────────────────

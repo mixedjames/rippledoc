@@ -183,6 +183,10 @@ export abstract class CoreElement
     return this.computedStyle_;
   }
 
+  get ownStyle(): ElementStyleProps {
+    return this.ownStyle_;
+  }
+
   setStyle(style: ElementStyleProps): void {
     this.ownStyle_ = style;
     this.recomputeAndPushStyle_();

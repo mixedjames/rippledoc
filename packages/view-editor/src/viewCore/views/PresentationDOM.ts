@@ -138,17 +138,66 @@ export class PresentationDOM {
         box-sizing: border-box;
       }
 
-      /* Selection chrome: outline sits above author border without affecting layout.
-         Suppressed in player mode where editor chrome should not be visible. */
-      .viewport:not([data-mode="player"]) .element.selected,
-      .pins:not([data-mode="player"]) .element.selected {
+      /* Selection chrome: visible in editor mode only.
+         Suppressed in anchors mode (selection preserved but not shown) and player. */
+      .viewport[data-mode="editor"] .element.selected,
+      .pins[data-mode="editor"] .element.selected {
         outline: 2px solid hsl(220 80% 55%);
         outline-offset: 1px;
       }
 
-      /* Anchors mode: hide rendered content so only element boxes are visible. */
+      /* Anchors mode: hide rendered content so only element boxes are visible,
+         and allow handles to overflow the element box. */
       [data-mode="anchors"] .element-content {
         display: none;
+      }
+
+      [data-mode="anchors"] .element {
+        /* overflow:visible lets handles on small elements escape the element box. */
+        overflow: visible;
+        outline: 1px dashed hsl(220 30% 65%);
+        outline-offset: 0px;
+      }
+
+      /* Anchor handles — hidden by default, shown only in anchors mode. */
+      .anchor-handle {
+        display: none;
+        position: absolute;
+        pointer-events: auto;
+        box-sizing: border-box;
+        min-width: 44px;
+        padding: 2px 4px;
+        background: hsl(220 70% 50%);
+        color: #fff;
+        border-radius: 3px;
+        font-size: 9px;
+        line-height: 1.2;
+        text-align: center;
+        white-space: nowrap;
+        cursor: pointer;
+        z-index: 20;
+        flex-direction: column;
+        align-items: center;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .anchor-handle--system {
+        background: hsl(220 20% 55%);
+        cursor: default;
+      }
+
+      [data-mode="anchors"] .anchor-handle {
+        display: flex;
+      }
+
+      .anchor-handle:not(.anchor-handle--system):hover {
+        background: hsl(220 70% 40%);
+      }
+
+      .anchor-handle__type {
+        font-size: 8px;
+        opacity: 0.85;
       }
     `;
 

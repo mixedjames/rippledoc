@@ -137,6 +137,10 @@ export class CoreSection
     return this.computedStyle_;
   }
 
+  get ownStyle(): SectionStyleProps {
+    return this.ownStyle_;
+  }
+
   setStyle(style: SectionStyleProps): void {
     this.ownStyle_ = style;
     this.recomputeAndPushStyle_();

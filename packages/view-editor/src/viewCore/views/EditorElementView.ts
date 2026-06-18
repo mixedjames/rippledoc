@@ -2,6 +2,7 @@ import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorSectionView } from "./EditorSectionView";
 import { EditorPinManager, NullEditorPinManager } from "./EditorPinManager";
 import { fillToCss, borderToCss } from "./colorToCss";
+import type { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 
 /**
  * Base element view for the editor. Renders a single absolutely-positioned
@@ -37,6 +38,10 @@ export class EditorElementView implements p4.ElementView {
   private readonly onPointerUp_: (e: PointerEvent) => void;
   private readonly unsubscribeSelection_: () => void;
 
+  // Anchor handle type-label spans — refreshed each layout() so the displayed
+  // expression type stays current after edits.
+  private readonly anchorTypeLabels_: Map<string, HTMLElement> = new Map();
+
   constructor(owner: p4.ElementViewOwner, parent: EditorSectionView) {
     this.owner_ = owner;
     this.sectionView_ = parent;
@@ -48,11 +53,14 @@ export class EditorElementView implements p4.ElementView {
       parent.presentationView.dom.viewportContainer.focus({
         preventScroll: true,
       });
+      // Selection is suppressed in anchors mode — picking is handled by anchor handles.
+      if (parent.presentationView.controller.mode === "anchors") return;
       ctrl.emit("element:picked", { element: this.owner_, source: e });
       ctrl.emit("element:pointerDown", { element: this.owner_, source: e });
     };
 
     this.onPointerUp_ = (e: PointerEvent) => {
+      if (parent.presentationView.controller.mode === "anchors") return;
       ctrl.emit("element:pointerUp", { element: this.owner_, source: e });
     };
 
@@ -96,6 +104,7 @@ export class EditorElementView implements p4.ElementView {
     this.element_.style.height = `${anchors.height.value * scale}px`;
     this.applyStyles_();
     this.pinManager_.layout();
+    this.refreshHandleLabels_();
   }
 
   private applyStyles_(): void {
@@ -117,6 +126,13 @@ export class EditorElementView implements p4.ElementView {
   }
 
   applyConstrainedDimension({ scale }: p4.LayoutTransform): void {
+    // In anchors mode, element content is hidden (display:none on .element-content)
+    // so the browser would size the element to zero. Bail out here — layout()
+    // in Phase 4 will set the dimension explicitly from the anchor value, which
+    // was correctly measured the last time editor mode ran.
+    if (this.sectionView_.presentationView.controller.mode === "anchors")
+      return;
+
     const dim = this.owner_.contentDependentDimension;
     if (dim === "height") {
       // Fix width so content can reflow; clear height so the browser sizes it naturally.
@@ -130,6 +146,13 @@ export class EditorElementView implements p4.ElementView {
   }
 
   measureAndReport(): void {
+    // In anchors mode, skip measurement — content is hidden and would read as
+    // zero. Skipping also prevents notifyMeasuredSize from emitting
+    // "anchors:changed" on every frame, which would otherwise create a
+    // perpetual layout loop.
+    if (this.sectionView_.presentationView.controller.mode === "anchors")
+      return;
+
     const dim = this.owner_.contentDependentDimension;
     if (dim === "none") return;
     const rect = this.element_.getBoundingClientRect();
@@ -189,9 +212,97 @@ export class EditorElementView implements p4.ElementView {
     this.contentWrapper_.style.width = "100%";
 
     this.element_.appendChild(this.contentWrapper_);
+
+    // Anchor handles — appended after content wrapper so they sit on top.
+    // Two-column layout: positional anchors on the left, size anchors on the right.
+    //   left column  → top (top-left), left (mid-left), bottom (bottom-left)
+    //   right column → width (top-right), right (mid-right), height (bottom-right)
+    const ctrl = parent.presentationView.controller;
+    this.appendAnchorHandle_(ctrl, "top", { top: "4px", left: "4px" });
+    this.appendAnchorHandle_(ctrl, "left", {
+      top: "50%",
+      left: "4px",
+      transform: "translateY(-50%)",
+    });
+    this.appendAnchorHandle_(ctrl, "bottom", { bottom: "4px", left: "4px" });
+    this.appendAnchorHandle_(ctrl, "width", { top: "4px", right: "4px" });
+    this.appendAnchorHandle_(ctrl, "right", {
+      top: "50%",
+      right: "4px",
+      transform: "translateY(-50%)",
+    });
+    this.appendAnchorHandle_(ctrl, "height", { bottom: "4px", right: "4px" });
+
     parent.contentContainer.appendChild(this.element_);
 
     this.element_.addEventListener("pointerdown", this.onPointerDown_);
     this.element_.addEventListener("pointerup", this.onPointerUp_);
   }
+
+  private appendAnchorHandle_(
+    ctrl: EditorViewControllerImpl,
+    slot: string,
+    pos: {
+      top?: string;
+      left?: string;
+      right?: string;
+      bottom?: string;
+      transform?: string;
+    },
+  ): void {
+    const handle = document.createElement("div");
+    handle.className = "anchor-handle";
+    handle.dataset.anchor = slot;
+    if (pos.top !== undefined) handle.style.top = pos.top;
+    if (pos.left !== undefined) handle.style.left = pos.left;
+    if (pos.right !== undefined) handle.style.right = pos.right;
+    if (pos.bottom !== undefined) handle.style.bottom = pos.bottom;
+    if (pos.transform !== undefined) handle.style.transform = pos.transform;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = slot;
+
+    const typeSpan = document.createElement("span");
+    typeSpan.className = "anchor-handle__type";
+    this.anchorTypeLabels_.set(slot, typeSpan);
+
+    handle.appendChild(nameSpan);
+    handle.appendChild(typeSpan);
+
+    handle.addEventListener("pointerdown", (e: PointerEvent) => {
+      e.stopPropagation();
+      // Keep viewport focused so keyboard events continue to work.
+      this.sectionView_.presentationView.dom.viewportContainer.focus({
+        preventScroll: true,
+      });
+      const anchor = this.owner_.anchors[slot as keyof p4.XYAnchors];
+      ctrl.emit("anchor:picked", { anchor, source: e });
+    });
+
+    this.element_.appendChild(handle);
+  }
+
+  private refreshHandleLabels_(): void {
+    const anchors = this.owner_.anchors;
+    for (const [slot, span] of this.anchorTypeLabels_) {
+      span.textContent = exprTypeLabel(
+        anchors[slot as keyof p4.XYAnchors].expression,
+      );
+    }
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// view-editor imports only from viewAPI, which does not export the concrete
+// expression classes. The label is inferred from dependency count — this is not
+// formally contractual but matches the current expression hierarchy:
+//   0 deps → ConstantAnchorExpression  → "const"
+//   1 dep  → Offset/FractionExpression → "ref"
+//   2 deps → DerivedAnchorExpression   → "derived"
+function exprTypeLabel(expr: p4.AnchorExpression): string {
+  const n = expr.dependencies.length;
+  if (n === 0) return "const";
+  if (n === 1) return "ref";
+  return "derived";
 }

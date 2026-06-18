@@ -54,6 +54,9 @@ export interface Section {
   /** The fully resolved style for this section after cascade evaluation. */
   get computedStyle(): ComputedSectionStyle;
 
+  /** The section's own style — the properties set directly on this section, before cascade. */
+  get ownStyle(): SectionStyleProps;
+
   /** Set the section's own style. Overrides named and global styles for any property specified. */
   setStyle(style: SectionStyleProps): void;
 

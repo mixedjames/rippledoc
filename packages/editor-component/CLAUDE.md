@@ -90,6 +90,16 @@ One tool is active at a time. Tools receive an `EditorToolContext` (view events,
 | `editText`                               | Not yet implemented — uses `delegate.requestTextEdit`    |
 | `loadPresentation`                       | Stub — throws                                            |
 
+## Styles Panel Status
+
+| Feature                      | Status                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| Fill (elements + sections)   | Done                                                                                   |
+| Border (elements + sections) | Done                                                                                   |
+| Font (markdown elements)     | Done                                                                                   |
+| Font size unit display       | Partial — always shows computed (basis) value; does not read back unit from `ownStyle` |
+| Unset to inherited           | Not done — only explicit `none` or a set value; no way to clear back to cascade        |
+
 ## Public Interface Changes
 
 Changes to anything in `clientAPI/` — adding, removing, or modifying types, interfaces, or function signatures — are **breaking changes**. Do not make them without explicit approval from the user, even if the change seems like a natural fix or unblocking move. Propose the change and the rationale first, then wait for a go-ahead before touching the interface.

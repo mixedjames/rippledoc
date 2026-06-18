@@ -5,6 +5,7 @@ import { EditorMarkdownElementView } from "./EditorMarkdownElementView";
 import { EditorBitmapImageElementView } from "./EditorBitmapImageElementView";
 import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
 import type { EditorElementView } from "./EditorElementView";
+import type { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 
 /**
  * Section view for the editor.
@@ -44,6 +45,9 @@ export class EditorSectionView implements p4.SectionView {
   private readonly onPointerUp_: (e: PointerEvent) => void;
   private readonly unsubscribeSelection_: () => void;
 
+  // Anchor handle type-label spans for the three vertical slots.
+  private readonly anchorTypeLabels_: Map<string, HTMLElement> = new Map();
+
   constructor(owner: p4.SectionViewOwner, parent: EditorPresentationView) {
     this.owner_ = owner;
     this.presentationView_ = parent;
@@ -52,11 +56,14 @@ export class EditorSectionView implements p4.SectionView {
 
     this.onPointerDown_ = (e: PointerEvent) => {
       parent.dom.viewportContainer.focus({ preventScroll: true });
+      // Selection is suppressed in anchors mode — picking is handled by anchor handles.
+      if (parent.controller.mode === "anchors") return;
       ctrl.emit("section:picked", { section: this.owner_, source: e });
       ctrl.emit("section:pointerDown", { section: this.owner_, source: e });
     };
 
     this.onPointerUp_ = (e: PointerEvent) => {
+      if (parent.controller.mode === "anchors") return;
       ctrl.emit("section:pointerUp", { section: this.owner_, source: e });
     };
 
@@ -87,6 +94,7 @@ export class EditorSectionView implements p4.SectionView {
     this.backgroundElement_.style.top = `${this.owner_.anchors.top.value * scale}px`;
     this.backgroundElement_.style.height = `${this.owner_.anchors.height.value * scale}px`;
     this.applyStyles_();
+    this.refreshHandleLabels_();
   }
 
   private applyStyles_(): void {
@@ -165,6 +173,13 @@ export class EditorSectionView implements p4.SectionView {
     this.contentElement_.style.top = "0";
     this.contentElement_.classList.add("section-content");
 
+    // Anchor handles for the three vertical slots. top is system-managed so it
+    // gets the --system modifier (dimmed, non-interactive pointer style).
+    const ctrl = parent.controller;
+    this.appendAnchorHandle_(ctrl, { slot: "top", topPct: "0%", isSystem: true });
+    this.appendAnchorHandle_(ctrl, { slot: "height", topPct: "50%", isSystem: false });
+    this.appendAnchorHandle_(ctrl, { slot: "bottom", topPct: "100%", isSystem: false });
+
     this.backgroundElement_.addEventListener(
       "pointerdown",
       this.onPointerDown_,
@@ -174,4 +189,58 @@ export class EditorSectionView implements p4.SectionView {
     parent.dom.backgroundsContainer.appendChild(this.backgroundElement_);
     parent.dom.elementsContainer.appendChild(this.contentElement_);
   }
+
+  /** Appends a vertical anchor handle to backgroundElement_. */
+  private appendAnchorHandle_(
+    ctrl: EditorViewControllerImpl,
+    { slot, topPct, isSystem }: { slot: "top" | "height" | "bottom"; topPct: string; isSystem: boolean },
+  ): void {
+    const handle = document.createElement("div");
+    handle.className =
+      "anchor-handle" + (isSystem ? " anchor-handle--system" : "");
+    handle.dataset.anchor = slot;
+    // Position near the left edge, centred vertically at topPct.
+    handle.style.top = topPct;
+    handle.style.left = "8px";
+    handle.style.transform = "translateY(-50%)";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = slot;
+
+    const typeSpan = document.createElement("span");
+    typeSpan.className = "anchor-handle__type";
+    this.anchorTypeLabels_.set(slot, typeSpan);
+
+    handle.appendChild(nameSpan);
+    handle.appendChild(typeSpan);
+
+    if (!isSystem) {
+      handle.addEventListener("pointerdown", (e: PointerEvent) => {
+        e.stopPropagation();
+        const anchor = this.owner_.anchors[slot];
+        ctrl.emit("anchor:picked", { anchor, source: e });
+      });
+    }
+
+    this.backgroundElement_.appendChild(handle);
+  }
+
+  private refreshHandleLabels_(): void {
+    const anchors = this.owner_.anchors;
+    for (const [slot, span] of this.anchorTypeLabels_) {
+      span.textContent = sectionExprTypeLabel(
+        anchors[slot as "top" | "height" | "bottom"].expression,
+      );
+    }
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Same dependency-count heuristic as EditorElementView — see note there.
+function sectionExprTypeLabel(expr: p4.AnchorExpression): string {
+  const n = expr.dependencies.length;
+  if (n === 0) return "const";
+  if (n === 1) return "ref";
+  return "derived";
 }

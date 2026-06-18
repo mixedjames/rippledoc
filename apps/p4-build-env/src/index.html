@@ -13,7 +13,7 @@
       }
 
       body {
-        background: #1a1a2e;
+        background: #f0f2f5;
         font-family: system-ui, sans-serif;
       }
 
@@ -24,11 +24,11 @@
         top: 0;
         width: 220px;
         height: 100%;
-        background: #12122a;
-        border-right: 1px solid hsl(220 30% 30%);
+        background: #fff;
+        border-right: 1px solid hsl(220 20% 85%);
         padding: 16px 12px;
         overflow-y: auto;
-        color: #cdd;
+        color: #2c3042;
       }
 
       /* Presentation fills the centre of the viewport. */
@@ -48,18 +48,18 @@
         right: 0;
         width: 280px;
         height: 100%;
-        background: #12122a;
-        border-left: 1px solid hsl(220 30% 30%);
+        background: #fff;
+        border-left: 1px solid hsl(220 20% 85%);
         padding: 16px 12px;
         overflow-y: auto;
-        color: #cdd;
+        color: #2c3042;
       }
 
       .panel-label {
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.1em;
-        color: hsl(220 40% 55%);
+        color: hsl(220 50% 45%);
         margin-bottom: 10px;
       }
 
@@ -74,10 +74,10 @@
       .mode-buttons button {
         flex: 1;
         padding: 5px 4px;
-        border: 1px solid hsl(220 30% 30%);
+        border: 1px solid hsl(220 20% 82%);
         border-radius: 4px;
-        background: hsl(220 20% 15%);
-        color: hsl(220 30% 60%);
+        background: hsl(220 20% 95%);
+        color: hsl(220 30% 40%);
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
@@ -88,14 +88,14 @@
       }
 
       .mode-buttons button[data-active="true"] {
-        background: hsl(220 60% 30%);
-        color: #eef;
-        border-color: hsl(220 60% 50%);
+        background: hsl(220 70% 55%);
+        color: #fff;
+        border-color: hsl(220 70% 45%);
       }
 
       .mode-buttons button:hover:not([data-active="true"]) {
-        background: hsl(220 25% 20%);
-        color: #cdd;
+        background: hsl(220 15% 90%);
+        color: #2c3042;
       }
 
       /* ── Selection panel ──────────────────────────────── */
@@ -114,39 +114,39 @@
       #selectionCount {
         font-size: 10px;
         font-weight: 700;
-        color: hsl(220 80% 70%);
-        background: hsl(220 40% 22%);
+        color: hsl(220 80% 40%);
+        background: hsl(220 60% 93%);
         padding: 1px 6px;
         border-radius: 10px;
       }
 
       .sel-empty {
         font-size: 11px;
-        color: hsl(220 20% 45%);
+        color: hsl(220 15% 55%);
         font-style: italic;
         margin-bottom: 4px;
       }
 
       .sel-item {
         font-size: 11px;
-        color: #cdd;
+        color: #2c3042;
         padding: 4px 6px;
         margin-bottom: 4px;
-        background: hsl(220 25% 18%);
+        background: hsl(220 50% 96%);
         border-radius: 3px;
         border-left: 2px solid hsl(220 70% 55%);
       }
 
       .panel-hint {
         font-size: 10px;
-        color: hsl(220 20% 38%);
+        color: hsl(220 15% 55%);
         margin-top: 6px;
         margin-bottom: 4px;
       }
 
       .panel-divider {
         height: 1px;
-        background: hsl(220 20% 22%);
+        background: hsl(220 15% 88%);
         margin: 16px 0;
       }
 
@@ -156,10 +156,10 @@
         display: block;
         width: 100%;
         padding: 6px 10px;
-        border: 1px solid hsl(220 30% 30%);
+        border: 1px solid hsl(220 20% 82%);
         border-radius: 4px;
-        background: hsl(220 20% 15%);
-        color: hsl(220 30% 65%);
+        background: hsl(220 20% 95%);
+        color: hsl(220 30% 40%);
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
@@ -170,8 +170,8 @@
       }
 
       .util-button:hover {
-        background: hsl(220 25% 22%);
-        color: #eef;
+        background: hsl(220 15% 90%);
+        color: #2c3042;
       }
 
       /* ── Trigger rows ─────────────────────────────────── */
@@ -179,7 +179,7 @@
       .trigger-row {
         margin-bottom: 20px;
         padding-bottom: 16px;
-        border-bottom: 1px solid hsl(220 20% 20%);
+        border-bottom: 1px solid hsl(220 15% 88%);
       }
       .trigger-row:last-child {
         border-bottom: none;
@@ -188,7 +188,7 @@
       .trigger-name {
         font-size: 12px;
         font-weight: 600;
-        color: #eef;
+        color: #2c3042;
         margin-bottom: 6px;
       }
 
@@ -205,28 +205,28 @@
         letter-spacing: 0.08em;
         padding: 2px 6px;
         border-radius: 3px;
-        background: hsl(220 20% 20%);
-        color: hsl(220 40% 60%);
+        background: hsl(220 15% 91%);
+        color: hsl(220 40% 45%);
       }
       .trigger-state[data-state="ACTIVE"] {
-        background: hsl(140 60% 25%);
-        color: hsl(140 80% 70%);
+        background: hsl(140 55% 88%);
+        color: hsl(140 70% 28%);
       }
       .trigger-state[data-state="AFTER"] {
-        background: hsl(30 60% 20%);
-        color: hsl(30 80% 65%);
+        background: hsl(30 55% 90%);
+        color: hsl(30 70% 35%);
       }
 
       .trigger-pill {
         font-size: 11px;
-        color: hsl(220 30% 60%);
+        color: hsl(220 30% 45%);
         font-variant-numeric: tabular-nums;
         min-width: 32px;
       }
 
       .trigger-bar-track {
         height: 4px;
-        background: hsl(220 20% 20%);
+        background: hsl(220 15% 90%);
         border-radius: 2px;
         overflow: hidden;
       }
@@ -244,7 +244,7 @@
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.1em;
-        color: hsl(220 40% 55%);
+        color: hsl(220 50% 40%);
         margin-top: 14px;
         margin-bottom: 8px;
       }
@@ -261,7 +261,7 @@
 
       .style-label {
         font-size: 10px;
-        color: hsl(220 20% 55%);
+        color: hsl(220 20% 50%);
         min-width: 44px;
         flex-shrink: 0;
       }
@@ -269,10 +269,10 @@
       .style-row select,
       .style-row input[type="number"] {
         flex: 1;
-        background: hsl(220 20% 15%);
-        border: 1px solid hsl(220 30% 30%);
+        background: hsl(220 20% 97%);
+        border: 1px solid hsl(220 20% 80%);
         border-radius: 3px;
-        color: #cdd;
+        color: #2c3042;
         font-size: 11px;
         padding: 3px 5px;
         min-width: 0;
@@ -281,10 +281,10 @@
       .style-row input[type="color"] {
         flex: 1;
         height: 24px;
-        border: 1px solid hsl(220 30% 30%);
+        border: 1px solid hsl(220 20% 80%);
         border-radius: 3px;
         padding: 1px;
-        background: hsl(220 20% 15%);
+        background: hsl(220 20% 97%);
         cursor: pointer;
         min-width: 0;
       }
@@ -293,12 +293,12 @@
         width: 14px;
         height: 14px;
         cursor: pointer;
-        accent-color: hsl(220 70% 60%);
+        accent-color: hsl(220 70% 55%);
       }
 
       #styleEditorEmpty {
         font-size: 11px;
-        color: hsl(220 20% 40%);
+        color: hsl(220 15% 55%);
         font-style: italic;
         margin-top: 10px;
       }
@@ -308,6 +308,14 @@
       }
       #styleEditorForm.active {
         display: block;
+      }
+
+      /* ── Anchor picked ────────────────────────────────── */
+
+      #anchorPickedEmpty {
+        font-size: 11px;
+        color: hsl(220 15% 55%);
+        font-style: italic;
       }
     </style>
   </head>
@@ -422,6 +430,15 @@
         Click to select &nbsp;·&nbsp; Shift+click to add &nbsp;·&nbsp; Esc to
         clear
       </p>
+
+      <div class="panel-divider"></div>
+
+      <p class="panel-label">ANCHOR PICKED</p>
+      <div id="anchorPicked">
+        <span id="anchorPickedEmpty"
+          >Switch to Anchors mode and click a handle.</span
+        >
+      </div>
 
       <div class="panel-divider"></div>
 
