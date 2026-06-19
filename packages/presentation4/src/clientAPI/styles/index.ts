@@ -6,10 +6,12 @@ export type { FontWeight } from "./Font";
 export type {
   ElementStyleProps,
   ComputedElementStyle,
+  ElementStyles,
 } from "./ElementStyleProps";
 export type {
   SectionStyleProps,
   ComputedSectionStyle,
+  SectionStyles,
 } from "./SectionStyleProps";
 export type { StyleRegistry } from "./StyleRegistry";
 export {

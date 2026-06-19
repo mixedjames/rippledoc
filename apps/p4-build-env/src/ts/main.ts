@@ -14,7 +14,7 @@ import type {
   FontWeight,
   BorderEdgeStyle,
 } from "@rippledoc/presentation4";
-import { createEditorView } from "@rippledoc/view-editor";
+import { createEditorView, isAnchorsMode } from "@rippledoc/view-editor";
 import type { ViewMode } from "@rippledoc/view-editor";
 
 // ── Presentation ──────────────────────────────────────────────────────────────
@@ -165,7 +165,10 @@ presentation.attachView(editor.viewFactory);
 
 // ── Mode switcher ─────────────────────────────────────────────────────────────
 
-const modeButtonIds: Record<ViewMode, string> = {
+// Axis-specific sub-modes (anchors-h/v/s) are set internally by the panel —
+// they are not user-selectable from the toolbar. Map them to "anchors" so the
+// anchors button stays highlighted during anchor picking.
+const modeButtonIds: Partial<Record<ViewMode, string>> = {
   editor: "modeEditor",
   anchors: "modeAnchors",
   player: "modePlayer",
@@ -173,9 +176,10 @@ const modeButtonIds: Record<ViewMode, string> = {
 
 function setMode(mode: ViewMode): void {
   editor.setMode(mode);
+  const buttonMode = isAnchorsMode(mode) ? "anchors" : mode;
   for (const [m, id] of Object.entries(modeButtonIds)) {
-    const btn = document.getElementById(id)!;
-    btn.dataset.active = String(m === mode);
+    const btn = document.getElementById(id!)!;
+    btn.dataset.active = String(m === buttonMode);
   }
 }
 
@@ -240,7 +244,7 @@ function populateStylePanel(el: Element | null): void {
   styleEditorEmpty.style.display = "none";
   styleEditorForm.classList.add("active");
 
-  const s = el.computedStyle;
+  const s = el.styles.computed;
 
   fillTypeEl.value = s.fill.type;
   fillColorRow.style.display = s.fill.type === "solid" ? "" : "none";
@@ -289,7 +293,7 @@ function readStyleFromPanel(): ElementStyleProps {
 function applyStyleToSelection(): void {
   const style = readStyleFromPanel();
   for (const el of editor.selection.elements) {
-    el.setStyle(style);
+    el.styles.set(style);
   }
 }
 

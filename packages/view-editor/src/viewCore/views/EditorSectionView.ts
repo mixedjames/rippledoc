@@ -6,6 +6,7 @@ import { EditorBitmapImageElementView } from "./EditorBitmapImageElementView";
 import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
 import type { EditorElementView } from "./EditorElementView";
 import type { EditorViewControllerImpl } from "../EditorViewControllerImpl";
+import { isAnchorsMode } from "../../clientAPI/ViewMode";
 
 /**
  * Section view for the editor.
@@ -57,13 +58,13 @@ export class EditorSectionView implements p4.SectionView {
     this.onPointerDown_ = (e: PointerEvent) => {
       parent.dom.viewportContainer.focus({ preventScroll: true });
       // Selection is suppressed in anchors mode — picking is handled by anchor handles.
-      if (parent.controller.mode === "anchors") return;
+      if (isAnchorsMode(parent.controller.mode)) return;
       ctrl.emit("section:picked", { section: this.owner_, source: e });
       ctrl.emit("section:pointerDown", { section: this.owner_, source: e });
     };
 
     this.onPointerUp_ = (e: PointerEvent) => {
-      if (parent.controller.mode === "anchors") return;
+      if (isAnchorsMode(parent.controller.mode)) return;
       ctrl.emit("section:pointerUp", { section: this.owner_, source: e });
     };
 
@@ -176,9 +177,21 @@ export class EditorSectionView implements p4.SectionView {
     // Anchor handles for the three vertical slots. top is system-managed so it
     // gets the --system modifier (dimmed, non-interactive pointer style).
     const ctrl = parent.controller;
-    this.appendAnchorHandle_(ctrl, { slot: "top", topPct: "0%", isSystem: true });
-    this.appendAnchorHandle_(ctrl, { slot: "height", topPct: "50%", isSystem: false });
-    this.appendAnchorHandle_(ctrl, { slot: "bottom", topPct: "100%", isSystem: false });
+    this.appendAnchorHandle_(ctrl, {
+      slot: "top",
+      topPct: "0%",
+      isSystem: true,
+    });
+    this.appendAnchorHandle_(ctrl, {
+      slot: "height",
+      topPct: "50%",
+      isSystem: false,
+    });
+    this.appendAnchorHandle_(ctrl, {
+      slot: "bottom",
+      topPct: "100%",
+      isSystem: false,
+    });
 
     this.backgroundElement_.addEventListener(
       "pointerdown",
@@ -193,12 +206,17 @@ export class EditorSectionView implements p4.SectionView {
   /** Appends a vertical anchor handle to backgroundElement_. */
   private appendAnchorHandle_(
     ctrl: EditorViewControllerImpl,
-    { slot, topPct, isSystem }: { slot: "top" | "height" | "bottom"; topPct: string; isSystem: boolean },
+    {
+      slot,
+      topPct,
+      isSystem,
+    }: { slot: "top" | "height" | "bottom"; topPct: string; isSystem: boolean },
   ): void {
     const handle = document.createElement("div");
     handle.className =
       "anchor-handle" + (isSystem ? " anchor-handle--system" : "");
     handle.dataset.anchor = slot;
+    handle.dataset.axis = slot === "height" ? "s" : "v";
     // Position near the left edge, centred vertically at topPct.
     handle.style.top = topPct;
     handle.style.left = "8px";

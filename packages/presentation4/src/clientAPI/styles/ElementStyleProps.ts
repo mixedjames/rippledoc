@@ -47,3 +47,22 @@ export interface ComputedElementStyle {
   fontColor: Color;
   fontItalic: boolean;
 }
+
+/** Style accessor bag returned by `element.styles`. */
+export interface ElementStyles {
+  /** The fully resolved style after cascade evaluation. */
+  get computed(): ComputedElementStyle;
+  /** The own style — properties set directly on this element, before cascade. */
+  get own(): ElementStyleProps;
+  /** Set the own style. Overrides named and global styles for any property specified. */
+  set(style: ElementStyleProps): void;
+  /**
+   * Append a named style. Named styles are evaluated in the order they were
+   * added; earlier entries take priority.
+   */
+  addNamed(name: string): void;
+  /** Remove a previously added named style. No-op if the name is not present. */
+  removeNamed(name: string): void;
+  /** The named styles currently applied, in priority order. */
+  get named(): readonly string[];
+}

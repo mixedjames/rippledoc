@@ -21,6 +21,7 @@ import type {
 import type {
   ElementStyleProps,
   ComputedElementStyle,
+  ElementStyles,
 } from "../clientAPI/styles/ElementStyleProps";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { NullElementView } from "./nullView/NullElementView";
@@ -45,7 +46,7 @@ import { serializeElementLayoutGeometry } from "./serialize/serializeGeometry";
  */
 export abstract class CoreElement
   extends AnchoredObjectBase
-  implements Element, ElementViewOwner
+  implements Element, ElementViewOwner, ElementStyles
 {
   private readonly section_: CoreSection;
   protected readonly eventContext_: EventContext;
@@ -179,27 +180,31 @@ export abstract class CoreElement
     return this.animations_;
   }
 
-  get computedStyle(): ComputedElementStyle {
+  get styles(): ElementStyles {
+    return this;
+  }
+
+  get computed(): ComputedElementStyle {
     return this.computedStyle_;
   }
 
-  get ownStyle(): ElementStyleProps {
+  get own(): ElementStyleProps {
     return this.ownStyle_;
   }
 
-  setStyle(style: ElementStyleProps): void {
+  set(style: ElementStyleProps): void {
     this.ownStyle_ = style;
     this.recomputeAndPushStyle_();
   }
 
-  addNamedStyle(name: string): void {
+  addNamed(name: string): void {
     if (!this.namedStyles_.includes(name)) {
       this.namedStyles_.push(name);
       this.recomputeAndPushStyle_();
     }
   }
 
-  removeNamedStyle(name: string): void {
+  removeNamed(name: string): void {
     const index = this.namedStyles_.indexOf(name);
     if (index >= 0) {
       this.namedStyles_.splice(index, 1);
@@ -207,7 +212,7 @@ export abstract class CoreElement
     }
   }
 
-  get namedStyles(): readonly string[] {
+  get named(): readonly string[] {
     return this.namedStyles_;
   }
 

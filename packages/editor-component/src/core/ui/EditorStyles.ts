@@ -1,18 +1,18 @@
 const EDITOR_CSS = `
 .rippledoc-editor {
   --re-sidebar-width: 240px;
-  --re-sidebar-bg: #1e1e1e;
-  --re-sidebar-fg: #cccccc;
-  --re-panel-header-bg: #252526;
-  --re-panel-header-hover-bg: #2d2d2d;
-  --re-panel-header-fg: #cccccc;
-  --re-panel-border: #3e3e42;
-  --re-panel-body-bg: #1e1e1e;
-  --re-panel-body-fg: #cccccc;
-  --re-panel-empty-fg: #6b6b6b;
-  --re-input-bg: #3c3c3c;
-  --re-input-fg: #cccccc;
-  --re-input-border: #5a5a5a;
+  --re-sidebar-bg: #f5f5f5;
+  --re-sidebar-fg: #1a1a1a;
+  --re-panel-header-bg: #ebebeb;
+  --re-panel-header-hover-bg: #e0e0e0;
+  --re-panel-header-fg: #1a1a1a;
+  --re-panel-border: #d4d4d4;
+  --re-panel-body-bg: #f5f5f5;
+  --re-panel-body-fg: #1a1a1a;
+  --re-panel-empty-fg: #8a8a8a;
+  --re-input-bg: #ffffff;
+  --re-input-fg: #1a1a1a;
+  --re-input-border: #c0c0c0;
 
   display: flex;
   flex-direction: row;
@@ -149,7 +149,7 @@ const EDITOR_CSS = `
 
 .re-style-input:focus,
 .re-style-select:focus {
-  border-color: #4d94ff;
+  border-color: hsl(220 80% 52%);
 }
 
 .re-style-input--hex {

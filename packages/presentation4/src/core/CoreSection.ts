@@ -16,6 +16,7 @@ import type {
 import type {
   SectionStyleProps,
   ComputedSectionStyle,
+  SectionStyles,
 } from "../clientAPI/styles/SectionStyleProps";
 import type { CoreStyleRegistry } from "./CoreStyleRegistry";
 import type { PresentationView } from "../viewAPI/PresentationView";
@@ -49,7 +50,7 @@ import { serializeSectionLayoutGeometry } from "./serialize/serializeGeometry";
  */
 export class CoreSection
   extends AnchoredObjectBase
-  implements Section, SectionViewOwner
+  implements Section, SectionViewOwner, SectionStyles
 {
   private readonly root_: CorePresentationRoot;
   private readonly eventContext_: EventContext;
@@ -133,27 +134,31 @@ export class CoreSection
     return this.animations_;
   }
 
-  get computedStyle(): ComputedSectionStyle {
+  get styles(): SectionStyles {
+    return this;
+  }
+
+  get computed(): ComputedSectionStyle {
     return this.computedStyle_;
   }
 
-  get ownStyle(): SectionStyleProps {
+  get own(): SectionStyleProps {
     return this.ownStyle_;
   }
 
-  setStyle(style: SectionStyleProps): void {
+  set(style: SectionStyleProps): void {
     this.ownStyle_ = style;
     this.recomputeAndPushStyle_();
   }
 
-  addNamedStyle(name: string): void {
+  addNamed(name: string): void {
     if (!this.namedStyles_.includes(name)) {
       this.namedStyles_.push(name);
       this.recomputeAndPushStyle_();
     }
   }
 
-  removeNamedStyle(name: string): void {
+  removeNamed(name: string): void {
     const index = this.namedStyles_.indexOf(name);
     if (index >= 0) {
       this.namedStyles_.splice(index, 1);
@@ -161,7 +166,7 @@ export class CoreSection
     }
   }
 
-  get namedStyles(): readonly string[] {
+  get named(): readonly string[] {
     return this.namedStyles_;
   }
 

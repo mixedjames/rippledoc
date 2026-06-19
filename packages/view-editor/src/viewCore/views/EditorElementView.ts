@@ -3,6 +3,7 @@ import type { EditorSectionView } from "./EditorSectionView";
 import { EditorPinManager, NullEditorPinManager } from "./EditorPinManager";
 import { fillToCss, borderToCss } from "./colorToCss";
 import type { EditorViewControllerImpl } from "../EditorViewControllerImpl";
+import { isAnchorsMode } from "../../clientAPI/ViewMode";
 
 /**
  * Base element view for the editor. Renders a single absolutely-positioned
@@ -54,13 +55,13 @@ export class EditorElementView implements p4.ElementView {
         preventScroll: true,
       });
       // Selection is suppressed in anchors mode — picking is handled by anchor handles.
-      if (parent.presentationView.controller.mode === "anchors") return;
+      if (isAnchorsMode(parent.presentationView.controller.mode)) return;
       ctrl.emit("element:picked", { element: this.owner_, source: e });
       ctrl.emit("element:pointerDown", { element: this.owner_, source: e });
     };
 
     this.onPointerUp_ = (e: PointerEvent) => {
-      if (parent.presentationView.controller.mode === "anchors") return;
+      if (isAnchorsMode(parent.presentationView.controller.mode)) return;
       ctrl.emit("element:pointerUp", { element: this.owner_, source: e });
     };
 
@@ -130,7 +131,7 @@ export class EditorElementView implements p4.ElementView {
     // so the browser would size the element to zero. Bail out here — layout()
     // in Phase 4 will set the dimension explicitly from the anchor value, which
     // was correctly measured the last time editor mode ran.
-    if (this.sectionView_.presentationView.controller.mode === "anchors")
+    if (isAnchorsMode(this.sectionView_.presentationView.controller.mode))
       return;
 
     const dim = this.owner_.contentDependentDimension;
@@ -150,7 +151,7 @@ export class EditorElementView implements p4.ElementView {
     // zero. Skipping also prevents notifyMeasuredSize from emitting
     // "anchors:changed" on every frame, which would otherwise create a
     // perpetual layout loop.
-    if (this.sectionView_.presentationView.controller.mode === "anchors")
+    if (isAnchorsMode(this.sectionView_.presentationView.controller.mode))
       return;
 
     const dim = this.owner_.contentDependentDimension;
@@ -253,6 +254,7 @@ export class EditorElementView implements p4.ElementView {
     const handle = document.createElement("div");
     handle.className = "anchor-handle";
     handle.dataset.anchor = slot;
+    handle.dataset.axis = elementHandleAxis(slot);
     if (pos.top !== undefined) handle.style.top = pos.top;
     if (pos.left !== undefined) handle.style.left = pos.left;
     if (pos.right !== undefined) handle.style.right = pos.right;
@@ -293,6 +295,12 @@ export class EditorElementView implements p4.ElementView {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function elementHandleAxis(slot: string): "h" | "v" | "s" {
+  if (slot === "left" || slot === "right") return "h";
+  if (slot === "top" || slot === "bottom") return "v";
+  return "s"; // width | height
+}
 
 // view-editor imports only from viewAPI, which does not export the concrete
 // expression classes. The label is inferred from dependency count — this is not

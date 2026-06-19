@@ -23,7 +23,7 @@ interface FontConsensus {
   /** null = mixed (elements have different values for this property) */
   family: string | null;
   /** Computed font size in basis units; null = mixed. The unit selector defaults to "basis".
-   * TODO: pre-select unit from element.ownStyle.fontSize when present. */
+   * TODO: pre-select unit from element.styles.own.fontSize when present. */
   size: number | "mixed";
   weight: FontWeight | "mixed";
   color: Color | "mixed";
@@ -108,16 +108,16 @@ function makeElementStyleOp(
   elements: ReadonlySet<Element>,
   patch: ElementStyleProps,
 ): EditOperation {
-  const snapshots = new Map([...elements].map((el) => [el, el.ownStyle]));
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
   return {
     execute() {
       for (const el of elements) {
-        el.setStyle({ ...snapshots.get(el), ...patch });
+        el.styles.set({ ...snapshots.get(el), ...patch });
       }
     },
     undo() {
       for (const el of elements) {
-        el.setStyle(snapshots.get(el)!);
+        el.styles.set(snapshots.get(el)!);
       }
     },
   };
@@ -127,16 +127,16 @@ function makeSectionStyleOp(
   sections: ReadonlySet<Section>,
   patch: SectionStyleProps,
 ): EditOperation {
-  const snapshots = new Map([...sections].map((s) => [s, s.ownStyle]));
+  const snapshots = new Map([...sections].map((s) => [s, s.styles.own]));
   return {
     execute() {
       for (const s of sections) {
-        s.setStyle({ ...snapshots.get(s), ...patch });
+        s.styles.set({ ...snapshots.get(s), ...patch });
       }
     },
     undo() {
       for (const s of sections) {
-        s.setStyle(snapshots.get(s)!);
+        s.styles.set(snapshots.get(s)!);
       }
     },
   };
@@ -186,7 +186,7 @@ export class StylesPanel implements SidebarPanel {
   }
 
   private renderElementStyles_(elements: ReadonlySet<Element>): void {
-    const styles = [...elements].map((el) => el.computedStyle);
+    const styles = [...elements].map((el) => el.styles.computed);
     const markdownEls = [...elements].filter(isMarkdown);
 
     const fill = consensusFill(styles.map((s) => s.fill));
@@ -202,7 +202,7 @@ export class StylesPanel implements SidebarPanel {
     });
 
     if (markdownEls.length > 0) {
-      const mdStyles = markdownEls.map((el) => el.computedStyle);
+      const mdStyles = markdownEls.map((el) => el.styles.computed);
       const font = consensusFont(mdStyles);
       const mdSet = new Set<Element>(markdownEls);
       this.renderFontSection_(font, (patch) => {
@@ -213,7 +213,7 @@ export class StylesPanel implements SidebarPanel {
   }
 
   private renderSectionStyles_(sections: ReadonlySet<Section>): void {
-    const styles = [...sections].map((s) => s.computedStyle);
+    const styles = [...sections].map((s) => s.styles.computed);
 
     const fill = consensusFill(styles.map((s) => s.fill));
     this.renderFillSection_(fill, (f) => {
@@ -414,7 +414,7 @@ export class StylesPanel implements SidebarPanel {
     body.appendChild(familyRow);
 
     // Size — displays computed (basis) value; unit selector applies on write.
-    // TODO: pre-select unit from element.ownStyle.fontSize when present.
+    // TODO: pre-select unit from element.styles.own.fontSize when present.
     const { row: sizeRow, value: sizeValue } = this.createRow_("Size");
     const sizeInput = document.createElement("input");
     sizeInput.type = "number";

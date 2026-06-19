@@ -38,6 +38,43 @@ export { FractionAnchorExpression } from "./anchors/expressions/FractionAnchorEx
 
 ---
 
+## Content-derived dimensions
+
+Distinct from the 2-of-3 derived anchor, an element's size on one axis can be
+**content-derived**: the view measures the rendered content and feeds that size back into
+the anchor system. This is analogous to CSS `height: auto`.
+
+`element.contentDependentDimension` returns `"none"` | `"height"` | `"width"`.
+
+When an axis is content-derived:
+
+- The size slot (`height` or `width`) has no meaningful expression — its value comes from
+  measurement, not from an anchor formula.
+- The position anchor on that axis (top/bottom for height, left/right for width) still uses
+  a normal expression. Exactly one position anchor is provided; the other edge is implied.
+- Both axes cannot be content-derived simultaneously.
+
+**Setting content-derived via the API:**
+
+```ts
+element.setAutoHeight({ top: expr }); // fix top, measure height
+element.setAutoHeight({ bottom: expr }); // fix bottom, measure height
+element.setAutoWidth({ left: expr }); // fix left, measure width
+element.setAutoWidth({ right: expr }); // fix right, measure width
+```
+
+Calling `setAutoHeight` or `setAutoWidth` clears all previously set anchors on that axis.
+
+**Display in the toolbox (planned — see TODO section):**
+
+- In the list view the size slot shows "auto" rather than a value / expression type.
+- In the detail view for that slot, instead of the type dropdown + edit controls, the panel
+  shows the content-derived status and a button to switch back to explicit constraints.
+- The detail view for the _position_ slot on a content-derived axis should offer a
+  "set to auto height / auto width" toggle that calls `setAutoHeight` / `setAutoWidth`.
+
+---
+
 ## Element vs section differences
 
 **Elements** (`clientAPI/Element.ts`):
@@ -45,7 +82,8 @@ export { FractionAnchorExpression } from "./anchors/expressions/FractionAnchorEx
 - `setHorizontalAnchors(descriptor)` — 2-of-3: left / right / width
 - `setVerticalAnchors(descriptor)` — 2-of-3: top / bottom / height
 - `setAutoHeight(options)` — makes height content-dependent
-- All 6 anchors are user-editable in the toolbox
+- `setAutoWidth(options)` — makes width content-dependent
+- All 6 anchors are user-editable in the toolbox (with content-derived exceptions above)
 
 **Sections** (`clientAPI/Section.ts`):
 
@@ -73,8 +111,14 @@ Anchors are only editable when **exactly one** element or section is selected.
 ## View mode
 
 `view-editor` has a `"anchors"` ViewMode (alongside `"editor"` and `"player"`).
-Currently it only sets `data-mode="anchors"` on the viewport DOM node — no overlay
-rendering is implemented yet.
+In anchors mode:
+
+- Element content is hidden (`display:none` on `.element-content`) so only element boxes
+  and anchor handles are visible.
+- Elements get a dashed outline and `overflow:visible` so handles on small elements can
+  escape the box.
+- Selection chrome is suppressed (selection is preserved but not shown).
+- Element and section pointer picking is suppressed — handles handle picking instead.
 
 Switch via `state.viewController?.setMode("anchors")` / `.setMode("editor")`.
 
@@ -154,30 +198,83 @@ All call `onDone()` in both `execute` and `undo` — `AnchorsPanel` passes
 - Back button → `viewController.setMode("editor")`.
 - Subject change (selection moves while in detail) → `viewController.setMode("editor")`.
 
+### Chunk D — Anchor reference picking
+
+`view-editor` renders anchor handle chips on every element (6 handles) and section
+(3 handles; top is system — dimmed, non-interactive). In `"anchors"` mode the handles
+are visible; clicking one emits `"anchor:picked": { anchor, source }`.
+
+`AnchorsPanel` wires this up:
+
+- `renderAnchorPicking_` — shown when the type is "Anchored" or "Fraction" but no
+  base anchor has been set yet. Subscribes to `"anchor:picked"` on the view controller;
+  validates the size-slot constraint (width/height slots may only reference size anchors).
+  On pick, builds a ref op via `buildHRefOp` / `buildVRefOp` and commits.
+- `renderOffsetEdit_` — shown once an `OffsetAnchorExpression` is set. Displays the
+  base anchor's current value and a number input for the offset.
+- `renderFractionEdit_` — same pattern for `FractionAnchorExpression`, editing the fraction.
+- `renderNumberEdit_` — shared number-input helper used by both.
+- `anchorPickSub_` — subscription handle cleared at the top of every `update()` and in
+  `dispose()` so stale listeners never accumulate.
+
 ---
 
 ## What is NOT done
 
-### Chunk D — Anchor reference picking (requires view-editor changes)
+### TODO — Axis constraint for anchor picking
 
-When the type dropdown is set to "Anchored" or "Fraction", the panel currently shows
-a placeholder: "Anchor picking — coming in the next step."
+Currently the only picking constraint is the size-slot rule (width/height may only
+reference width/height anchors). There is no positional axis constraint: a `left` slot
+could pick a `top` anchor, which is semantically odd.
 
-What's needed:
+Decision needed: enforce that horizontal slots (left, right, width) may only reference
+horizontal anchors, and vertical slots (top, bottom, height) may only reference vertical
+anchors. The `isSizeAnchor` helper in `AnchorsPanel.ts` and the `renderAnchorPicking_`
+filter are the places to add this.
 
-1. **view-editor**: Add `"anchor:picked": { anchor: Anchor; source: PointerEvent }` to
-   `EditorViewEvents`. In `"anchors"` mode, render overlay markers for every readable
-   anchor in the presentation. User clicks a marker → emit `"anchor:picked"`.
+### TODO — Handle highlight during picking
 
-2. **editor-component**: In `AnchorsPanel`, handle `"anchor:picked"`:
-   - For "Anchored" type → create `OffsetAnchorExpression(pickedAnchor, 0)`, then show
-     an offset adjustment control.
-   - For "Fraction" type → create `FractionAnchorExpression(pickedAnchor, 1)`, then
-     show a fraction adjustment control.
-   - Wrap in `EditOperation` and commit via `push_()`.
+All anchor handles look identical in `"anchors"` mode. When the panel is waiting for a
+pick (i.e. `renderAnchorPicking_` is active), handles that are _invalid_ picks (wrong
+axis if axis constraint is added, or the slot being edited itself) could be visually
+dimmed or disabled. Valid picks could be highlighted with a different colour.
 
-The TODO comment in `AnchorsPanel.ts` (in `renderDetail_`'s else branch) marks the
-placeholder that will be replaced.
+This requires the `AnchorsPanel` to communicate picking state to the view — a CSS class
+or data attribute on the viewport, or a dedicated method on `EditorViewController`.
+
+### TODO — Re-pick base anchor
+
+In `renderOffsetEdit_` and `renderFractionEdit_`, the base anchor is shown read-only.
+There is no affordance for the user to pick a different base without first switching the
+type to "Constant" and back to "Anchored"/"Fraction". A small "re-pick" button next to
+the base value row would enter picking mode again for just the base, keeping the existing
+offset/fraction value.
+
+### TODO — Content-derived dimension support in AnchorsPanel
+
+The panel does not yet handle `element.contentDependentDimension !== "none"`. When an
+axis is content-derived:
+
+**List view:**
+
+- The size slot (`height` or `width`) should show "auto" (not a numeric value) and
+  a description of "content" rather than an expression type.
+
+**Detail view for the size slot:**
+
+- Should not show the type dropdown or editing controls.
+- Should show "auto (content)" status and a "Remove auto" button that calls
+  `setVerticalAnchors` / `setHorizontalAnchors` with explicit expressions to restore
+  anchor control. The natural restore is: set the size slot to `constant(currentValue)`,
+  keeping the position anchor's expression unchanged.
+
+**Detail view for the position slot on a content-derived axis:**
+
+- Should show the normal type/editing controls for that position anchor's expression.
+- Should additionally offer a "Make height auto" / "Make width auto" toggle. Activating
+  it calls `setAutoHeight({ top: currentExpr })` or `setAutoHeight({ bottom: currentExpr })`
+  depending on which slot is selected. The panel will need to infer which position anchor
+  to keep (the one that is not derived on that axis).
 
 ---
 
@@ -190,3 +287,9 @@ Anchor-panel classes live in `EditorStyles.ts` under the `/* ── Anchors pane
 - `.re-anchor-row__name`, `.re-anchor-row__value`, `.re-anchor-row__expr`
 - `.re-anchor-back`, `.re-anchor-detail-divider`
 - `.re-anchor-edit-row`, `.re-anchor-select`
+
+Anchor handle styles live inside the shadow DOM in `PresentationDOM.ts`:
+
+- `.anchor-handle` — hidden by default; `display:flex` in `[data-mode="anchors"]`
+- `.anchor-handle--system` — grey, `cursor:default`, no click handler
+- `.anchor-handle__type` — small type label below the slot name

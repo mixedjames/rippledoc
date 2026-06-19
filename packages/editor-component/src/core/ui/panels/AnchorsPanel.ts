@@ -219,7 +219,15 @@ function buildVConstantOp(
 
 function buildHRefOp(
   element: Element,
-  { slot, base, exprFactory }: { slot: HSlot; base: Anchor; exprFactory: (base: Anchor) => AnchorExpression },
+  {
+    slot,
+    base,
+    exprFactory,
+  }: {
+    slot: HSlot;
+    base: Anchor;
+    exprFactory: (base: Anchor) => AnchorExpression;
+  },
   onDone: () => void,
 ): EditOperation {
   const a = element.anchors;
@@ -250,7 +258,15 @@ function buildHRefOp(
 
 function buildVRefOp(
   subject: Element | Section,
-  { slot, base, exprFactory }: { slot: VSlot; base: Anchor; exprFactory: (base: Anchor) => AnchorExpression },
+  {
+    slot,
+    base,
+    exprFactory,
+  }: {
+    slot: VSlot;
+    base: Anchor;
+    exprFactory: (base: Anchor) => AnchorExpression;
+  },
   onDone: () => void,
 ): EditOperation {
   const a = subject.anchors;
@@ -448,6 +464,12 @@ export class AnchorsPanel implements SidebarPanel {
   // ── Detail view ───────────────────────────────────────────────────────────
 
   private renderDetail_(subject: Element | Section, entry: AnchorEntry): void {
+    // Show only the handles relevant to this slot's axis throughout the detail
+    // view — not just during picking. Plain "anchors" mode shows all handles,
+    // which is cluttered when drilling into a single slot.
+    const modeMap = { h: "anchors-h", v: "anchors-v", s: "anchors-s" } as const;
+    this.state_.viewController?.setMode(modeMap[slotPickGroup(entry.name)]);
+
     const back = document.createElement("button");
     back.className = "re-anchor-back";
     back.textContent = `← ${entry.name}`;
@@ -612,12 +634,18 @@ export class AnchorsPanel implements SidebarPanel {
         entry.axis === "horizontal"
           ? buildHSwapDerivedOp(
               subject as Element,
-              { currentDerived: entry.name as HSlot, newDerived: newDerived as HSlot },
+              {
+                currentDerived: entry.name as HSlot,
+                newDerived: newDerived as HSlot,
+              },
               () => this.update(),
             )
           : buildVSwapDerivedOp(
               subject,
-              { currentDerived: entry.name as VSlot, newDerived: newDerived as VSlot },
+              {
+                currentDerived: entry.name as VSlot,
+                newDerived: newDerived as VSlot,
+              },
               () => this.update(),
             );
       this.push_(op);
@@ -643,15 +671,11 @@ export class AnchorsPanel implements SidebarPanel {
     const vc = this.state_.viewController;
     if (!vc) return;
 
-    // isSizeSlot: width/height anchors may only reference other size anchors.
-    const isSizeSlot = entry.name === "width" || entry.name === "height";
+    const group = slotPickGroup(entry.name);
 
     const pres = this.state_.presentation;
     this.anchorPickSub_ = vc.events.on("anchor:picked", ({ anchor }) => {
-      // Validate axis constraint: size slots only accept size anchors,
-      // checked by seeing whether the picked anchor is a width or height
-      // on any element/section in the presentation.
-      if (isSizeSlot && (pres === null || !isSizeAnchor(anchor, pres))) return;
+      if (pres === null || anchorPickGroup(anchor, pres) !== group) return;
 
       const exprFactory =
         type === "offset"
@@ -704,12 +728,20 @@ export class AnchorsPanel implements SidebarPanel {
           entry.axis === "horizontal"
             ? buildHRefOp(
                 subject as Element,
-                { slot: entry.name as HSlot, base, exprFactory: (b) => new OffsetAnchorExpression(b, v) },
+                {
+                  slot: entry.name as HSlot,
+                  base,
+                  exprFactory: (b) => new OffsetAnchorExpression(b, v),
+                },
                 () => this.update(),
               )
             : buildVRefOp(
                 subject,
-                { slot: entry.name as VSlot, base, exprFactory: (b) => new OffsetAnchorExpression(b, v) },
+                {
+                  slot: entry.name as VSlot,
+                  base,
+                  exprFactory: (b) => new OffsetAnchorExpression(b, v),
+                },
                 () => this.update(),
               );
         this.push_(op);
@@ -745,12 +777,20 @@ export class AnchorsPanel implements SidebarPanel {
           entry.axis === "horizontal"
             ? buildHRefOp(
                 subject as Element,
-                { slot: entry.name as HSlot, base, exprFactory: (b) => new FractionAnchorExpression(b, v) },
+                {
+                  slot: entry.name as HSlot,
+                  base,
+                  exprFactory: (b) => new FractionAnchorExpression(b, v),
+                },
                 () => this.update(),
               )
             : buildVRefOp(
                 subject,
-                { slot: entry.name as VSlot, base, exprFactory: (b) => new FractionAnchorExpression(b, v) },
+                {
+                  slot: entry.name as VSlot,
+                  base,
+                  exprFactory: (b) => new FractionAnchorExpression(b, v),
+                },
                 () => this.update(),
               );
         this.push_(op);
@@ -823,15 +863,32 @@ export class AnchorsPanel implements SidebarPanel {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Returns true if `anchor` is a width or height anchor of any object in the presentation. */
-function isSizeAnchor(anchor: Anchor, pres: Presentation): boolean {
+type PickGroup = "h" | "v" | "s";
+
+/** Which pick group a slot belongs to.
+ *  h = left/right (horizontal position)
+ *  v = top/bottom (vertical position)
+ *  s = width/height (size — cross-axis allowed for aspect ratio) */
+function slotPickGroup(slot: AnchorSlot): PickGroup {
+  if (slot === "left" || slot === "right") return "h";
+  if (slot === "top" || slot === "bottom") return "v";
+  return "s";
+}
+
+/** Identifies which pick group a given anchor belongs to by scanning the
+ *  presentation. Returns null if the anchor is not found (shouldn't happen). */
+function anchorPickGroup(anchor: Anchor, pres: Presentation): PickGroup | null {
   for (const section of pres.root.getSections()) {
-    if (section.anchors.width === anchor || section.anchors.height === anchor)
-      return true;
+    const sa = section.anchors;
+    if (sa.left === anchor || sa.right === anchor) return "h";
+    if (sa.top === anchor || sa.bottom === anchor) return "v";
+    if (sa.width === anchor || sa.height === anchor) return "s";
     for (const element of section.getElements()) {
-      if (element.anchors.width === anchor || element.anchors.height === anchor)
-        return true;
+      const ea = element.anchors;
+      if (ea.left === anchor || ea.right === anchor) return "h";
+      if (ea.top === anchor || ea.bottom === anchor) return "v";
+      if (ea.width === anchor || ea.height === anchor) return "s";
     }
   }
-  return false;
+  return null;
 }

@@ -6,10 +6,7 @@ import type {
   VerticalAnchorSet,
 } from "../anchors/AnchorSet";
 import type { ElementAnimations } from "./animation/ElementAnimations";
-import type {
-  ElementStyleProps,
-  ComputedElementStyle,
-} from "./styles/ElementStyleProps";
+import type { ElementStyles } from "./styles/ElementStyleProps";
 
 /** Which dimension, if any, is determined by content measurement rather than anchor expressions. */
 export type ContentDependentDimension = "none" | "width" | "height";
@@ -57,26 +54,8 @@ export interface Element {
   /** Pins and animations attached to this element. */
   get animations(): ElementAnimations;
 
-  /** The fully resolved style for this element after cascade evaluation. */
-  get computedStyle(): ComputedElementStyle;
-
-  /** The element's own style — the properties set directly on this element, before cascade. */
-  get ownStyle(): ElementStyleProps;
-
-  /** Set the element's own style. Overrides named and global styles for any property specified. */
-  setStyle(style: ElementStyleProps): void;
-
-  /**
-   * Append a named style to this element's style list.
-   * Named styles are evaluated in the order they were added; earlier entries take priority.
-   */
-  addNamedStyle(name: string): void;
-
-  /** Remove a previously added named style. No-op if the name is not present. */
-  removeNamedStyle(name: string): void;
-
-  /** The named styles currently applied to this element, in priority order. */
-  get namedStyles(): readonly string[];
+  /** Style accessor bag: computed result, own props, cascade controls. */
+  get styles(): ElementStyles;
 
   /** Set the horizontal geometry of this element. Exactly two of left/right/width must be provided. */
   setHorizontalAnchors(descriptor: HorizontalAnchorSet): void;

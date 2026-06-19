@@ -27,3 +27,22 @@ export interface ComputedSectionStyle {
   fill: Fill;
   border: ComputedBorder;
 }
+
+/** Style accessor bag returned by `section.styles`. */
+export interface SectionStyles {
+  /** The fully resolved style after cascade evaluation. */
+  get computed(): ComputedSectionStyle;
+  /** The own style — properties set directly on this section, before cascade. */
+  get own(): SectionStyleProps;
+  /** Set the own style. Overrides named and global styles for any property specified. */
+  set(style: SectionStyleProps): void;
+  /**
+   * Append a named style. Named styles are evaluated in the order they were
+   * added; earlier entries take priority.
+   */
+  addNamed(name: string): void;
+  /** Remove a previously added named style. No-op if the name is not present. */
+  removeNamed(name: string): void;
+  /** The named styles currently applied, in priority order. */
+  get named(): readonly string[];
+}

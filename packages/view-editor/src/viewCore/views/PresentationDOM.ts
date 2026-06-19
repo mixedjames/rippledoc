@@ -146,20 +146,19 @@ export class PresentationDOM {
         outline-offset: 1px;
       }
 
-      /* Anchors mode: hide rendered content so only element boxes are visible,
-         and allow handles to overflow the element box. */
-      [data-mode="anchors"] .element-content {
+      /* Anchors mode (all sub-modes): hide rendered content, allow handle overflow. */
+      [data-mode^="anchors"] .element-content {
         display: none;
       }
 
-      [data-mode="anchors"] .element {
+      [data-mode^="anchors"] .element {
         /* overflow:visible lets handles on small elements escape the element box. */
         overflow: visible;
         outline: 1px dashed hsl(220 30% 65%);
         outline-offset: 0px;
       }
 
-      /* Anchor handles — hidden by default, shown only in anchors mode. */
+      /* Anchor handles — hidden by default. */
       .anchor-handle {
         display: none;
         position: absolute;
@@ -187,9 +186,13 @@ export class PresentationDOM {
         cursor: default;
       }
 
-      [data-mode="anchors"] .anchor-handle {
-        display: flex;
-      }
+      /* Plain anchors mode (list view, no active picking): show all handles. */
+      [data-mode="anchors"] .anchor-handle { display: flex; }
+
+      /* Axis-specific picking modes: show only the relevant third. */
+      [data-mode="anchors-h"] .anchor-handle[data-axis="h"] { display: flex; }
+      [data-mode="anchors-v"] .anchor-handle[data-axis="v"] { display: flex; }
+      [data-mode="anchors-s"] .anchor-handle[data-axis="s"] { display: flex; }
 
       .anchor-handle:not(.anchor-handle--system):hover {
         background: hsl(220 70% 40%);
