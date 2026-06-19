@@ -16,8 +16,8 @@ export class CoreMarkdownElement
 {
   private markdown_: string;
 
-  constructor(section: CoreSection, markdown = "") {
-    super(section);
+  constructor(section: CoreSection, name: string, markdown = "") {
+    super(section, name);
     this.markdown_ = markdown;
   }
 

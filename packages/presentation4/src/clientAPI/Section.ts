@@ -23,6 +23,12 @@ export interface Section {
   /** The presentation root that owns this section. */
   get root(): PresentationRoot;
 
+  /** User-visible name for this section. Unique within the presentation. */
+  get name(): string;
+
+  /** Rename this section. Throws if another section already has this name. */
+  setName(name: string): void;
+
   /**
    * The anchors defining this section's geometry in the virtual coordinate space.
    *

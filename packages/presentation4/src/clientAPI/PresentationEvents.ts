@@ -34,6 +34,8 @@ export type PresentationEvents = {
   "element:styleChanged": { element: Element };
   /** Emitted when a section's computed style changes for any reason. */
   "section:styleChanged": { section: Section };
+  "section:nameChanged": { section: Section; name: string };
+  "element:nameChanged": { element: Element; name: string };
 };
 
 /**

@@ -17,10 +17,14 @@ export class CoreBitmapImageElement
   private src_: string;
   private alt_: string;
 
-  constructor(section: CoreSection, src = "", alt = "") {
-    super(section);
-    this.src_ = src;
-    this.alt_ = alt;
+  constructor(
+    section: CoreSection,
+    name: string,
+    options: { src?: string; alt?: string } = {},
+  ) {
+    super(section, name);
+    this.src_ = options.src ?? "";
+    this.alt_ = options.alt ?? "";
   }
 
   protected createView(sectionView: SectionView): ElementView {

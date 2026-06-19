@@ -204,6 +204,7 @@ type BaseElementMemento = {
   readonly layouts: readonly ElementLayoutGeometryMemento[];
   readonly keyFrameAnimations: readonly KeyFrameAnimationMemento[];
   readonly pins: readonly PinMemento[];
+  readonly name: string;
 };
 
 export type MarkdownElementMemento = BaseElementMemento & {
@@ -238,6 +239,7 @@ export type SectionMemento = {
   readonly layouts: readonly SectionLayoutGeometryMemento[];
   readonly keyFrameAnimations: readonly KeyFrameAnimationMemento[];
   readonly elements: readonly ElementMemento[];
+  readonly name: string;
 };
 
 /** Serialized form of a Layout. */

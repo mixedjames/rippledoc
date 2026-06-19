@@ -54,17 +54,20 @@ export class CoreSection
 {
   private readonly root_: CorePresentationRoot;
   private readonly eventContext_: EventContext;
+  private name_: string;
   private readonly elements_: CoreElement[] = [];
+  private readonly nextElementTypeIds_: Record<string, number> = {};
   private view_: SectionView;
   private readonly animations_: CoreSectionAnimations;
   private ownStyle_: SectionStyleProps = {};
   private namedStyles_: string[] = [];
   private computedStyle_: ComputedSectionStyle;
 
-  constructor(root: CorePresentationRoot) {
+  constructor(root: CorePresentationRoot, name: string) {
     super(root.layoutContext);
     this.root_ = root;
     this.eventContext_ = root.eventContext;
+    this.name_ = name;
     this.view_ = new NullSectionView();
     this.animations_ = new CoreSectionAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
@@ -130,6 +133,20 @@ export class CoreSection
     return this.root_;
   }
 
+  get name(): string {
+    return this.name_;
+  }
+
+  setName(name: string): void {
+    const isDuplicate = this.root_.coreSections.some(
+      (s) => s !== this && s.name === name,
+    );
+    if (isDuplicate)
+      throw new Error(`Section name "${name}" is already in use.`);
+    this.name_ = name;
+    this.eventContext_.emit("section:nameChanged", { section: this, name });
+  }
+
   get animations(): SectionAnimations {
     return this.animations_;
   }
@@ -176,8 +193,18 @@ export class CoreSection
     this.eventContext_.emitAnchorChanged([a.top, a.bottom, a.height], this);
   }
 
+  private generateElementName_(type: string): string {
+    const n = (this.nextElementTypeIds_[type] ?? 0) + 1;
+    this.nextElementTypeIds_[type] = n;
+    return `${type} ${n}`;
+  }
+
   addMarkdownElement(markdown = ""): MarkdownElement {
-    const element = new CoreMarkdownElement(this, markdown);
+    const element = new CoreMarkdownElement(
+      this,
+      this.generateElementName_("Markdown"),
+      markdown,
+    );
     element.attachView(this.view_);
     this.elements_.push(element);
     this.eventContext_.emit("element:added", {
@@ -189,7 +216,10 @@ export class CoreSection
   }
 
   addBitmapImageElement(): BitmapImageElement {
-    const element = new CoreBitmapImageElement(this);
+    const element = new CoreBitmapImageElement(
+      this,
+      this.generateElementName_("Bitmap"),
+    );
     element.attachView(this.view_);
     this.elements_.push(element);
     this.eventContext_.emit("element:added", {
@@ -201,7 +231,10 @@ export class CoreSection
   }
 
   addSVGImageElement(): SVGImageElement {
-    const element = new CoreSVGImageElement(this);
+    const element = new CoreSVGImageElement(
+      this,
+      this.generateElementName_("SVG"),
+    );
     element.attachView(this.view_);
     this.elements_.push(element);
     this.eventContext_.emit("element:added", {
@@ -289,6 +322,7 @@ export class CoreSection
 
   toMemento(ctx: SerializeContext): SectionMemento {
     return {
+      name: this.name_,
       layouts: ctx.layouts.map((layout, li) => {
         const bag = this.getLayoutBag_(layout);
         if (!bag) throw new Error("CoreSection.toMemento: missing layout bag.");

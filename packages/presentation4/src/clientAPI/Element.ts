@@ -27,6 +27,12 @@ export interface Element {
   /** The section that owns this element. */
   get section(): Section;
 
+  /** User-visible name for this element. Unique within the owning section. */
+  get name(): string;
+
+  /** Rename this element. Throws if another element in the same section already has this name. */
+  setName(name: string): void;
+
   /**
    * The anchors defining this element's geometry in the virtual coordinate space.
    *

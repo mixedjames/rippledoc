@@ -50,6 +50,7 @@ export abstract class CoreElement
 {
   private readonly section_: CoreSection;
   protected readonly eventContext_: EventContext;
+  private name_: string;
   private view_: ElementView;
   private readonly animations_: CoreElementAnimations;
   private ownStyle_: ElementStyleProps = {};
@@ -66,10 +67,11 @@ export abstract class CoreElement
   private measuredWidthBox_: { value: number } | null = null;
   private measuredHeightBox_: { value: number } | null = null;
 
-  constructor(section: CoreSection) {
+  constructor(section: CoreSection, name: string) {
     super(section.layoutContext);
     this.section_ = section;
     this.eventContext_ = section.eventContext;
+    this.name_ = name;
     this.view_ = new NullElementView();
     this.animations_ = new CoreElementAnimations(this, this.eventContext_);
     // Register the initial bag created during super().
@@ -139,11 +141,13 @@ export abstract class CoreElement
       CoreElementAnimations["toMemento"]
     >["keyFrameAnimations"];
     pins: ReturnType<CoreElementAnimations["toMemento"]>["pins"];
+    name: string;
   } {
     const { keyFrameAnimations, pins } = this.animations_.toMemento(
       ctx.triggerIndex,
     );
     return {
+      name: this.name_,
       layouts: ctx.layouts.map((layout, li) => {
         const bag = this.getLayoutBag_(layout);
         if (!bag) throw new Error("CoreElement.toMemento: missing layout bag.");
@@ -170,6 +174,22 @@ export abstract class CoreElement
 
   get section(): Section {
     return this.section_;
+  }
+
+  get name(): string {
+    return this.name_;
+  }
+
+  setName(name: string): void {
+    const isDuplicate = this.section_.coreElements.some(
+      (e) => e !== this && e.name === name,
+    );
+    if (isDuplicate)
+      throw new Error(
+        `Element name "${name}" is already in use in this section.`,
+      );
+    this.name_ = name;
+    this.eventContext_.emit("element:nameChanged", { element: this, name });
   }
 
   get contentDependentDimension(): ContentDependentDimension {

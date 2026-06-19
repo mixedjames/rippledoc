@@ -17,8 +17,8 @@ export class CoreSVGImageElement
 {
   private src_: string;
 
-  constructor(section: CoreSection, src = "") {
-    super(section);
+  constructor(section: CoreSection, name: string, src = "") {
+    super(section, name);
     this.src_ = src;
   }
 

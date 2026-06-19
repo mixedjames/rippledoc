@@ -6,7 +6,7 @@
  * interfaces and only import concrete classes to construct the root object.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { CorePresentation } from "../CorePresentation";
 import { constant } from "../../anchors/factories";
 
@@ -109,6 +109,50 @@ describe("CorePresentationRoot", () => {
       s2.setVerticalAnchors({ top: constant(300), height: constant(200) });
       p.root.removeSection(s2);
       expect(p.root.totalHeight).toBe(300);
+    });
+  });
+
+  describe("section names", () => {
+    it("assigns sequential default names starting at 'Section 1'", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      const s3 = p.root.addSection();
+      expect(s1.name).toBe("Section 1");
+      expect(s2.name).toBe("Section 2");
+      expect(s3.name).toBe("Section 3");
+    });
+
+    it("setName updates the name getter", () => {
+      const p = new CorePresentation();
+      const s = p.root.addSection();
+      s.setName("Intro");
+      expect(s.name).toBe("Intro");
+    });
+
+    it("setName throws when another section already has that name", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      p.root.addSection();
+      s1.setName("Custom");
+      expect(() => p.root.addSection().setName("Custom")).toThrow(
+        /already in use/,
+      );
+    });
+
+    it("setName to the same name on the same section does not throw", () => {
+      const p = new CorePresentation();
+      const s = p.root.addSection();
+      expect(() => s.setName(s.name)).not.toThrow();
+    });
+
+    it("setName emits section:nameChanged", () => {
+      const p = new CorePresentation();
+      const s = p.root.addSection();
+      const listener = vi.fn();
+      p.events.on("section:nameChanged", listener);
+      s.setName("My Section");
+      expect(listener).toHaveBeenCalledWith({ section: s, name: "My Section" });
     });
   });
 
@@ -263,6 +307,73 @@ describe("CoreSection", () => {
       const s2 = p.root.addSection();
       const foreign = s2.addMarkdownElement();
       expect(() => s1.removeElement(foreign)).toThrow();
+    });
+  });
+
+  describe("element names", () => {
+    it("assigns per-type sequential default names", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const md1 = section.addMarkdownElement();
+      const md2 = section.addMarkdownElement();
+      const bmp = section.addBitmapImageElement();
+      const svg = section.addSVGImageElement();
+      expect(md1.name).toBe("Markdown 1");
+      expect(md2.name).toBe("Markdown 2");
+      expect(bmp.name).toBe("Bitmap 1");
+      expect(svg.name).toBe("SVG 1");
+    });
+
+    it("per-type counters are independent across sections", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      expect(s1.addMarkdownElement().name).toBe("Markdown 1");
+      expect(s2.addMarkdownElement().name).toBe("Markdown 1");
+    });
+
+    it("setName updates the name getter", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const el = section.addMarkdownElement();
+      el.setName("Hero Text");
+      expect(el.name).toBe("Hero Text");
+    });
+
+    it("setName throws when another element in the same section has that name", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const el1 = section.addMarkdownElement();
+      const el2 = section.addMarkdownElement();
+      el1.setName("Custom");
+      expect(() => el2.setName("Custom")).toThrow(/already in use/);
+    });
+
+    it("setName allows the same name in a different section", () => {
+      const p = new CorePresentation();
+      const s1 = p.root.addSection();
+      const s2 = p.root.addSection();
+      const el1 = s1.addMarkdownElement();
+      const el2 = s2.addMarkdownElement();
+      el1.setName("Shared Name");
+      expect(() => el2.setName("Shared Name")).not.toThrow();
+    });
+
+    it("setName to the same name on the same element does not throw", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const el = section.addMarkdownElement();
+      expect(() => el.setName(el.name)).not.toThrow();
+    });
+
+    it("setName emits element:nameChanged", () => {
+      const p = new CorePresentation();
+      const section = p.root.addSection();
+      const el = section.addMarkdownElement();
+      const listener = vi.fn();
+      p.events.on("element:nameChanged", listener);
+      el.setName("Title");
+      expect(listener).toHaveBeenCalledWith({ element: el, name: "Title" });
     });
   });
 

@@ -34,6 +34,7 @@ export class CorePresentationRoot
   private readonly presentation_: CorePresentation;
   private readonly eventContext_: EventContext;
   private readonly sections_: CoreSection[] = [];
+  private nextSectionId_: number = 1;
   // Tracks the current view so sections added after attachView get a real view immediately.
   private view_: PresentationView = new NullPresentationView();
 
@@ -140,7 +141,7 @@ export class CorePresentationRoot
   }
 
   addSection(): Section {
-    const section = new CoreSection(this);
+    const section = new CoreSection(this, `Section ${this.nextSectionId_++}`);
     // If a real view is already attached, wire the new section into it immediately
     // rather than leaving it with a null view until the next full attach cycle.
     section.attachView(this.view_);
