@@ -309,6 +309,59 @@
       #styleEditorForm.active {
         display: block;
       }
+
+      /* ── Tool buttons ─────────────────────────────── */
+
+      .tool-buttons {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+      }
+
+      .tool-buttons button {
+        flex: 1;
+        padding: 5px 4px;
+        border: 1px solid hsl(220 20% 82%);
+        border-radius: 4px;
+        background: hsl(220 20% 95%);
+        color: hsl(220 30% 40%);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.1s,
+          color 0.1s,
+          border-color 0.1s;
+      }
+
+      .tool-buttons button[data-active="true"] {
+        background: hsl(35 85% 50%);
+        color: #fff;
+        border-color: hsl(35 80% 40%);
+      }
+
+      .tool-buttons button:hover:not([data-active="true"]) {
+        background: hsl(220 15% 90%);
+        color: #2c3042;
+      }
+
+      /* ── Focused element display ──────────────────── */
+
+      .focused-item {
+        font-size: 11px;
+        color: #2c3042;
+        padding: 4px 6px;
+        background: hsl(35 70% 95%);
+        border-radius: 3px;
+        border-left: 2px solid hsl(35 90% 50%);
+        margin-bottom: 4px;
+      }
+
+      .focused-empty {
+        font-size: 11px;
+        color: hsl(220 15% 55%);
+        font-style: italic;
+      }
     </style>
   </head>
 
@@ -419,8 +472,25 @@
       <div id="selectionList"></div>
       <p class="panel-hint">
         Click to select &nbsp;·&nbsp; Shift+click to add &nbsp;·&nbsp; Esc to
-        clear
+        clear &nbsp;(Select tool)
       </p>
+
+      <div class="panel-divider"></div>
+
+      <p class="panel-label">TOOLS</p>
+      <div class="tool-buttons">
+        <button id="toolSelect">Select</button>
+        <button id="toolAnchorPicker">Anchor Picker</button>
+      </div>
+
+      <div id="focusedSection" style="display: none">
+        <p class="panel-label">FOCUSED</p>
+        <div id="focusedContent"></div>
+        <p class="panel-hint" style="margin-top: 6px">
+          Click an element to set it as the anchor target
+        </p>
+        <div class="panel-divider"></div>
+      </div>
 
       <div class="panel-divider"></div>
 

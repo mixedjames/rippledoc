@@ -15,7 +15,7 @@ import type {
   BorderEdgeStyle,
 } from "@rippledoc/presentation4";
 import { createEditorView } from "@rippledoc/view-editor";
-import type { ViewMode } from "@rippledoc/view-editor";
+import type { ViewMode, EditorTool } from "@rippledoc/view-editor";
 
 // ── Presentation ──────────────────────────────────────────────────────────────
 
@@ -369,27 +369,86 @@ function refreshSelectionPanel(): void {
 refreshSelectionPanel();
 editor.events.on("selection:changed", refreshSelectionPanel);
 
+// ── Tools ─────────────────────────────────────────────────────────────────────
+
+const multiSelectorTool: EditorTool = {
+  onElementPicked({ element, source }) {
+    if (source.shiftKey) editor.selection.addElement(element);
+    else editor.selection.setElements([element]);
+  },
+};
+
+const anchorPickerTool: EditorTool = {
+  onElementPicked({ element }) {
+    editor.selection.setFocusedElement(element);
+  },
+};
+
+// ── Tool switcher ─────────────────────────────────────────────────────────────
+
+const focusedSection = document.getElementById("focusedSection")!;
+const focusedContent = document.getElementById("focusedContent")!;
+
+function activateTool(toolKey: "select" | "anchorPicker"): void {
+  const isSelect = toolKey === "select";
+  editor.setActiveTool(isSelect ? multiSelectorTool : anchorPickerTool);
+  if (isSelect) {
+    editor.selection.clearFocusedElement();
+    focusedSection.style.display = "none";
+  } else {
+    editor.selection.clear();
+    focusedSection.style.display = "";
+  }
+  document.getElementById("toolSelect")!.dataset.active = String(isSelect);
+  document.getElementById("toolAnchorPicker")!.dataset.active = String(!isSelect);
+}
+
+document
+  .getElementById("toolSelect")!
+  .addEventListener("click", () => activateTool("select"));
+document
+  .getElementById("toolAnchorPicker")!
+  .addEventListener("click", () => activateTool("anchorPicker"));
+
+// ── Focus display ─────────────────────────────────────────────────────────────
+
+function refreshFocusedPanel(): void {
+  focusedContent.replaceChildren();
+  const f = editor.selection.focus;
+  if (f.focused) {
+    const item = document.createElement("div");
+    item.className = "focused-item";
+    item.textContent = describeElement(f.element);
+    focusedContent.appendChild(item);
+  } else {
+    const empty = document.createElement("div");
+    empty.className = "focused-empty";
+    empty.textContent = "nothing focused";
+    focusedContent.appendChild(empty);
+  }
+}
+
+refreshFocusedPanel();
+editor.events.on("focus:changed", refreshFocusedPanel);
+
 // ── Picking ───────────────────────────────────────────────────────────────────
 
-editor.events.on("element:picked", ({ element, source }) => {
-  if (source.shiftKey) {
-    editor.selection.addElement(element);
-  } else {
-    editor.selection.setElements([element]);
-  }
-});
+// Element picking is handled by the active tool (multiSelectorTool or anchorPickerTool).
 
 editor.events.on("section:picked", ({ section, source }) => {
-  if (source.shiftKey) {
-    editor.selection.addSection(section);
-  } else {
-    editor.selection.setSections([section]);
-  }
+  if (source.shiftKey) editor.selection.addSection(section);
+  else editor.selection.setSections([section]);
 });
 
 editor.events.on("key:down", ({ source }) => {
-  if (source.key === "Escape") editor.selection.clear();
+  if (source.key === "Escape") {
+    editor.selection.clear();
+    editor.selection.clearFocusedElement();
+  }
 });
+
+// Install the default tool — must come after all wiring above.
+activateTool("select");
 
 // ── Serialisation ─────────────────────────────────────────────────────────────
 

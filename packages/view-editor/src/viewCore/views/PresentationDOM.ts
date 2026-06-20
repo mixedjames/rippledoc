@@ -145,10 +145,13 @@ export class PresentationDOM {
         outline-offset: 1px;
       }
 
-      /* Focus chrome: box-shadow so it stacks visually with the selection outline. */
+      /* Focus chrome: dashed amber outline signals "pick target". Intentionally
+         overrides the selection outline when an element is both selected and
+         focused, since the focused state is the more operationally relevant one. */
       .viewport[data-mode="editor"] .element.focused,
       .pins[data-mode="editor"] .element.focused {
-        box-shadow: 0 0 0 3px hsl(35 90% 55%);
+        outline: 2px dashed hsl(35 90% 50%);
+        outline-offset: 1px;
       }
     `;
 
