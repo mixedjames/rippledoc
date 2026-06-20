@@ -17,8 +17,9 @@ import { fillToCss, borderToCss } from "./colorToCss";
  * (e.g. "markdown-element") without affecting the content.
  *
  * Selection chrome: the "selected" class is toggled on element_ in response to
- * "selection:changed" events. The element view self-subscribes in its constructor
- * and self-unsubscribes in destroy(), so no external cascade is needed.
+ * "selection:changed" events, and the "focused" class is toggled in response to
+ * "focus:changed". The element view self-subscribes in its constructor and
+ * self-unsubscribes in destroy(), so no external cascade is needed.
  *
  * Picking: pointerdown on element_ emits "element:picked" and "element:pointerDown"
  * through the controller, then focuses the viewport so subsequent key events route
@@ -35,6 +36,7 @@ export class EditorElementView implements p4.ElementView {
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
   private readonly unsubscribeSelection_: () => void;
+  private readonly unsubscribeFocus_: () => void;
 
   constructor(owner: p4.ElementViewOwner, parent: EditorSectionView) {
     this.owner_ = owner;
@@ -67,6 +69,18 @@ export class EditorElementView implements p4.ElementView {
     this.element_.classList.toggle(
       "selected",
       ctrl.selection.hasElement(this.owner_),
+    );
+
+    this.unsubscribeFocus_ = ctrl.events.on("focus:changed", (state) => {
+      this.element_.classList.toggle(
+        "focused",
+        state.focused && state.element === this.owner_,
+      );
+    });
+    const f = ctrl.selection.focus;
+    this.element_.classList.toggle(
+      "focused",
+      f.focused && f.element === this.owner_,
     );
 
     this.initDOM_(parent);
@@ -146,6 +160,7 @@ export class EditorElementView implements p4.ElementView {
     this.element_.removeEventListener("pointerdown", this.onPointerDown_);
     this.element_.removeEventListener("pointerup", this.onPointerUp_);
     this.unsubscribeSelection_();
+    this.unsubscribeFocus_();
     this.pinManager_.disconnect();
     this.element_.remove();
     this.sectionView_.onElementViewDestroyed(this);

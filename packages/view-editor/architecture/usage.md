@@ -13,7 +13,7 @@ const editor = createEditorView({ container: "#app" });
 presentation.attachView(editor.viewFactory);
 ```
 
-`createEditorView` returns an `EditorViewController`. This object is stable for its lifetime — mode, selection, and subscriptions survive `attachView` / `detach` cycles.
+`createEditorView` returns an `EditorViewController`. This object is stable for its lifetime — mode, selection, the active tool, and subscriptions survive `attachView` / `detach` cycles.
 
 ## View modes
 
@@ -45,6 +45,7 @@ Subscribe via `editor.events.on(event, listener)`. Each call returns an unsubscr
 | `key:down`            | `{ source }`             | Keyboard event while the viewport has focus                  |
 | `key:up`              | `{ source }`             | Keyboard event while the viewport has focus                  |
 | `selection:changed`   | `{ elements, sections }` | Any mutation to the selection set                            |
+| `focus:changed`       | `FocusState`             | The focused element changes or is cleared                    |
 
 `element:picked` is the intended hook for click-to-select. The view does **not** mutate the selection itself — that is the caller's responsibility.
 
@@ -59,9 +60,32 @@ editor.events.on("key:down", ({ source }) => {
 });
 ```
 
-## Selection
+## Selection and focus
 
-`editor.selection` is an `EditorSelectionController`. Elements and sections are separate sets that are mutually exclusive — see [selection-model.md](selection-model.md).
+`editor.selection` is an `EditorSelectionController`. Elements and sections are separate sets that are mutually exclusive — see [selection-model.md](selection-model.md) for the full model including the focused element.
+
+## Tools
+
+A tool is a caller-supplied object that receives interactive events while it is the active tool. Install one with `editor.setActiveTool(tool)`; deactivate with `editor.setActiveTool(NullTool)`.
+
+```ts
+import { NullTool } from "@rippledoc/view-editor";
+
+// Anchor-picker tool: single-click sets focused element, nothing else.
+const anchorPickerTool = {
+  onElementPicked({ element }) {
+    editor.selection.setFocusedElement(element);
+  },
+};
+
+editor.setActiveTool(anchorPickerTool);
+// ... later, when done picking:
+editor.setActiveTool(NullTool);
+```
+
+Only one tool is active at a time. Swapping is a single call — no subscription management needed. Global `editor.events.on()` subscribers still receive all events regardless of which tool is active; tools are an additive layer, not a replacement.
+
+Events routed to tools: `element:picked`, `element:pointerDown`, `element:pointerUp`, `section:picked`, `section:pointerDown`, `section:pointerUp`, `key:down`, `key:up`. State-change events (`selection:changed`, `focus:changed`) are not routed to tools.
 
 ## Pin animations
 

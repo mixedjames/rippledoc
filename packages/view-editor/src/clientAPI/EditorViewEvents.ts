@@ -1,4 +1,5 @@
 import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
+import type { FocusState } from "./FocusState";
 
 export type EditorViewEvents = {
   /** Fired on pointerdown over an element. Distinct from pointerDown so
@@ -18,6 +19,8 @@ export type EditorViewEvents = {
     elements: ReadonlySet<Element>;
     sections: ReadonlySet<Section>;
   };
+  /** Fired whenever the focused element changes. Carries the full new focus state. */
+  "focus:changed": FocusState;
 };
 
 /** The subscribe-only surface exposed to external clients via EditorViewController. */

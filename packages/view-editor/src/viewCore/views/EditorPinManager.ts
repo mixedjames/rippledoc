@@ -72,13 +72,22 @@ export class EditorPinManager {
     this.buildDOM_();
     this.buildPins_();
 
-    // Keep the clone's "selected" class in sync with the original while a pin
-    // is active. Stored in unsubscribe_ so disconnect() cleans it up.
+    // Keep the clone's "selected" and "focused" classes in sync with the
+    // original while a pin is active. Stored in unsubscribe_ so disconnect()
+    // cleans them up.
     const ctrl = this.presentationView_.controller;
     this.unsubscribe_.push(
       ctrl.events.on("selection:changed", ({ elements }) => {
         if (this.activePin_ !== null) {
           this.clone_.classList.toggle("selected", elements.has(this.owner_));
+        }
+      }),
+      ctrl.events.on("focus:changed", (state) => {
+        if (this.activePin_ !== null) {
+          this.clone_.classList.toggle(
+            "focused",
+            state.focused && state.element === this.owner_,
+          );
         }
       }),
     );

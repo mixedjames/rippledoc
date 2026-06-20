@@ -71,4 +71,50 @@ The event is fired once per logical mutation, not once per object added or remov
 
 ## Pin clones and selection
 
-When an element is pinned, its clone in the non-scrolling overlay must stay visually in sync with the original. `EditorPinManager` subscribes to `selection:changed` and toggles `"selected"` on the active clone whenever a pin transition is in progress.
+When an element is pinned, its clone in the non-scrolling overlay must stay visually in sync with the original. `EditorPinManager` subscribes to `selection:changed` and toggles `"selected"` on the active clone whenever a pin transition is in progress. It subscribes to `focus:changed` for the same reason and toggles `"focused"` on the clone in parallel.
+
+## The focused element
+
+Alongside the selection sets, the controller tracks a single _focused element_ — the element that is the current target for a specific operation (e.g. the element being anchored to). It is independent of the selection sets; callers decide whether focus should track selection or not.
+
+### Type
+
+`FocusState` is a discriminated union that avoids `null` in the public interface:
+
+```ts
+type FocusState =
+  | { readonly focused: true; readonly element: Element }
+  | { readonly focused: false };
+```
+
+TypeScript narrows the type on `if (state.focused)`, so `state.element` is only accessible inside the true branch — a compile-time guarantee rather than a runtime guard.
+
+### Controller interface
+
+Added to `EditorSelectionController`:
+
+```ts
+setFocusedElement(element: Element): void;
+clearFocusedElement(): void;
+readonly focus: FocusState;
+```
+
+`setFocusedElement` is idempotent — calling it twice with the same element fires `"focus:changed"` only once. `clearFocusedElement` is a no-op (no event) when nothing is focused.
+
+### The focus:changed event
+
+```ts
+"focus:changed": FocusState;
+```
+
+The payload _is_ the new `FocusState`, so listeners can switch on `state.focused` and either read `state.element` or know the focus was cleared — no second event type needed.
+
+### Focus chrome
+
+Each `EditorElementView` self-subscribes to `"focus:changed"` in its constructor (same pattern as `"selection:changed"`) and toggles a `"focused"` CSS class on its root div. The CSS rule uses `box-shadow` rather than `outline` so that focus and selection chrome can both be visible simultaneously on the same element:
+
+```css
+.viewport[data-mode="editor"] .element.focused {
+  box-shadow: 0 0 0 3px hsl(35 90% 55%);
+}
+```

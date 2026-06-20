@@ -7,3 +7,6 @@ export type {
   EditorViewEvents,
 } from "./clientAPI/EditorViewEvents";
 export type { ViewMode } from "./clientAPI/ViewMode";
+export type { FocusState } from "./clientAPI/FocusState";
+export type { EditorTool } from "./clientAPI/EditorTool";
+export { NullTool } from "./clientAPI/EditorTool";

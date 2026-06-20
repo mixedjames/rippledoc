@@ -7,6 +7,8 @@ import type {
 } from "../clientAPI/EditorViewEvents";
 import type { EditorSelectionController } from "../clientAPI/EditorSelectionController";
 import type { EditorViewController } from "../clientAPI/EditorViewController";
+import type { FocusState } from "../clientAPI/FocusState";
+import { NullTool, type EditorTool } from "../clientAPI/EditorTool";
 
 /**
  * What the controller needs from whichever presentation view is currently
@@ -27,6 +29,7 @@ export class EditorViewControllerImpl implements EditorViewController {
   private readonly sectionSet_: Set<p4.Section> = new Set();
   private readonly selection_: EditorSelectionControllerImpl;
   private readonly emitter_ = new TypedEmitter<EditorViewEvents>();
+  private activeTool_: EditorTool = NullTool;
 
   // Null when no presentation view is currently attached.
   private view_: AttachedView | null = null;
@@ -69,6 +72,14 @@ export class EditorViewControllerImpl implements EditorViewController {
     return this.selection_;
   }
 
+  setActiveTool(tool: EditorTool): void {
+    this.activeTool_ = tool;
+  }
+
+  get activeTool(): EditorTool {
+    return this.activeTool_;
+  }
+
   // ── Called by EditorPresentationView ────────────────────────────────────────
 
   registerView(view: AttachedView): void {
@@ -89,6 +100,51 @@ export class EditorViewControllerImpl implements EditorViewController {
     payload: EditorViewEvents[K],
   ): void {
     this.emitter_.emit(event, payload);
+    this.dispatchToTool_(event, payload);
+  }
+
+  // The payload parameter is typed as unknown so the switch can use casts that
+  // are sound (the case already constrains the event key). Kept private so the
+  // unsafety is contained to this module.
+  private dispatchToTool_(
+    event: keyof EditorViewEvents,
+    payload: unknown,
+  ): void {
+    const tool = this.activeTool_;
+    switch (event) {
+      case "element:picked":
+        tool.onElementPicked?.(payload as EditorViewEvents["element:picked"]);
+        break;
+      case "element:pointerDown":
+        tool.onElementPointerDown?.(
+          payload as EditorViewEvents["element:pointerDown"],
+        );
+        break;
+      case "element:pointerUp":
+        tool.onElementPointerUp?.(
+          payload as EditorViewEvents["element:pointerUp"],
+        );
+        break;
+      case "section:picked":
+        tool.onSectionPicked?.(payload as EditorViewEvents["section:picked"]);
+        break;
+      case "section:pointerDown":
+        tool.onSectionPointerDown?.(
+          payload as EditorViewEvents["section:pointerDown"],
+        );
+        break;
+      case "section:pointerUp":
+        tool.onSectionPointerUp?.(
+          payload as EditorViewEvents["section:pointerUp"],
+        );
+        break;
+      case "key:down":
+        tool.onKeyDown?.(payload as EditorViewEvents["key:down"]);
+        break;
+      case "key:up":
+        tool.onKeyUp?.(payload as EditorViewEvents["key:up"]);
+        break;
+    }
   }
 
   // ── Called by EditorSelectionControllerImpl ──────────────────────────────────
@@ -99,6 +155,10 @@ export class EditorViewControllerImpl implements EditorViewController {
       sections: this.sectionSet_ as ReadonlySet<p4.Section>,
     });
   }
+
+  onFocusChanged(state: FocusState): void {
+    this.emitter_.emit("focus:changed", state);
+  }
 }
 
 // Private to this module — consumers see only EditorSelectionController.
@@ -106,6 +166,7 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   private readonly ctrl_: EditorViewControllerImpl;
   private readonly elementSet_: Set<p4.Element>;
   private readonly sectionSet_: Set<p4.Section>;
+  private focusedElement_: p4.Element | null = null;
 
   constructor(
     ctrl: EditorViewControllerImpl,
@@ -193,6 +254,28 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
       this.sectionSet_.clear();
       this.ctrl_.onSelectionChanged();
     }
+  }
+
+  // ── Focus ────────────────────────────────────────────────────────────────────
+
+  setFocusedElement(element: p4.Element): void {
+    if (this.focusedElement_ !== element) {
+      this.focusedElement_ = element;
+      this.ctrl_.onFocusChanged({ focused: true, element });
+    }
+  }
+
+  clearFocusedElement(): void {
+    if (this.focusedElement_ !== null) {
+      this.focusedElement_ = null;
+      this.ctrl_.onFocusChanged({ focused: false });
+    }
+  }
+
+  get focus(): FocusState {
+    return this.focusedElement_ !== null
+      ? { focused: true, element: this.focusedElement_ }
+      : { focused: false };
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────

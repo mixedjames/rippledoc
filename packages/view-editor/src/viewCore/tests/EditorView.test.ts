@@ -78,6 +78,17 @@ describe("pre-attach validity", () => {
       getViewport(container).querySelectorAll(".element.selected");
     expect(selected).toHaveLength(1);
   });
+
+  it("focus set before attachView is reflected in element CSS classes on attach", () => {
+    const section = presentation.root.addSection();
+    const el = section.addMarkdownElement("hello");
+
+    editor.selection.setFocusedElement(el);
+    presentation.attachView(editor.viewFactory);
+
+    const focused = getViewport(container).querySelectorAll(".element.focused");
+    expect(focused).toHaveLength(1);
+  });
 });
 
 // ── Mode → DOM ────────────────────────────────────────────────────────────────
@@ -165,6 +176,55 @@ describe("selection — CSS class on element divs", () => {
     expect(selected).toHaveLength(1);
     // el1 deselected, el2 selected — verify by checking element count vs. selected count
     expect(getElementDivs(container)).toHaveLength(2);
+  });
+});
+
+// ── Focus → DOM ───────────────────────────────────────────────────────────────
+
+describe("focus — CSS class on element divs", () => {
+  let el1: Element;
+  let el2: Element;
+
+  beforeEach(() => {
+    const section = presentation.root.addSection();
+    el1 = section.addMarkdownElement("one");
+    el2 = section.addMarkdownElement("two");
+    presentation.attachView(editor.viewFactory);
+  });
+
+  it("no element div has the focused class initially", () => {
+    expect(getViewport(container).querySelector(".element.focused")).toBeNull();
+  });
+
+  it("setFocusedElement adds the focused class to the matching element div only", () => {
+    editor.selection.setFocusedElement(el1);
+    expect(
+      getViewport(container).querySelectorAll(".element.focused"),
+    ).toHaveLength(1);
+  });
+
+  it("setFocusedElement on a second element moves the focused class", () => {
+    editor.selection.setFocusedElement(el1);
+    editor.selection.setFocusedElement(el2);
+    const focused = getViewport(container).querySelectorAll(".element.focused");
+    expect(focused).toHaveLength(1);
+  });
+
+  it("clearFocusedElement removes the focused class", () => {
+    editor.selection.setFocusedElement(el1);
+    editor.selection.clearFocusedElement();
+    expect(getViewport(container).querySelector(".element.focused")).toBeNull();
+  });
+
+  it("focused class is independent of selected class", () => {
+    editor.selection.addElement(el1);
+    editor.selection.setFocusedElement(el2);
+    expect(
+      getViewport(container).querySelectorAll(".element.selected"),
+    ).toHaveLength(1);
+    expect(
+      getViewport(container).querySelectorAll(".element.focused"),
+    ).toHaveLength(1);
   });
 });
 

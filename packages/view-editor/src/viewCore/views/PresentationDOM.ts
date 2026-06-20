@@ -144,6 +144,12 @@ export class PresentationDOM {
         outline: 2px solid hsl(220 80% 55%);
         outline-offset: 1px;
       }
+
+      /* Focus chrome: box-shadow so it stacks visually with the selection outline. */
+      .viewport[data-mode="editor"] .element.focused,
+      .pins[data-mode="editor"] .element.focused {
+        box-shadow: 0 0 0 3px hsl(35 90% 55%);
+      }
     `;
 
     // All layers fill the container absolutely.

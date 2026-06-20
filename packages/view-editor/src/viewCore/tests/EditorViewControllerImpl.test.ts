@@ -9,6 +9,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
+import { NullTool, type EditorTool } from "../../clientAPI/EditorTool";
 
 // A minimal stand-in for AttachedView — satisfies the structural interface.
 const makeViewSpy = () => ({ applyMode: vi.fn() });
@@ -385,6 +386,111 @@ describe("selection:changed payload", () => {
   });
 });
 
+// ── Focused element ───────────────────────────────────────────────────────────
+
+describe("focused element — initial state", () => {
+  it("focus starts as { focused: false }", () => {
+    const ctrl = new EditorViewControllerImpl();
+    expect(ctrl.selection.focus).toEqual({ focused: false });
+  });
+});
+
+describe("focused element — setFocusedElement", () => {
+  it("setFocusedElement makes focus return { focused: true, element }", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const el = makeEl();
+    ctrl.selection.setFocusedElement(el);
+    const f = ctrl.selection.focus;
+    expect(f.focused).toBe(true);
+    if (f.focused) expect(f.element).toBe(el);
+  });
+
+  it("setFocusedElement fires focus:changed with the new element", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const el = makeEl();
+    const listener = vi.fn();
+    ctrl.events.on("focus:changed", listener);
+
+    ctrl.selection.setFocusedElement(el);
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith({ focused: true, element: el });
+  });
+
+  it("setFocusedElement is idempotent — same element twice fires only one event", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const el = makeEl();
+    const listener = vi.fn();
+    ctrl.events.on("focus:changed", listener);
+
+    ctrl.selection.setFocusedElement(el);
+    ctrl.selection.setFocusedElement(el);
+
+    expect(listener).toHaveBeenCalledOnce();
+  });
+
+  it("setFocusedElement on a different element fires one event", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const el1 = makeEl();
+    const el2 = makeEl();
+    ctrl.selection.setFocusedElement(el1);
+    const listener = vi.fn();
+    ctrl.events.on("focus:changed", listener);
+
+    ctrl.selection.setFocusedElement(el2);
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith({ focused: true, element: el2 });
+  });
+});
+
+describe("focused element — clearFocusedElement", () => {
+  it("clearFocusedElement returns focus to { focused: false }", () => {
+    const ctrl = new EditorViewControllerImpl();
+    ctrl.selection.setFocusedElement(makeEl());
+    ctrl.selection.clearFocusedElement();
+    expect(ctrl.selection.focus).toEqual({ focused: false });
+  });
+
+  it("clearFocusedElement fires focus:changed with { focused: false }", () => {
+    const ctrl = new EditorViewControllerImpl();
+    ctrl.selection.setFocusedElement(makeEl());
+    const listener = vi.fn();
+    ctrl.events.on("focus:changed", listener);
+
+    ctrl.selection.clearFocusedElement();
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener).toHaveBeenCalledWith({ focused: false });
+  });
+
+  it("clearFocusedElement when nothing is focused fires no event", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const listener = vi.fn();
+    ctrl.events.on("focus:changed", listener);
+
+    ctrl.selection.clearFocusedElement();
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe("focused element — focus:changed payload", () => {
+  it("payload after setFocusedElement reflects the new element", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const el = makeEl();
+    let received: typeof ctrl.selection.focus | null = null;
+    ctrl.events.on("focus:changed", (state) => {
+      received = state;
+    });
+
+    ctrl.selection.setFocusedElement(el);
+
+    expect(received).not.toBeNull();
+    expect(received!.focused).toBe(true);
+  });
+});
+
 // ── events.on / unsubscribe ──────────────────────────────────────────────────
 
 describe("events", () => {
@@ -411,5 +517,191 @@ describe("events", () => {
 
     expect(listener).toHaveBeenCalledOnce();
     expect(listener).toHaveBeenCalledWith({ source: fakeEvent });
+  });
+});
+
+// ── Tool model ────────────────────────────────────────────────────────────────
+
+describe("tool model — initial state", () => {
+  it("activeTool starts as NullTool", () => {
+    const ctrl = new EditorViewControllerImpl();
+    expect(ctrl.activeTool).toBe(NullTool);
+  });
+});
+
+describe("tool model — setActiveTool", () => {
+  it("setActiveTool replaces the active tool", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const tool: EditorTool = {};
+    ctrl.setActiveTool(tool);
+    expect(ctrl.activeTool).toBe(tool);
+  });
+
+  it("setActiveTool(NullTool) deactivates a real tool", () => {
+    const ctrl = new EditorViewControllerImpl();
+    ctrl.setActiveTool({});
+    ctrl.setActiveTool(NullTool);
+    expect(ctrl.activeTool).toBe(NullTool);
+  });
+});
+
+describe("tool model — event dispatch", () => {
+  it("active tool receives element:picked events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onElementPicked: handler });
+
+    const el = makeEl();
+    const e = new PointerEvent("pointerdown");
+    ctrl.emit("element:picked", { element: el, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ element: el, source: e });
+  });
+
+  it("active tool receives element:pointerDown events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onElementPointerDown: handler });
+
+    const el = makeEl();
+    const e = new PointerEvent("pointerdown");
+    ctrl.emit("element:pointerDown", { element: el, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ element: el, source: e });
+  });
+
+  it("active tool receives element:pointerUp events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onElementPointerUp: handler });
+
+    const el = makeEl();
+    const e = new PointerEvent("pointerup");
+    ctrl.emit("element:pointerUp", { element: el, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ element: el, source: e });
+  });
+
+  it("active tool receives section:picked events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onSectionPicked: handler });
+
+    const sec = makeSec();
+    const e = new PointerEvent("pointerdown");
+    ctrl.emit("section:picked", { section: sec, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ section: sec, source: e });
+  });
+
+  it("active tool receives section:pointerDown events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onSectionPointerDown: handler });
+
+    const sec = makeSec();
+    const e = new PointerEvent("pointerdown");
+    ctrl.emit("section:pointerDown", { section: sec, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ section: sec, source: e });
+  });
+
+  it("active tool receives section:pointerUp events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onSectionPointerUp: handler });
+
+    const sec = makeSec();
+    const e = new PointerEvent("pointerup");
+    ctrl.emit("section:pointerUp", { section: sec, source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).toHaveBeenCalledWith({ section: sec, source: e });
+  });
+
+  it("active tool receives key:down events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onKeyDown: handler });
+
+    const e = new KeyboardEvent("keydown", { key: "Escape" });
+    ctrl.emit("key:down", { source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("active tool receives key:up events", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    ctrl.setActiveTool({ onKeyUp: handler });
+
+    const e = new KeyboardEvent("keyup", { key: "Escape" });
+    ctrl.emit("key:up", { source: e });
+
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("tool receives events only for the methods it implements", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const handler = vi.fn();
+    // Tool implements only onElementPicked, not onKeyDown.
+    ctrl.setActiveTool({ onElementPicked: handler });
+
+    const e = new KeyboardEvent("keydown");
+    ctrl.emit("key:down", { source: e });
+
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("inactive tool receives no events after being replaced", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const oldHandler = vi.fn();
+    ctrl.setActiveTool({ onElementPicked: oldHandler });
+    ctrl.setActiveTool(NullTool);
+
+    ctrl.emit("element:picked", {
+      element: makeEl(),
+      source: new PointerEvent("pointerdown"),
+    });
+
+    expect(oldHandler).not.toHaveBeenCalled();
+  });
+
+  it("global event subscribers still fire when a tool is active", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const globalListener = vi.fn();
+    const toolHandler = vi.fn();
+    ctrl.events.on("element:picked", globalListener);
+    ctrl.setActiveTool({ onElementPicked: toolHandler });
+
+    ctrl.emit("element:picked", {
+      element: makeEl(),
+      source: new PointerEvent("pointerdown"),
+    });
+
+    expect(globalListener).toHaveBeenCalledOnce();
+    expect(toolHandler).toHaveBeenCalledOnce();
+  });
+
+  it("focus:changed and selection:changed are not routed to the tool", () => {
+    const ctrl = new EditorViewControllerImpl();
+    // A tool that intercepts everything it can — no method for state events.
+    const handler = vi.fn();
+    ctrl.setActiveTool({
+      onElementPicked: handler,
+      onKeyDown: handler,
+    });
+
+    // Trigger a state event directly via selection mutation.
+    ctrl.selection.addElement(makeEl());
+    ctrl.selection.setFocusedElement(makeEl());
+
+    // handler must not have been called by state events.
+    expect(handler).not.toHaveBeenCalled();
   });
 });
