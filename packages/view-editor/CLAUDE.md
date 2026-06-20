@@ -11,7 +11,7 @@ See [`packages/presentation4/CLAUDE.md`](../presentation4/CLAUDE.md) for the ful
 - **Selection chrome** — a `selected` CSS class toggled on element/section divs
 - **Pointer picking** — `element:picked` / `section:picked` events for click-to-select
 - **Keyboard forwarding** — `key:down` / `key:up` events while the viewport has focus
-- **View modes** — `editor`, `player`, `anchors` — surfaced as `data-mode` on the viewport
+- **View modes** — `editor`, `player` — surfaced as `data-mode` on the viewport
 - **Pin animation** — the non-scrolling clone technique that makes pinned elements appear sticky
 
 It does not implement selection policy. Callers decide what picking means (set vs. add vs. ignore).

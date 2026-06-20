@@ -16,6 +16,7 @@ export default [
     ignores: [
       "node_modules",
       "apps",
+      "legacy",
       "**/dist/**",
       "**/docs/**",
       "**/build/**",

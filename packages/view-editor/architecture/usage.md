@@ -17,16 +17,15 @@ presentation.attachView(editor.viewFactory);
 
 ## View modes
 
-Three modes control what the view renders:
+Two modes control what the view renders:
 
-| Mode        | Behaviour                                                                                    |
-| ----------- | -------------------------------------------------------------------------------------------- |
-| `"editor"`  | Full rendering + selection chrome. Default.                                                  |
-| `"player"`  | Full rendering, selection chrome hidden. Intended for read-only preview.                     |
-| `"anchors"` | Element content hidden; only element/section outlines visible. For anchor editing workflows. |
+| Mode       | Behaviour                                                   |
+| ---------- | ----------------------------------------------------------- |
+| `"editor"` | Full rendering + selection chrome. Default.                 |
+| `"player"` | Full rendering, selection chrome hidden. Read-only preview. |
 
 ```ts
-editor.setMode("anchors");
+editor.setMode("player");
 ```
 
 Mode is surfaced as `data-mode` on the viewport element inside the Shadow DOM. CSS rules react to it without a JS cascade through the view hierarchy.

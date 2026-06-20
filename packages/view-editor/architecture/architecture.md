@@ -64,14 +64,9 @@ container (caller-supplied)
 Mode is stored on `EditorViewControllerImpl` and applied to the DOM via `data-mode` on the `viewport` and `pins` elements. CSS rules inside the Shadow DOM react declaratively:
 
 ```css
-/* Hide selection chrome in player mode */
-.viewport:not([data-mode="player"]) .element.selected {
-  outline: ...;
-}
-
-/* Anchors mode: hide rendered content, leave element boxes visible */
-[data-mode="anchors"] .element-content {
-  display: none;
+/* Selection chrome visible in editor mode only */
+.viewport[data-mode="editor"] .element.selected {
+  outline: 2px solid hsl(220 80% 55%);
 }
 ```
 

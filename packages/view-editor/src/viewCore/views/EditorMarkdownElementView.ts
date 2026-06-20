@@ -29,8 +29,8 @@ export class EditorMarkdownElementView extends EditorElementView {
   }
 
   private syncContent_(): void {
-    // Render into the content wrapper so anchors mode can hide it without
-    // hiding the element's outer box (border, position).
+    // Render into the content wrapper, keeping it separate from the outer
+    // positioning box (border, position).
     this.contentElement.replaceChildren(
       parseMarkdown(this.markdownOwner_.markdown),
     );

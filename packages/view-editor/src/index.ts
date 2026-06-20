@@ -7,4 +7,3 @@ export type {
   EditorViewEvents,
 } from "./clientAPI/EditorViewEvents";
 export type { ViewMode } from "./clientAPI/ViewMode";
-export { isAnchorsMode } from "./clientAPI/ViewMode";

@@ -14,7 +14,7 @@ import type {
   FontWeight,
   BorderEdgeStyle,
 } from "@rippledoc/presentation4";
-import { createEditorView, isAnchorsMode } from "@rippledoc/view-editor";
+import { createEditorView } from "@rippledoc/view-editor";
 import type { ViewMode } from "@rippledoc/view-editor";
 
 // ── Presentation ──────────────────────────────────────────────────────────────
@@ -165,21 +165,15 @@ presentation.attachView(editor.viewFactory);
 
 // ── Mode switcher ─────────────────────────────────────────────────────────────
 
-// Axis-specific sub-modes (anchors-h/v/s) are set internally by the panel —
-// they are not user-selectable from the toolbar. Map them to "anchors" so the
-// anchors button stays highlighted during anchor picking.
-const modeButtonIds: Partial<Record<ViewMode, string>> = {
+const modeButtonIds: Record<ViewMode, string> = {
   editor: "modeEditor",
-  anchors: "modeAnchors",
   player: "modePlayer",
 };
 
 function setMode(mode: ViewMode): void {
   editor.setMode(mode);
-  const buttonMode = isAnchorsMode(mode) ? "anchors" : mode;
   for (const [m, id] of Object.entries(modeButtonIds)) {
-    const btn = document.getElementById(id!)!;
-    btn.dataset.active = String(m === buttonMode);
+    document.getElementById(id)!.dataset.active = String(m === mode);
   }
 }
 
@@ -395,26 +389,6 @@ editor.events.on("section:picked", ({ section, source }) => {
 
 editor.events.on("key:down", ({ source }) => {
   if (source.key === "Escape") editor.selection.clear();
-});
-
-// ── Anchor picked ─────────────────────────────────────────────────────────────
-
-const anchorPickedEl = document.getElementById("anchorPicked")!;
-const anchorPickedEmpty = document.getElementById("anchorPickedEmpty")!;
-
-editor.events.on("anchor:picked", ({ anchor }) => {
-  const deps = anchor.expression.dependencies.length;
-  const typeLabel = deps === 0 ? "const" : deps === 1 ? "ref" : "derived";
-  const depCount = anchor.dependents.length;
-
-  anchorPickedEmpty.style.display = "none";
-
-  anchorPickedEl.querySelectorAll(".sel-item").forEach((n) => n.remove());
-
-  const item = document.createElement("div");
-  item.className = "sel-item";
-  item.textContent = `value: ${anchor.value.toFixed(2)}  ·  ${typeLabel}  ·  ${depCount} dependent${depCount !== 1 ? "s" : ""}`;
-  anchorPickedEl.appendChild(item);
 });
 
 // ── Serialisation ─────────────────────────────────────────────────────────────

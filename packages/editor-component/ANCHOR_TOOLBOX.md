@@ -108,22 +108,6 @@ Anchors are only editable when **exactly one** element or section is selected.
 
 ---
 
-## View mode
-
-`view-editor` has a `"anchors"` ViewMode (alongside `"editor"` and `"player"`).
-In anchors mode:
-
-- Element content is hidden (`display:none` on `.element-content`) so only element boxes
-  and anchor handles are visible.
-- Elements get a dashed outline and `overflow:visible` so handles on small elements can
-  escape the box.
-- Selection chrome is suppressed (selection is preserved but not shown).
-- Element and section pointer picking is suppressed — handles handle picking instead.
-
-Switch via `state.viewController?.setMode("anchors")` / `.setMode("editor")`.
-
----
-
 ## What is done
 
 ### CorePresentation auto-layout fix
@@ -143,12 +127,11 @@ anchor edits visually update without the user needing to resize the window.
   Vertical only for sections).
 - Each row: name | current value | expression description.
 - `top` on sections shows as locked (non-clickable, dimmed).
-- Clicking a non-locked row enters the detail view and switches the view mode to
-  `"anchors"`.
+- Clicking a non-locked row enters the detail view.
 
 **Detail view** (`renderDetail_`):
 
-- Back button (clears `detail_` and `detailType_`, restores `"editor"` mode).
+- Back button (clears `detail_`, `detailType_`, `anchorRePickMode_`, and `anchorPickingTarget_`).
 - Current value row (read-only).
 - Branches on whether the expression is derived:
   - **Derived anchor** → `renderSwapDerivedDropdown_` only (no type selector).
@@ -169,7 +152,7 @@ anchor edits visually update without the user needing to resize the window.
 - After commit, `onDone` calls `this.update()` — the formerly-derived anchor is now
   constant, so the detail view re-renders with type controls.
 
-**Constant editing** (`renderConstantEdit_`):
+**Constant editing** (inline in `renderDetail_` via `renderNumberEdit_`):
 
 - Number input; auto-focused on first entry into detail.
 - Commits on blur or Enter; Escape cancels. Double-commit prevented with `committed` flag.
@@ -191,64 +174,43 @@ All call `onDone()` in both `execute` and `undo` — `AnchorsPanel` passes
 - `detail_: DetailState | null` — null = list view; non-null = detail view.
 - `detailType_: ExprType | null` — user's type override; null = use actual type.
 - `focusOnRender_: boolean` — auto-focus only on first entry into detail.
+- `anchorRePickMode_: boolean` — true when the user has clicked "change" to re-pick a
+  base anchor; forces `renderAnchorPicking_` even when an expression is already set.
+- `anchorPickingTarget_: Element | Section | null` — the element/section chosen in Stage 1
+  of the two-stage anchor chooser; null means no target chosen yet.
 
-### Chunk C — View mode toggle
+### Chunk D — Anchor reference picking (two-stage chooser)
 
-- Entering detail view → `viewController.setMode("anchors")`.
-- Back button → `viewController.setMode("editor")`.
-- Subject change (selection moves while in detail) → `viewController.setMode("editor")`.
+`AnchorsPanel` uses a two-stage sidebar chooser for Anchored and Fraction expressions.
+Viewport anchor handle chips are not used for picking.
 
-### Chunk D — Anchor reference picking
+- `renderAnchorPicking_` — shown when the type is "Anchored" or "Fraction" and either
+  no expression is set yet OR `anchorRePickMode_` is true (user clicked "change").
+  - **Stage 1** — "element" dropdown listing all elements/sections in the presentation that
+    have ≥1 valid anchor for the current axis group. Subject itself is excluded to prevent
+    circular refs. Labels: section name for sections, `"sectionName › elementName"` for
+    elements. On selection, sets `anchorPickingTarget_` and re-renders.
+  - **Stage 2** — "anchor" dropdown (only once a target is chosen) listing the valid slot
+    names for the target (filtered by `validSlotsForGroup`). On selection, looks up
+    `target.anchors[slot]`, builds a ref op via `buildHRefOp` / `buildVRefOp`, and commits.
+    After commit, `anchorRePickMode_` and `anchorPickingTarget_` are cleared.
+- `renderOffsetEdit_` — shown once an `OffsetAnchorExpression` is set. Displays the base
+  anchor as `"name · slot  (value)"` (resolved via `findAnchorLabel`) and a "change" button
+  that sets `anchorRePickMode_ = true` to re-enter picking.
+- `renderFractionEdit_` — same pattern for `FractionAnchorExpression`.
+- `renderNumberEdit_` — shared number-input helper used by constant, offset, and fraction editing.
 
-`view-editor` renders anchor handle chips on every element (6 handles) and section
-(3 handles; top is system — dimmed, non-interactive). In `"anchors"` mode the handles
-are visible; clicking one emits `"anchor:picked": { anchor, source }`.
+**Helpers** (module-level):
 
-`AnchorsPanel` wires this up:
-
-- `renderAnchorPicking_` — shown when the type is "Anchored" or "Fraction" but no
-  base anchor has been set yet. Subscribes to `"anchor:picked"` on the view controller;
-  validates the size-slot constraint (width/height slots may only reference size anchors).
-  On pick, builds a ref op via `buildHRefOp` / `buildVRefOp` and commits.
-- `renderOffsetEdit_` — shown once an `OffsetAnchorExpression` is set. Displays the
-  base anchor's current value and a number input for the offset.
-- `renderFractionEdit_` — same pattern for `FractionAnchorExpression`, editing the fraction.
-- `renderNumberEdit_` — shared number-input helper used by both.
-- `anchorPickSub_` — subscription handle cleared at the top of every `update()` and in
-  `dispose()` so stale listeners never accumulate.
+- `slotPickGroup(slot)` — maps a slot name to pick group `"h"` | `"v"` | `"s"`.
+- `validSlotsForGroup(group, target)` — returns the slot names on `target` valid for `group`.
+  Sections have no horizontal slots; only vertical slots and height.
+- `findAnchorLabel(anchor, pres)` — scans the presentation tree to produce a human-readable
+  label `"ownerName · slot"` for a given anchor object.
 
 ---
 
 ## What is NOT done
-
-### TODO — Axis constraint for anchor picking
-
-Currently the only picking constraint is the size-slot rule (width/height may only
-reference width/height anchors). There is no positional axis constraint: a `left` slot
-could pick a `top` anchor, which is semantically odd.
-
-Decision needed: enforce that horizontal slots (left, right, width) may only reference
-horizontal anchors, and vertical slots (top, bottom, height) may only reference vertical
-anchors. The `isSizeAnchor` helper in `AnchorsPanel.ts` and the `renderAnchorPicking_`
-filter are the places to add this.
-
-### TODO — Handle highlight during picking
-
-All anchor handles look identical in `"anchors"` mode. When the panel is waiting for a
-pick (i.e. `renderAnchorPicking_` is active), handles that are _invalid_ picks (wrong
-axis if axis constraint is added, or the slot being edited itself) could be visually
-dimmed or disabled. Valid picks could be highlighted with a different colour.
-
-This requires the `AnchorsPanel` to communicate picking state to the view — a CSS class
-or data attribute on the viewport, or a dedicated method on `EditorViewController`.
-
-### TODO — Re-pick base anchor
-
-In `renderOffsetEdit_` and `renderFractionEdit_`, the base anchor is shown read-only.
-There is no affordance for the user to pick a different base without first switching the
-type to "Constant" and back to "Anchored"/"Fraction". A small "re-pick" button next to
-the base value row would enter picking mode again for just the base, keeping the existing
-offset/fraction value.
 
 ### TODO — Content-derived dimension support in AnchorsPanel
 
@@ -288,8 +250,6 @@ Anchor-panel classes live in `EditorStyles.ts` under the `/* ── Anchors pane
 - `.re-anchor-back`, `.re-anchor-detail-divider`
 - `.re-anchor-edit-row`, `.re-anchor-select`
 
-Anchor handle styles live inside the shadow DOM in `PresentationDOM.ts`:
+Panel-internal button:
 
-- `.anchor-handle` — hidden by default; `display:flex` in `[data-mode="anchors"]`
-- `.anchor-handle--system` — grey, `cursor:default`, no click handler
-- `.anchor-handle__type` — small type label below the slot name
+- `.re-anchor-repick` — small inline "change" button on the base-anchor row in offset/fraction editing

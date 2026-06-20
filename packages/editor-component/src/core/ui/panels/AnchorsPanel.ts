@@ -308,9 +308,11 @@ export class AnchorsPanel implements SidebarPanel {
   // True only on the first render after entering a detail view — drives auto-focus.
   private focusOnRender_ = false;
 
-  // Active subscription to "anchor:picked". Cleared at the top of every
-  // update() and in dispose() so stale listeners never accumulate.
-  private anchorPickSub_: (() => void) | null = null;
+  // True while the user has explicitly requested a re-pick (clicked "change").
+  // Forces renderAnchorPicking_ even when the expression is already set.
+  private anchorRePickMode_ = false;
+  // The element/section chosen in Stage 1 of the two-stage anchor chooser.
+  private anchorPickingTarget_: Element | Section | null = null;
 
   constructor(state: EditorState, push: PushOperation) {
     this.state_ = state;
@@ -320,8 +322,6 @@ export class AnchorsPanel implements SidebarPanel {
   }
 
   update(): void {
-    this.anchorPickSub_?.();
-    this.anchorPickSub_ = null;
     this.element.innerHTML = "";
     const sel = this.state_.viewController?.selection;
     if (!sel) {
@@ -344,7 +344,8 @@ export class AnchorsPanel implements SidebarPanel {
     // Clear drill-down when the subject changes.
     if (this.detail_ && this.detail_.subject !== subject) {
       this.detail_ = null;
-      this.state_.viewController?.setMode("editor");
+      this.anchorRePickMode_ = false;
+      this.anchorPickingTarget_ = null;
     }
 
     if (!subject) {
@@ -366,10 +367,7 @@ export class AnchorsPanel implements SidebarPanel {
     }
   }
 
-  dispose(): void {
-    this.anchorPickSub_?.();
-    this.anchorPickSub_ = null;
-  }
+  dispose(): void {}
 
   // ── List view ─────────────────────────────────────────────────────────────
 
@@ -453,7 +451,6 @@ export class AnchorsPanel implements SidebarPanel {
       row.addEventListener("click", () => {
         this.detail_ = { subject, entry };
         this.focusOnRender_ = true;
-        this.state_.viewController?.setMode("anchors");
         this.update();
       });
     }
@@ -464,19 +461,14 @@ export class AnchorsPanel implements SidebarPanel {
   // ── Detail view ───────────────────────────────────────────────────────────
 
   private renderDetail_(subject: Element | Section, entry: AnchorEntry): void {
-    // Show only the handles relevant to this slot's axis throughout the detail
-    // view — not just during picking. Plain "anchors" mode shows all handles,
-    // which is cluttered when drilling into a single slot.
-    const modeMap = { h: "anchors-h", v: "anchors-v", s: "anchors-s" } as const;
-    this.state_.viewController?.setMode(modeMap[slotPickGroup(entry.name)]);
-
     const back = document.createElement("button");
     back.className = "re-anchor-back";
     back.textContent = `← ${entry.name}`;
     back.addEventListener("click", () => {
       this.detail_ = null;
       this.detailType_ = null;
-      this.state_.viewController?.setMode("editor");
+      this.anchorRePickMode_ = false;
+      this.anchorPickingTarget_ = null;
       this.update();
     });
     this.element.appendChild(back);
@@ -538,13 +530,13 @@ export class AnchorsPanel implements SidebarPanel {
         },
       });
     } else if (effectiveType === "offset") {
-      if (expr instanceof OffsetAnchorExpression) {
+      if (expr instanceof OffsetAnchorExpression && !this.anchorRePickMode_) {
         this.renderOffsetEdit_(subject, entry, expr);
       } else {
         this.renderAnchorPicking_(subject, entry, "offset");
       }
     } else {
-      if (expr instanceof FractionAnchorExpression) {
+      if (expr instanceof FractionAnchorExpression && !this.anchorRePickMode_) {
         this.renderFractionEdit_(subject, entry, expr);
       } else {
         this.renderAnchorPicking_(subject, entry, "fraction");
@@ -663,39 +655,129 @@ export class AnchorsPanel implements SidebarPanel {
     entry: AnchorEntry,
     type: "offset" | "fraction",
   ): void {
-    const note = document.createElement("span");
-    note.className = "re-panel-empty";
-    note.textContent = "Click an anchor in the preview to link to it.";
-    this.element.appendChild(note);
-
-    const vc = this.state_.viewController;
-    if (!vc) return;
+    const pres = this.state_.presentation;
+    if (!pres) return;
 
     const group = slotPickGroup(entry.name);
 
-    const pres = this.state_.presentation;
-    this.anchorPickSub_ = vc.events.on("anchor:picked", ({ anchor }) => {
-      if (pres === null || anchorPickGroup(anchor, pres) !== group) return;
+    // Collect valid targets, excluding the subject itself.
+    const targets: Array<{ label: string; target: Element | Section }> = [];
+    for (const section of pres.root.getSections()) {
+      if (
+        section !== subject &&
+        validSlotsForGroup(group, section).length > 0
+      ) {
+        targets.push({ label: section.name, target: section });
+      }
+      for (const el of section.getElements()) {
+        if (el === subject) continue;
+        if (validSlotsForGroup(group, el).length > 0) {
+          targets.push({ label: `${section.name} › ${el.name}`, target: el });
+        }
+      }
+    }
+
+    // Stage 1 — target chooser
+    const targetRow = document.createElement("div");
+    targetRow.className = "re-anchor-edit-row";
+    const targetLabel = document.createElement("span");
+    targetLabel.className = "re-anchor-row__name";
+    targetLabel.textContent = "element";
+    const targetSelect = document.createElement("select");
+    targetSelect.className = "re-style-select re-anchor-select";
+
+    const ph = document.createElement("option");
+    ph.value = "";
+    ph.textContent = "— select —";
+    ph.disabled = true;
+    ph.selected = this.anchorPickingTarget_ === null;
+    targetSelect.appendChild(ph);
+
+    for (let i = 0; i < targets.length; i++) {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = targets[i]!.label;
+      if (targets[i]!.target === this.anchorPickingTarget_) opt.selected = true;
+      targetSelect.appendChild(opt);
+    }
+
+    targetSelect.addEventListener("change", () => {
+      const idx = parseInt(targetSelect.value, 10);
+      if (!isNaN(idx) && targets[idx]) {
+        this.anchorPickingTarget_ = targets[idx].target;
+        this.update();
+      }
+    });
+
+    targetRow.appendChild(targetLabel);
+    targetRow.appendChild(targetSelect);
+    this.element.appendChild(targetRow);
+
+    // Stage 2 — anchor chooser (only once a target is chosen)
+    if (this.anchorPickingTarget_ === null) return;
+
+    const pickedTarget = this.anchorPickingTarget_;
+    const slots = validSlotsForGroup(group, pickedTarget);
+
+    const anchorRow = document.createElement("div");
+    anchorRow.className = "re-anchor-edit-row";
+    const anchorLabel = document.createElement("span");
+    anchorLabel.className = "re-anchor-row__name";
+    anchorLabel.textContent = "anchor";
+    const anchorSelect = document.createElement("select");
+    anchorSelect.className = "re-style-select re-anchor-select";
+
+    const anchorPh = document.createElement("option");
+    anchorPh.value = "";
+    anchorPh.textContent = "— select —";
+    anchorPh.disabled = true;
+    anchorPh.selected = true;
+    anchorSelect.appendChild(anchorPh);
+
+    for (const slot of slots) {
+      const opt = document.createElement("option");
+      opt.value = slot;
+      opt.textContent = slot;
+      anchorSelect.appendChild(opt);
+    }
+
+    anchorSelect.addEventListener("change", () => {
+      const slot = anchorSelect.value as AnchorSlot;
+      if (!slot) return;
+      const base = (
+        pickedTarget.anchors as Record<AnchorSlot, Anchor | undefined>
+      )[slot];
+      if (!base) return;
 
       const exprFactory =
         type === "offset"
-          ? (base: Anchor) => new OffsetAnchorExpression(base, 0)
-          : (base: Anchor) => new FractionAnchorExpression(base, 1);
+          ? (b: Anchor) => new OffsetAnchorExpression(b, 0)
+          : (b: Anchor) => new FractionAnchorExpression(b, 1);
+
+      const onDone = () => {
+        this.anchorRePickMode_ = false;
+        this.anchorPickingTarget_ = null;
+        this.update();
+      };
 
       const op =
         entry.axis === "horizontal"
           ? buildHRefOp(
               subject as Element,
-              { slot: entry.name as HSlot, base: anchor, exprFactory },
-              () => this.update(),
+              { slot: entry.name as HSlot, base, exprFactory },
+              onDone,
             )
           : buildVRefOp(
               subject,
-              { slot: entry.name as VSlot, base: anchor, exprFactory },
-              () => this.update(),
+              { slot: entry.name as VSlot, base, exprFactory },
+              onDone,
             );
       this.push_(op);
     });
+
+    anchorRow.appendChild(anchorLabel);
+    anchorRow.appendChild(anchorSelect);
+    this.element.appendChild(anchorRow);
   }
 
   // ── Offset / fraction editing ─────────────────────────────────────────────
@@ -707,6 +789,7 @@ export class AnchorsPanel implements SidebarPanel {
   ): void {
     // OffsetAnchorExpression always constructs with exactly one dependency (base).
     const base = expr.dependencies[0]!;
+    const pres = this.state_.presentation;
     const baseRow = document.createElement("div");
     baseRow.className = "re-anchor-edit-row";
     const baseLabel = document.createElement("span");
@@ -714,9 +797,20 @@ export class AnchorsPanel implements SidebarPanel {
     baseLabel.textContent = "base";
     const baseVal = document.createElement("span");
     baseVal.className = "re-anchor-row__value";
-    baseVal.textContent = fmtVal(base.value);
+    baseVal.textContent = pres
+      ? `${findAnchorLabel(base, pres)}  (${fmtVal(base.value)})`
+      : fmtVal(base.value);
+    const changeBtn = document.createElement("button");
+    changeBtn.className = "re-anchor-repick";
+    changeBtn.textContent = "change";
+    changeBtn.addEventListener("click", () => {
+      this.anchorRePickMode_ = true;
+      this.anchorPickingTarget_ = null;
+      this.update();
+    });
     baseRow.appendChild(baseLabel);
     baseRow.appendChild(baseVal);
+    baseRow.appendChild(changeBtn);
     this.element.appendChild(baseRow);
 
     this.renderNumberEdit_({
@@ -756,6 +850,7 @@ export class AnchorsPanel implements SidebarPanel {
   ): void {
     // FractionAnchorExpression always constructs with exactly one dependency (base).
     const base = expr.dependencies[0]!;
+    const pres = this.state_.presentation;
     const baseRow = document.createElement("div");
     baseRow.className = "re-anchor-edit-row";
     const baseLabel = document.createElement("span");
@@ -763,9 +858,20 @@ export class AnchorsPanel implements SidebarPanel {
     baseLabel.textContent = "base";
     const baseVal = document.createElement("span");
     baseVal.className = "re-anchor-row__value";
-    baseVal.textContent = fmtVal(base.value);
+    baseVal.textContent = pres
+      ? `${findAnchorLabel(base, pres)}  (${fmtVal(base.value)})`
+      : fmtVal(base.value);
+    const changeBtn = document.createElement("button");
+    changeBtn.className = "re-anchor-repick";
+    changeBtn.textContent = "change";
+    changeBtn.addEventListener("click", () => {
+      this.anchorRePickMode_ = true;
+      this.anchorPickingTarget_ = null;
+      this.update();
+    });
     baseRow.appendChild(baseLabel);
     baseRow.appendChild(baseVal);
+    baseRow.appendChild(changeBtn);
     this.element.appendChild(baseRow);
 
     this.renderNumberEdit_({
@@ -875,20 +981,34 @@ function slotPickGroup(slot: AnchorSlot): PickGroup {
   return "s";
 }
 
-/** Identifies which pick group a given anchor belongs to by scanning the
- *  presentation. Returns null if the anchor is not found (shouldn't happen). */
-function anchorPickGroup(anchor: Anchor, pres: Presentation): PickGroup | null {
+/** Anchor slots on `target` that are valid picks for `group`. */
+function validSlotsForGroup(
+  group: PickGroup,
+  target: Element | Section,
+): AnchorSlot[] {
+  const isSection = !("setHorizontalAnchors" in target);
+  if (group === "h") return isSection ? [] : ["left", "right"];
+  if (group === "v") return ["top", "bottom"];
+  // "s" — size anchors
+  return isSection ? ["height"] : ["width", "height"];
+}
+
+/** Human-readable label for an anchor, e.g. `"Section 1 · top"`. */
+function findAnchorLabel(anchor: Anchor, pres: Presentation): string {
+  const vSlots: VSlot[] = ["top", "bottom", "height"];
+  const hSlots: HSlot[] = ["left", "right", "width"];
   for (const section of pres.root.getSections()) {
-    const sa = section.anchors;
-    if (sa.left === anchor || sa.right === anchor) return "h";
-    if (sa.top === anchor || sa.bottom === anchor) return "v";
-    if (sa.width === anchor || sa.height === anchor) return "s";
-    for (const element of section.getElements()) {
-      const ea = element.anchors;
-      if (ea.left === anchor || ea.right === anchor) return "h";
-      if (ea.top === anchor || ea.bottom === anchor) return "v";
-      if (ea.width === anchor || ea.height === anchor) return "s";
+    const sa = section.anchors as Record<AnchorSlot, Anchor | undefined>;
+    for (const slot of vSlots) {
+      if (sa[slot] === anchor) return `${section.name} · ${slot}`;
+    }
+    for (const el of section.getElements()) {
+      const ea = el.anchors as Record<AnchorSlot, Anchor | undefined>;
+      const elSlot = ([...hSlots, ...vSlots] as AnchorSlot[]).find(
+        (s) => ea[s] === anchor,
+      );
+      if (elSlot) return `${el.name} · ${elSlot}`;
     }
   }
-  return null;
+  return "?";
 }

@@ -276,6 +276,22 @@ const EDITOR_CSS = `
 .re-anchor-select {
   flex: 1;
 }
+
+.re-anchor-repick {
+  padding: 0 4px;
+  background: none;
+  border: 1px solid var(--re-panel-border);
+  border-radius: 3px;
+  color: var(--re-sidebar-fg);
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.re-anchor-repick:hover {
+  border-color: var(--re-sidebar-fg);
+  color: #ffffff;
+}
 `;
 
 const INJECTED_ATTR = "data-rippledoc-editor-styles";

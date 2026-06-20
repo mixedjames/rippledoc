@@ -14,7 +14,7 @@ import type { ViewMode } from "../../clientAPI/ViewMode";
  *         viewport (div, overflow-y:auto, tabIndex=0 — the scroll and keyboard container)
  *           backgrounds (div — one child per section, for section backgrounds)
  *           elements   (div — one child per element, in global virtual coords)
- *         overlay (div, pointer-events:none — future: anchor handles, selection UI)
+ *         overlay (div, pointer-events:none — future: selection UI overlays)
  *           pins (div)
  *
  * backgrounds and elements are both absolutely positioned and sized to
@@ -24,7 +24,7 @@ import type { ViewMode } from "../../clientAPI/ViewMode";
  *
  * Mode is surfaced as a data-mode attribute on the viewport. CSS rules inside this
  * shadow root use it to change rendering without requiring a JS cascade through
- * the view hierarchy (e.g. hiding element content in anchors mode).
+ * the view hierarchy.
  */
 export class PresentationDOM {
   private readonly presentationView_: EditorPresentationView;
@@ -138,69 +138,11 @@ export class PresentationDOM {
         box-sizing: border-box;
       }
 
-      /* Selection chrome: visible in editor mode only.
-         Suppressed in anchors mode (selection preserved but not shown) and player. */
+      /* Selection chrome: visible in editor mode only. */
       .viewport[data-mode="editor"] .element.selected,
       .pins[data-mode="editor"] .element.selected {
         outline: 2px solid hsl(220 80% 55%);
         outline-offset: 1px;
-      }
-
-      /* Anchors mode (all sub-modes): hide rendered content, allow handle overflow. */
-      [data-mode^="anchors"] .element-content {
-        display: none;
-      }
-
-      [data-mode^="anchors"] .element {
-        /* overflow:visible lets handles on small elements escape the element box. */
-        overflow: visible;
-        outline: 1px dashed hsl(220 30% 65%);
-        outline-offset: 0px;
-      }
-
-      /* Anchor handles — hidden by default. */
-      .anchor-handle {
-        display: none;
-        position: absolute;
-        pointer-events: auto;
-        box-sizing: border-box;
-        min-width: 44px;
-        padding: 2px 4px;
-        background: hsl(220 70% 50%);
-        color: #fff;
-        border-radius: 3px;
-        font-size: 9px;
-        line-height: 1.2;
-        text-align: center;
-        white-space: nowrap;
-        cursor: pointer;
-        z-index: 20;
-        flex-direction: column;
-        align-items: center;
-        user-select: none;
-        -webkit-user-select: none;
-      }
-
-      .anchor-handle--system {
-        background: hsl(220 20% 55%);
-        cursor: default;
-      }
-
-      /* Plain anchors mode (list view, no active picking): show all handles. */
-      [data-mode="anchors"] .anchor-handle { display: flex; }
-
-      /* Axis-specific picking modes: show only the relevant third. */
-      [data-mode="anchors-h"] .anchor-handle[data-axis="h"] { display: flex; }
-      [data-mode="anchors-v"] .anchor-handle[data-axis="v"] { display: flex; }
-      [data-mode="anchors-s"] .anchor-handle[data-axis="s"] { display: flex; }
-
-      .anchor-handle:not(.anchor-handle--system):hover {
-        background: hsl(220 70% 40%);
-      }
-
-      .anchor-handle__type {
-        font-size: 8px;
-        opacity: 0.85;
       }
     `;
 

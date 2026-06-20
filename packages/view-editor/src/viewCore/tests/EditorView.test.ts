@@ -51,7 +51,7 @@ beforeEach(() => {
 describe("pre-attach validity", () => {
   it("mode, selection, and events are all usable before attachView", () => {
     expect(editor.mode).toBe("editor");
-    expect(() => editor.setMode("anchors")).not.toThrow();
+    expect(() => editor.setMode("player")).not.toThrow();
     expect(() =>
       editor.selection.addElement({} as unknown as Element),
     ).not.toThrow();
@@ -59,10 +59,10 @@ describe("pre-attach validity", () => {
   });
 
   it("mode set before attachView is reflected in the DOM immediately on attach", () => {
-    editor.setMode("anchors");
+    editor.setMode("player");
     presentation.attachView(editor.viewFactory);
 
-    expect(getViewport(container).getAttribute("data-mode")).toBe("anchors");
+    expect(getViewport(container).getAttribute("data-mode")).toBe("player");
   });
 
   it("selection set before attachView is reflected in element CSS classes on attach", () => {
@@ -92,12 +92,13 @@ describe("mode — DOM reflection", () => {
   });
 
   it("setMode updates data-mode on the viewport", () => {
-    editor.setMode("anchors");
-    expect(getViewport(container).getAttribute("data-mode")).toBe("anchors");
+    editor.setMode("player");
+    expect(getViewport(container).getAttribute("data-mode")).toBe("player");
   });
 
   it("setMode can be called multiple times and always reflects the latest value", () => {
-    editor.setMode("anchors");
+    editor.setMode("player");
+    editor.setMode("editor");
     editor.setMode("player");
     editor.setMode("editor");
     expect(getViewport(container).getAttribute("data-mode")).toBe("editor");
@@ -167,48 +168,16 @@ describe("selection — CSS class on element divs", () => {
   });
 });
 
-// ── Anchors mode — content hidden ─────────────────────────────────────────────
-
-describe("anchors mode — element content visibility", () => {
-  it("element-content divs are hidden in anchors mode", () => {
-    const section = presentation.root.addSection();
-    section.addMarkdownElement("visible text");
-    presentation.attachView(editor.viewFactory);
-
-    editor.setMode("anchors");
-
-    // The CSS rule [data-mode="anchors"] .element-content { display: none } is
-    // defined in the shadow DOM stylesheet. We can verify data-mode is set, which
-    // is sufficient to confirm the CSS rule will apply — computed styles are not
-    // available in happy-dom.
-    expect(getViewport(container).getAttribute("data-mode")).toBe("anchors");
-    expect(
-      getViewport(container).querySelector(".element-content"),
-    ).not.toBeNull();
-  });
-
-  it("switching back from anchors to editor restores data-mode", () => {
-    const section = presentation.root.addSection();
-    section.addMarkdownElement("text");
-    presentation.attachView(editor.viewFactory);
-
-    editor.setMode("anchors");
-    editor.setMode("editor");
-
-    expect(getViewport(container).getAttribute("data-mode")).toBe("editor");
-  });
-});
-
 // ── View swap ─────────────────────────────────────────────────────────────────
 
 describe("view swap — mode and selection survive re-attach", () => {
   it("mode set before re-attach is applied to the new view", () => {
     presentation.attachView(editor.viewFactory);
-    editor.setMode("anchors");
+    editor.setMode("player");
 
     // Re-attach with the same factory — simulates view replacement.
     presentation.attachView(editor.viewFactory);
 
-    expect(getViewport(container).getAttribute("data-mode")).toBe("anchors");
+    expect(getViewport(container).getAttribute("data-mode")).toBe("player");
   });
 });

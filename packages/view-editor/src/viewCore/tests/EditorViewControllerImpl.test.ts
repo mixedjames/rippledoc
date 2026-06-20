@@ -27,8 +27,8 @@ describe("mode — initial state and basic updates", () => {
 
   it("setMode updates the mode getter", () => {
     const ctrl = new EditorViewControllerImpl();
-    ctrl.setMode("anchors");
-    expect(ctrl.mode).toBe("anchors");
+    ctrl.setMode("player");
+    expect(ctrl.mode).toBe("player");
   });
 
   it("setMode with no view attached is safe", () => {
@@ -41,7 +41,7 @@ describe("mode — initial state and basic updates", () => {
     const spy = makeViewSpy();
     ctrl.registerView(spy);
     ctrl.unregisterView();
-    expect(() => ctrl.setMode("anchors")).not.toThrow();
+    expect(() => ctrl.setMode("player")).not.toThrow();
     // applyMode was only called once: from registerView, not from the post-unregister setMode
     expect(spy.applyMode).toHaveBeenCalledOnce();
   });
@@ -54,21 +54,21 @@ describe("mode — view interaction", () => {
     ctrl.registerView(spy);
     spy.applyMode.mockClear();
 
-    ctrl.setMode("anchors");
+    ctrl.setMode("player");
 
     expect(spy.applyMode).toHaveBeenCalledOnce();
-    expect(spy.applyMode).toHaveBeenCalledWith("anchors");
+    expect(spy.applyMode).toHaveBeenCalledWith("player");
   });
 
   it("registerView replays the current mode onto the view", () => {
     const ctrl = new EditorViewControllerImpl();
-    ctrl.setMode("anchors");
+    ctrl.setMode("player");
 
     const spy = makeViewSpy();
     ctrl.registerView(spy);
 
     expect(spy.applyMode).toHaveBeenCalledOnce();
-    expect(spy.applyMode).toHaveBeenCalledWith("anchors");
+    expect(spy.applyMode).toHaveBeenCalledWith("player");
   });
 
   it("registerView with default mode replays editor", () => {
