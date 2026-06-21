@@ -220,6 +220,11 @@ const EDITOR_CSS = `
   background: var(--re-panel-header-hover-bg);
 }
 
+.re-anchor-row--current {
+  background: var(--re-panel-header-bg);
+  border-radius: 2px;
+}
+
 .re-anchor-row__name {
   flex: 0 0 44px;
   font-size: 10px;

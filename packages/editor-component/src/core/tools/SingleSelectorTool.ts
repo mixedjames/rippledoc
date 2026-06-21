@@ -1,22 +1,25 @@
+import { NullTool } from "@rippledoc/view-editor";
+import type { EditorViewController } from "@rippledoc/view-editor";
 import type { EditorTool, EditorToolContext } from "./EditorTool";
 
 /** Click to select a single element or section; clicking empty space clears the selection. */
 export class SingleSelectorTool implements EditorTool {
-  private unsubscribers_: Array<() => void> = [];
+  private viewController_: EditorViewController | null = null;
 
   activate(context: EditorToolContext): void {
-    this.unsubscribers_.push(
-      context.viewEvents.on("element:picked", ({ element }) => {
+    this.viewController_ = context.state.viewController;
+    this.viewController_.setActiveTool({
+      onElementPicked: ({ element }) => {
         context.selection.setElements([element]);
-      }),
-      context.viewEvents.on("section:picked", ({ section }) => {
+      },
+      onSectionPicked: ({ section }) => {
         context.selection.setSections([section]);
-      }),
-    );
+      },
+    });
   }
 
   deactivate(): void {
-    for (const unsub of this.unsubscribers_) unsub();
-    this.unsubscribers_ = [];
+    this.viewController_?.setActiveTool(NullTool);
+    this.viewController_ = null;
   }
 }

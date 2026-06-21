@@ -28,9 +28,9 @@ export class PropertiesPanel implements SidebarPanel {
 
   update(): void {
     this.element.innerHTML = "";
-    const sel = this.state_.viewController?.selection.elements;
+    const sel = this.state_.viewController.selection.elements;
 
-    if (!sel || sel.size === 0) {
+    if (sel.size === 0) {
       this.renderEmpty_("No element selected.");
       return;
     }

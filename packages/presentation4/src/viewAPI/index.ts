@@ -30,6 +30,10 @@ export type {
 export type { SectionView } from "./SectionView";
 export type { ElementView } from "./ElementView";
 
+// Null view — a no-op PresentationView for use before a real view is attached,
+// or to force teardown of the current view via presentation.attachView().
+export { NullPresentationView } from "../core/nullView/NullPresentationView";
+
 // ViewOwner interfaces (privileged model surface exposed to views).
 export type { PresentationViewOwner } from "./PresentationViewOwner";
 export type { SectionViewOwner } from "./SectionViewOwner";

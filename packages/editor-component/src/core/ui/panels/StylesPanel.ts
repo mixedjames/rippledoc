@@ -158,13 +158,7 @@ export class StylesPanel implements SidebarPanel {
 
   update(): void {
     this.element.innerHTML = "";
-    const vc = this.state_.viewController;
-    if (!vc) {
-      this.renderEmpty_("No presentation loaded.");
-      return;
-    }
-
-    const { elements, sections } = vc.selection;
+    const { elements, sections } = this.state_.viewController.selection;
     if (elements.size > 0) {
       this.renderElementStyles_(elements);
     } else if (sections.size > 0) {

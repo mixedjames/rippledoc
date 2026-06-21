@@ -4,7 +4,9 @@ import {
   type PresentationOptions,
   type PresentationMemento,
 } from "@rippledoc/presentation4";
+import { NullPresentationView } from "@rippledoc/presentation4/viewAPI";
 import { createEditorView } from "@rippledoc/view-editor";
+import type { EditorViewController } from "@rippledoc/view-editor";
 import type { EditorComponent } from "../clientAPI/EditorComponent";
 import type {
   EditorCommandId,
@@ -25,6 +27,10 @@ import type { EditorTool, EditorToolContext } from "./tools/EditorTool";
 import type { EditOperation } from "./history/EditOperation";
 import { SingleSelectorTool } from "./tools/SingleSelectorTool";
 import { MultiSelectorTool } from "./tools/MultiSelectorTool";
+import { AnchorPickerTool } from "./tools/AnchorPickerTool";
+import type { AnchorPickResult } from "./tools/AnchorPickerTool";
+
+const NULL_TOOL: EditorTool = Object.freeze({ activate() {}, deactivate() {} });
 
 export class EditorComponentImpl implements EditorComponent {
   private readonly delegate_: EditorDelegate;
@@ -34,19 +40,37 @@ export class EditorComponentImpl implements EditorComponent {
   private readonly history_: OperationHistory;
   private readonly emitter_: TypedEmitter<EditorEvents>;
 
-  private activeTool_: EditorTool | null = null;
-  private selectionUnsub_: (() => void) | null = null;
+  private activeTool_: EditorTool = NULL_TOOL;
+  private selectionUnsub_: () => void = () => {};
 
   constructor(delegate: EditorDelegate) {
     this.delegate_ = delegate;
     this.layout_ = new EditorLayout();
-    this.state_ = new EditorState();
     this.history_ = new OperationHistory();
     this.emitter_ = new TypedEmitter();
-
     injectEditorStyles();
-    this.sidebar_ = new Sidebar(this.state_, (op) => this.pushOperation_(op));
+
+    // Always start with a presentation so state is never null.
+    const presentation = createPresentation();
+    const viewController = createEditorView({ container: this.layout_.canvas });
+    presentation.attachView(viewController.viewFactory);
+    this.state_ = new EditorState(presentation, viewController);
+
+    this.sidebar_ = new Sidebar(
+      this.state_,
+      (op) => this.pushOperation_(op),
+      (cb) => this.requestPick_(cb),
+    );
     this.layout_.element.appendChild(this.sidebar_.element);
+
+    this.selectionUnsub_ = viewController.events.on(
+      "selection:changed",
+      ({ elements, sections }) => {
+        this.emitter_.emit("selectionChanged", { elements, sections });
+        this.sidebar_.update();
+      },
+    );
+    this.activateTool_(this.state_.activeToolId);
   }
 
   get element(): HTMLElement {
@@ -91,7 +115,6 @@ export class EditorComponentImpl implements EditorComponent {
   }
 
   getMemento(): PresentationMemento {
-    if (!this.state_.presentation) throw new Error("No presentation loaded");
     return this.state_.presentation.toMemento();
   }
 
@@ -118,29 +141,45 @@ export class EditorComponentImpl implements EditorComponent {
   canExec(command: EditorCommandId): boolean {
     if (command === "undo") return this.history_.canUndo();
     if (command === "redo") return this.history_.canRedo();
-    if (command.startsWith("tool:")) return true;
-    return this.state_.presentation !== null;
+    return true;
   }
 
   private switchTool_(id: EditorToolId): void {
-    this.activeTool_?.deactivate();
+    this.activeTool_.deactivate();
     this.state_.activeToolId = id;
     this.activateTool_(id);
     this.emitter_.emit("toolChanged", { tool: id });
   }
 
   private activateTool_(id: EditorToolId): void {
-    const vc = this.state_.viewController;
-    if (!vc) return;
-
     this.activeTool_ = this.createTool_(id);
-    const context: EditorToolContext = {
+    this.activeTool_.activate(this.makeContext_(this.state_.viewController));
+  }
+
+  private makeContext_(vc: EditorViewController): EditorToolContext {
+    return {
       viewEvents: vc.events,
       selection: vc.selection,
       state: this.state_,
       pushOperation: (op) => this.pushOperation_(op),
     };
-    this.activeTool_.activate(context);
+  }
+
+  private requestPick_(callback: (result: AnchorPickResult) => void): void {
+    const vc = this.state_.viewController;
+    const previousTool = this.activeTool_;
+    this.activeTool_.deactivate();
+
+    const onDone = (result: AnchorPickResult) => {
+      this.activeTool_.deactivate();
+      this.activeTool_ = previousTool;
+      previousTool.activate(this.makeContext_(vc));
+      callback(result);
+    };
+
+    const pickerTool = new AnchorPickerTool(onDone);
+    this.activeTool_ = pickerTool;
+    pickerTool.activate(this.makeContext_(vc));
   }
 
   private pushOperation_(op: EditOperation): void {
@@ -166,12 +205,12 @@ export class EditorComponentImpl implements EditorComponent {
   }
 
   private teardownPresentation_(): void {
-    this.activeTool_?.deactivate();
-    this.activeTool_ = null;
-    this.selectionUnsub_?.();
-    this.selectionUnsub_ = null;
-    this.state_.presentation = null;
-    this.state_.viewController = null;
-    this.sidebar_.update();
+    this.activeTool_.deactivate();
+    this.activeTool_ = NULL_TOOL;
+    this.selectionUnsub_();
+    this.selectionUnsub_ = () => {};
+    // CorePresentation.attachView() calls this.view_.destroy() before swapping,
+    // which removes the EditorPresentationView's root div from the canvas.
+    this.state_.presentation.attachView(() => new NullPresentationView());
   }
 }

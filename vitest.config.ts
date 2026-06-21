@@ -31,6 +31,7 @@ export default defineConfig({
         __dirname,
         "packages/editor-component/src",
       ),
+      "@rippledoc/dialogs": path.resolve(__dirname, "packages/dialogs/src"),
     },
   },
 });
