@@ -20,6 +20,12 @@ import { colorToHex, hexToColor, colorToAlphaPct } from "../widgets/colorUtils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * Agreed-upon font property values across a multi-selection.
+ * Each property is `"mixed"` (or `null` for family) when the selected elements
+ * disagree. Computed values are used for display — own-style raw values are
+ * not shown directly, which is why the unit selector always defaults to "basis".
+ */
 interface FontConsensus {
   /** null = mixed (elements have different values for this property) */
   family: string | null;
@@ -33,6 +39,8 @@ interface FontConsensus {
 
 /**
  * Where in the cascade a style property's value originates.
+ * Mirrors the p4 style cascade: own → named styles (in order) → global → system default.
+ * Shown as a source badge next to each property row so users can see what they are overriding.
  * "system" means no explicit value is set anywhere — the system default applies.
  */
 type StyleSource =
@@ -41,7 +49,11 @@ type StyleSource =
   | { level: "global" }
   | { level: "system" };
 
-/** Consensus source across a multi-selection; "mixed" means elements disagree. */
+/**
+ * Agreed-upon source across a multi-selection.
+ * "mixed" means elements in the selection disagree on which cascade level provides the value.
+ * Own styles are not badged (the absence of a badge already signals "set here directly").
+ */
 type SourceConsensus = StyleSource | "mixed";
 
 interface FontSourceConsensus {
@@ -345,6 +357,24 @@ function makeClearSectionBorderOp(
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Sidebar panel for fill, border, and font style editing.
+ *
+ * **Multi-selection:** the panel renders for whatever is currently selected
+ * (elements take priority over sections). When multiple items are selected,
+ * "consensus" helpers reduce the set to a single display value or `"mixed"`.
+ * Editing a mixed field overwrites all selected items with the new value.
+ *
+ * **Cascade display:** each property row shows a source badge (named style name,
+ * "global", or "default") indicating which cascade level supplies the value.
+ * Own-level properties are un-badged. A "clear" button appears when at least one
+ * selected item has an own-level value for that property group, allowing the
+ * user to unset the override and fall back to the cascade.
+ *
+ * **Write path:** all mutations go through `push_` (the `PushOperation` callback),
+ * never via direct property assignment. Each change creates a new `EditOperation`
+ * that snapshots the before-state at construction time.
+ */
 export class StylesPanel implements SidebarPanel {
   readonly element: HTMLElement;
   private state_: EditorState;

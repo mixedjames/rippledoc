@@ -516,6 +516,42 @@ function buildAutoWidthPositionOp(
 
 // ── Panel ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Sidebar panel for editing the anchor (layout constraint) expressions of a single
+ * selected element or section.
+ *
+ * **Two views:**
+ * - *List view* — shows all anchors for the subject in two groups (Horizontal / Vertical),
+ *   one row per anchor displaying its current computed value and expression summary.
+ *   Clicking a non-locked row drills into the detail view.
+ * - *Detail view* — shows the full editor for one anchor: a type dropdown (constant /
+ *   anchored / fraction / fit-content) and type-specific input fields.
+ *
+ * **Two-stage reference pick flow** (offset and fraction types):
+ * Setting a reference-type expression requires knowing both (a) which element/section
+ * to reference and (b) which anchor slot on that target. The panel handles this as a
+ * two-stage flow managed by `pickInProgress_` and `anchorPickingTarget_`:
+ *
+ *   Stage 1 — `pickInProgress_ = true`: the panel auto-activates `AnchorPickerTool`
+ *   via `requestPick_`, which interrupts the current selection tool. The panel renders
+ *   a "click an element…" prompt. When the user clicks, the callback fires.
+ *
+ *   Stage 2 — `anchorPickingTarget_ !== null`: target is known; show available slots
+ *   on that target. Clicking a slot builds and pushes the operation, then clears `anchorPickingTarget_`.
+ *
+ *   A cancel (Escape) during Stage 1 reverts `detailType_` to null if the anchor's
+ *   actual expression doesn't yet match the chosen type, preventing a stale type display.
+ *
+ * **`detailType_`** shadows the expression's actual inferred type to allow the user
+ * to change the type dropdown before committing a new expression. It is cleared when:
+ * leaving the detail view, cancelling a pick, or after a successful commit (via `onDone`).
+ *
+ * **Fit-content mode** complicates the operation builders: in this mode only one anchor
+ * (the position) is user-set, not two. The normal H/V ref/constant builders snapshot
+ * all non-derived anchors as the before-state, which would be an incomplete VerticalAnchorSet
+ * in fit-content mode. `buildFromFitContentVOp` / `buildFromFitContentHOp` and
+ * `buildAutoHeight/WidthPositionOp` handle these transitions correctly.
+ */
 export class AnchorsPanel implements SidebarPanel {
   readonly element: HTMLElement;
   private state_: EditorState;

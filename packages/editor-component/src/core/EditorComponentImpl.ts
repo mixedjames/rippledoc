@@ -32,6 +32,31 @@ import type { AnchorPickResult } from "./tools/AnchorPickerTool";
 
 const NULL_TOOL: EditorTool = Object.freeze({ activate() {}, deactivate() {} });
 
+/**
+ * The single concrete implementation of `EditorComponent`. Wires together every
+ * subsystem and owns their lifecycles.
+ *
+ * **Subsystems coordinated here:**
+ * - `EditorLayout` — top-level DOM structure (canvas + sidebar slot)
+ * - `Sidebar` — the right-hand panel column; rebuilt once, updated on each selection change
+ * - `EditorState` — mutable shared bag; held by reference so tools and panels
+ *   always see the current presentation/viewController after `newPresentation()` replaces them
+ * - `OperationHistory` — undo/redo stacks; tools write via `pushOperation_`
+ * - `TypedEmitter` — fires events at the shell; nothing inside core listens
+ * - Active tool — one `EditorTool` at a time; switched by `switchTool_`
+ *
+ * **Two non-obvious patterns:**
+ *
+ * `newPresentation()` creates a new presentation and a new viewController but
+ * does *not* recreate the sidebar or layout. Instead it mutates `state_` in-place
+ * so that the sidebar panels, which hold a reference to `state_`, automatically
+ * see the new presentation on their next `update()`. `teardownPresentation_` must
+ * run first to detach the old view and clear the selection subscription.
+ *
+ * `requestPick_` is a tool interrupt: it deactivates the current tool, installs
+ * `AnchorPickerTool` for a single canvas click, then restores the original tool.
+ * The sidebar calls this when the user starts editing a reference-type anchor.
+ */
 export class EditorComponentImpl implements EditorComponent {
   private readonly delegate_: EditorDelegate;
   private readonly layout_: EditorLayout;

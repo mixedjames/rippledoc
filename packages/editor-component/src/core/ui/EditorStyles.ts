@@ -344,6 +344,16 @@ const EDITOR_CSS = `
 
 const INJECTED_ATTR = "data-rippledoc-editor-styles";
 
+/**
+ * Injects the editor's CSS into `<head>` exactly once per document, regardless
+ * of how many editor instances exist. The attribute guard prevents double-injection
+ * in environments that construct multiple editors (tests, demos).
+ *
+ * All editor styles use the `re-` (rippledoc-editor) prefix and are scoped under
+ * `.rippledoc-editor` for the layout/canvas rules. CSS custom properties on
+ * `.rippledoc-editor` expose the colour tokens so a future theming layer can
+ * override them without touching the selector rules.
+ */
 export function injectEditorStyles(): void {
   if (document.querySelector(`[${INJECTED_ATTR}]`)) return;
   const style = document.createElement("style");

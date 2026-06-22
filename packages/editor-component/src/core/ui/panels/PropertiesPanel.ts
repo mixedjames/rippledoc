@@ -13,6 +13,16 @@ function isBitmapImage(el: Element): el is BitmapImageElement {
   return "alt" in el;
 }
 
+/**
+ * Sidebar panel that shows element-type-specific properties for a single selected element.
+ *
+ * Currently a placeholder: markdown elements show a read-only content preview;
+ * bitmap image elements show the src URL. The full implementations (inline markdown
+ * editor, image re-import) will delegate to `EditorDelegate` and are tracked in CLAUDE.md.
+ *
+ * Only renders when exactly one element is selected. Multi-selection and section
+ * selections show an empty-state message.
+ */
 export class PropertiesPanel implements SidebarPanel {
   readonly element: HTMLElement;
   private state_: EditorState;

@@ -1,5 +1,15 @@
 import type { EditOperation } from "./EditOperation";
 
+/**
+ * Linear undo/redo history using two stacks.
+ *
+ * `push(op)` calls `op.execute()` immediately and pushes onto the undo stack.
+ * Callers hand an un-executed operation to `push` — they never pre-execute it.
+ *
+ * Pushing a new operation clears the redo stack, giving a linear (not branching)
+ * history. This matches user expectations: after undoing two steps and editing,
+ * the undone future is discarded.
+ */
 export class OperationHistory {
   private readonly undoStack_: EditOperation[] = [];
   private readonly redoStack_: EditOperation[] = [];

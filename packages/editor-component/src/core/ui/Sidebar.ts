@@ -7,6 +7,20 @@ import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { AnchorsPanel } from "./panels/AnchorsPanel";
 import type { SidebarPanel } from "./panels/SidebarPanel";
 
+/**
+ * Assembles and owns the three sidebar panels: Styles, Properties, and Anchors.
+ * Each panel is wrapped in a `CollapsiblePanel` chrome and appended to the sidebar element.
+ *
+ * The sidebar does not subscribe to any events directly. Instead,
+ * `EditorComponentImpl` calls `update()` whenever the selection changes, and
+ * the sidebar fans it out to every panel. Panels fully re-render their content on
+ * each update (innerHTML reset + rebuild) rather than diffing — acceptable at this
+ * scale, and simpler than tracking incremental state.
+ *
+ * Panels receive `push` (the operation write path) and `requestPick` (the anchor
+ * pick interrupt) rather than a reference to `EditorComponentImpl` directly,
+ * keeping the coupling narrow and the panel interfaces easy to test.
+ */
 export class Sidebar {
   readonly element: HTMLElement;
   private panels_: SidebarPanel[];
