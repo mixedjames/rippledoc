@@ -10,7 +10,8 @@
   "references": [
     { "path": "../../packages/presentation4" },
     { "path": "../../packages/view-editor" },
-    { "path": "../../packages/editor-component" }
+    { "path": "../../packages/editor-component" },
+    { "path": "../../packages/dialogs" }
   ],
 
   "include": ["src"]

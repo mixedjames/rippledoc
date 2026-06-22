@@ -9,6 +9,7 @@ import {
   offsetFrom,
   type Presentation,
 } from "@rippledoc/presentation4";
+import { createDialogs, type OperationSink } from "@rippledoc/dialogs";
 
 // ── Delegate ──────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,16 @@ const delegate: EditorDelegate = {
 const editor = createEditorComponent(delegate);
 document.getElementById("editorMount")!.appendChild(editor.element);
 
+// ── Dialogs ───────────────────────────────────────────────────────────────────
+
+// No-op sink: dialog changes apply immediately but aren't yet tracked in
+// undo/redo history. editor-component needs to expose pushOperation() in its
+// clientAPI before this can be properly wired.
+const sink: OperationSink = { push() {} };
+const dialogs = createDialogs(document.body, sink);
+
+let currentPresentation: Presentation = editor.newPresentation();
+
 // ── Toolbar wiring ────────────────────────────────────────────────────────────
 
 const btnSingleSelect = document.getElementById(
@@ -42,6 +53,7 @@ const btnMultiSelect = document.getElementById(
 const btnUndo = document.getElementById("btnUndo")! as HTMLButtonElement;
 const btnRedo = document.getElementById("btnRedo")! as HTMLButtonElement;
 const btnNew = document.getElementById("btnNew")! as HTMLButtonElement;
+const btnGlobalStyles = document.getElementById("btnGlobalStyles")! as HTMLButtonElement;
 
 const toolButtons: Record<EditorToolId, HTMLButtonElement> = {
   singleSelect: btnSingleSelect,
@@ -62,9 +74,14 @@ btnSingleSelect.addEventListener("click", () => exec("tool:singleSelect"));
 btnMultiSelect.addEventListener("click", () => exec("tool:multiSelect"));
 btnUndo.addEventListener("click", () => exec("undo"));
 btnRedo.addEventListener("click", () => exec("redo"));
-btnNew.addEventListener("click", () =>
-  seedPresentation(editor.newPresentation()),
-);
+btnNew.addEventListener("click", () => {
+  currentPresentation = editor.newPresentation();
+  seedPresentation(currentPresentation);
+});
+
+btnGlobalStyles.addEventListener("click", () => {
+  void dialogs.openGlobalStyles(currentPresentation.styles);
+});
 
 const selectionStatus = document.getElementById(
   "selectionStatus",
@@ -132,6 +149,6 @@ function seedPresentation(p: Presentation): void {
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-seedPresentation(editor.newPresentation());
+seedPresentation(currentPresentation);
 refreshToolbar();
 btnSingleSelect.dataset.active = "true";
