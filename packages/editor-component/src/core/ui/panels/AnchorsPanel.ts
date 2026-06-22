@@ -457,10 +457,20 @@ function buildFromFitContentHOp(
  */
 function buildAutoHeightPositionOp(
   element: Element,
-  { slot, newExpr, prevExpr }: { slot: "top" | "bottom"; newExpr: AnchorExpression; prevExpr: AnchorExpression },
+  {
+    slot,
+    newExpr,
+    prevExpr,
+  }: {
+    slot: "top" | "bottom";
+    newExpr: AnchorExpression;
+    prevExpr: AnchorExpression;
+  },
   onDone: () => void,
 ): EditOperation {
-  const toOption = (expr: AnchorExpression): { top: AnchorExpression } | { bottom: AnchorExpression } =>
+  const toOption = (
+    expr: AnchorExpression,
+  ): { top: AnchorExpression } | { bottom: AnchorExpression } =>
     slot === "top" ? { top: expr } : { bottom: expr };
   return {
     execute: () => {
@@ -477,10 +487,20 @@ function buildAutoHeightPositionOp(
 /** Symmetric to buildAutoHeightPositionOp for width-auto elements. */
 function buildAutoWidthPositionOp(
   element: Element,
-  { slot, newExpr, prevExpr }: { slot: "left" | "right"; newExpr: AnchorExpression; prevExpr: AnchorExpression },
+  {
+    slot,
+    newExpr,
+    prevExpr,
+  }: {
+    slot: "left" | "right";
+    newExpr: AnchorExpression;
+    prevExpr: AnchorExpression;
+  },
   onDone: () => void,
 ): EditOperation {
-  const toOption = (expr: AnchorExpression): { left: AnchorExpression } | { right: AnchorExpression } =>
+  const toOption = (
+    expr: AnchorExpression,
+  ): { left: AnchorExpression } | { right: AnchorExpression } =>
     slot === "left" ? { left: expr } : { right: expr };
   return {
     execute: () => {
@@ -583,12 +603,22 @@ export class AnchorsPanel implements SidebarPanel {
     this.renderGroup_(el, "Horizontal", [
       { name: "left", anchor: a.left, axis: "horizontal" },
       { name: "right", anchor: a.right, axis: "horizontal" },
-      { name: "width", anchor: a.width, axis: "horizontal", fitContent: cdd === "width" },
+      {
+        name: "width",
+        anchor: a.width,
+        axis: "horizontal",
+        fitContent: cdd === "width",
+      },
     ]);
     this.renderGroup_(el, "Vertical", [
       { name: "top", anchor: a.top, axis: "vertical" },
       { name: "bottom", anchor: a.bottom, axis: "vertical" },
-      { name: "height", anchor: a.height, axis: "vertical", fitContent: cdd === "height" },
+      {
+        name: "height",
+        anchor: a.height,
+        axis: "vertical",
+        fitContent: cdd === "height",
+      },
     ]);
   }
 
@@ -730,7 +760,8 @@ export class AnchorsPanel implements SidebarPanel {
     const effectiveType = this.detailType_ ?? baseType;
     // Disable the type selector while a pick is in progress so the user can't
     // inadvertently start a second pick by changing the type mid-flow.
-    const inPickFlow = this.pickInProgress_ || this.anchorPickingTarget_ !== null;
+    const inPickFlow =
+      this.pickInProgress_ || this.anchorPickingTarget_ !== null;
     // Only size anchors on elements support fit-content mode.
     const showFitContent = isSizeSlot(entry.name) && isElement(subject);
 
@@ -1155,7 +1186,8 @@ export class AnchorsPanel implements SidebarPanel {
   ): void {
     const group = slotPickGroup(entry.name);
     const isSelf = target === subject;
-    const slots = isSelf && group !== "s" ? [] : validSlotsForGroup(group, target);
+    const slots =
+      isSelf && group !== "s" ? [] : validSlotsForGroup(group, target);
 
     if (slots.length === 0) {
       const msg = document.createElement("span");
@@ -1171,7 +1203,9 @@ export class AnchorsPanel implements SidebarPanel {
     this.element.appendChild(slotTitle);
 
     for (const slot of slots) {
-      const base = (target.anchors as Record<AnchorSlot, Anchor | undefined>)[slot];
+      const base = (target.anchors as Record<AnchorSlot, Anchor | undefined>)[
+        slot
+      ];
       if (!base) continue;
 
       const isCurrent = base === currentBase;
@@ -1249,34 +1283,58 @@ export class AnchorsPanel implements SidebarPanel {
 
     // Always-visible anchor slot list for the current target.
     if (info !== null) {
-      this.renderInlineSlotList_(subject, entry, base, info.target, (newBase) => {
-        const newExpr = new OffsetAnchorExpression(newBase, expr.offset);
-        const onDone = () => this.update();
-        const op = sizeInFitContent
-          ? entry.axis === "horizontal"
-            ? buildAutoWidthPositionOp(
-                subject as Element,
-                { slot: entry.name as "left" | "right", newExpr, prevExpr: expr },
-                onDone,
-              )
-            : buildAutoHeightPositionOp(
-                subject as Element,
-                { slot: entry.name as "top" | "bottom", newExpr, prevExpr: expr },
-                onDone,
-              )
-          : entry.axis === "horizontal"
-            ? buildHRefOp(
-                subject as Element,
-                { slot: entry.name as HSlot, base: newBase, exprFactory: (b) => new OffsetAnchorExpression(b, expr.offset) },
-                onDone,
-              )
-            : buildVRefOp(
-                subject,
-                { slot: entry.name as VSlot, base: newBase, exprFactory: (b) => new OffsetAnchorExpression(b, expr.offset) },
-                onDone,
-              );
-        this.push_(op);
-      });
+      this.renderInlineSlotList_(
+        subject,
+        entry,
+        base,
+        info.target,
+        (newBase) => {
+          const newExpr = new OffsetAnchorExpression(newBase, expr.offset);
+          const onDone = () => this.update();
+          const op = sizeInFitContent
+            ? entry.axis === "horizontal"
+              ? buildAutoWidthPositionOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as "left" | "right",
+                    newExpr,
+                    prevExpr: expr,
+                  },
+                  onDone,
+                )
+              : buildAutoHeightPositionOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as "top" | "bottom",
+                    newExpr,
+                    prevExpr: expr,
+                  },
+                  onDone,
+                )
+            : entry.axis === "horizontal"
+              ? buildHRefOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as HSlot,
+                    base: newBase,
+                    exprFactory: (b) =>
+                      new OffsetAnchorExpression(b, expr.offset),
+                  },
+                  onDone,
+                )
+              : buildVRefOp(
+                  subject,
+                  {
+                    slot: entry.name as VSlot,
+                    base: newBase,
+                    exprFactory: (b) =>
+                      new OffsetAnchorExpression(b, expr.offset),
+                  },
+                  onDone,
+                );
+          this.push_(op);
+        },
+      );
     }
 
     this.renderNumberEdit_({
@@ -1290,23 +1348,39 @@ export class AnchorsPanel implements SidebarPanel {
           ? entry.axis === "horizontal"
             ? buildAutoWidthPositionOp(
                 subject as Element,
-                { slot: entry.name as "left" | "right", newExpr, prevExpr: expr },
+                {
+                  slot: entry.name as "left" | "right",
+                  newExpr,
+                  prevExpr: expr,
+                },
                 onDone,
               )
             : buildAutoHeightPositionOp(
                 subject as Element,
-                { slot: entry.name as "top" | "bottom", newExpr, prevExpr: expr },
+                {
+                  slot: entry.name as "top" | "bottom",
+                  newExpr,
+                  prevExpr: expr,
+                },
                 onDone,
               )
           : entry.axis === "horizontal"
             ? buildHRefOp(
                 subject as Element,
-                { slot: entry.name as HSlot, base, exprFactory: (b) => new OffsetAnchorExpression(b, v) },
+                {
+                  slot: entry.name as HSlot,
+                  base,
+                  exprFactory: (b) => new OffsetAnchorExpression(b, v),
+                },
                 onDone,
               )
             : buildVRefOp(
                 subject,
-                { slot: entry.name as VSlot, base, exprFactory: (b) => new OffsetAnchorExpression(b, v) },
+                {
+                  slot: entry.name as VSlot,
+                  base,
+                  exprFactory: (b) => new OffsetAnchorExpression(b, v),
+                },
                 onDone,
               );
         this.push_(op);
@@ -1358,34 +1432,58 @@ export class AnchorsPanel implements SidebarPanel {
 
     // Always-visible anchor slot list for the current target.
     if (info !== null) {
-      this.renderInlineSlotList_(subject, entry, base, info.target, (newBase) => {
-        const newExpr = new FractionAnchorExpression(newBase, expr.fraction);
-        const onDone = () => this.update();
-        const op = sizeInFitContent
-          ? entry.axis === "horizontal"
-            ? buildAutoWidthPositionOp(
-                subject as Element,
-                { slot: entry.name as "left" | "right", newExpr, prevExpr: expr },
-                onDone,
-              )
-            : buildAutoHeightPositionOp(
-                subject as Element,
-                { slot: entry.name as "top" | "bottom", newExpr, prevExpr: expr },
-                onDone,
-              )
-          : entry.axis === "horizontal"
-            ? buildHRefOp(
-                subject as Element,
-                { slot: entry.name as HSlot, base: newBase, exprFactory: (b) => new FractionAnchorExpression(b, expr.fraction) },
-                onDone,
-              )
-            : buildVRefOp(
-                subject,
-                { slot: entry.name as VSlot, base: newBase, exprFactory: (b) => new FractionAnchorExpression(b, expr.fraction) },
-                onDone,
-              );
-        this.push_(op);
-      });
+      this.renderInlineSlotList_(
+        subject,
+        entry,
+        base,
+        info.target,
+        (newBase) => {
+          const newExpr = new FractionAnchorExpression(newBase, expr.fraction);
+          const onDone = () => this.update();
+          const op = sizeInFitContent
+            ? entry.axis === "horizontal"
+              ? buildAutoWidthPositionOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as "left" | "right",
+                    newExpr,
+                    prevExpr: expr,
+                  },
+                  onDone,
+                )
+              : buildAutoHeightPositionOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as "top" | "bottom",
+                    newExpr,
+                    prevExpr: expr,
+                  },
+                  onDone,
+                )
+            : entry.axis === "horizontal"
+              ? buildHRefOp(
+                  subject as Element,
+                  {
+                    slot: entry.name as HSlot,
+                    base: newBase,
+                    exprFactory: (b) =>
+                      new FractionAnchorExpression(b, expr.fraction),
+                  },
+                  onDone,
+                )
+              : buildVRefOp(
+                  subject,
+                  {
+                    slot: entry.name as VSlot,
+                    base: newBase,
+                    exprFactory: (b) =>
+                      new FractionAnchorExpression(b, expr.fraction),
+                  },
+                  onDone,
+                );
+          this.push_(op);
+        },
+      );
     }
 
     this.renderNumberEdit_({
@@ -1399,23 +1497,39 @@ export class AnchorsPanel implements SidebarPanel {
           ? entry.axis === "horizontal"
             ? buildAutoWidthPositionOp(
                 subject as Element,
-                { slot: entry.name as "left" | "right", newExpr, prevExpr: expr },
+                {
+                  slot: entry.name as "left" | "right",
+                  newExpr,
+                  prevExpr: expr,
+                },
                 onDone,
               )
             : buildAutoHeightPositionOp(
                 subject as Element,
-                { slot: entry.name as "top" | "bottom", newExpr, prevExpr: expr },
+                {
+                  slot: entry.name as "top" | "bottom",
+                  newExpr,
+                  prevExpr: expr,
+                },
                 onDone,
               )
           : entry.axis === "horizontal"
             ? buildHRefOp(
                 subject as Element,
-                { slot: entry.name as HSlot, base, exprFactory: (b) => new FractionAnchorExpression(b, v) },
+                {
+                  slot: entry.name as HSlot,
+                  base,
+                  exprFactory: (b) => new FractionAnchorExpression(b, v),
+                },
                 onDone,
               )
             : buildVRefOp(
                 subject,
-                { slot: entry.name as VSlot, base, exprFactory: (b) => new FractionAnchorExpression(b, v) },
+                {
+                  slot: entry.name as VSlot,
+                  base,
+                  exprFactory: (b) => new FractionAnchorExpression(b, v),
+                },
                 onDone,
               );
         this.push_(op);

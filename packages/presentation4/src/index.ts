@@ -14,6 +14,10 @@
  * constructing a presentation.
  */
 export type * from "./clientAPI/index";
+export {
+  SYSTEM_DEFAULT_ELEMENT_STYLE,
+  SYSTEM_DEFAULT_SECTION_STYLE,
+} from "./clientAPI/index";
 export { createPresentation } from "./createPresentation";
 export type { ViewablePresentation } from "./createPresentation";
 export { constant, offsetFrom, fractionOf } from "./anchors/factories";

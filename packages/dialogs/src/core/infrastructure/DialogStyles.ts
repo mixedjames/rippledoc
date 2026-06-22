@@ -17,8 +17,8 @@ const DIALOG_CSS = `
   background: #fff;
   border-radius: 6px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
-  min-width: 380px;
-  max-width: 480px;
+  min-width: 460px;
+  max-width: 640px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -58,13 +58,34 @@ const DIALOG_CSS = `
   padding-top: 10px;
 }
 
+.rdoc-dlg-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rdoc-dlg-section-header-spacer {
+  flex: 0 0 52px;
+}
+
 .rdoc-dlg-section-title {
+  flex: 1;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #8a8a8a;
-  margin: 0 0 8px;
+  margin: 0;
+}
+
+.rdoc-dlg-section-default-label {
+  flex: 0 0 140px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #c8c8c8;
 }
 
 /* Rows */
@@ -86,6 +107,27 @@ const DIALOG_CSS = `
   flex: 1;
   display: flex;
   align-items: center;
+}
+
+.rdoc-dlg-row-default {
+  flex: 0 0 140px;
+  display: flex;
+  align-items: center;
+}
+
+.rdoc-dlg-default-val {
+  font-size: 11px;
+  color: #b8b8b8;
+  font-style: italic;
+}
+
+.rdoc-dlg-default-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 /* Unset placeholder */

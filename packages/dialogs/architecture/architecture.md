@@ -14,6 +14,7 @@ The package is split into two layers:
 The infrastructure provides a `DialogHost` — a class that owns a DOM overlay (a backdrop element appended to a mount point) and renders dialog content into it. One dialog is shown at a time.
 
 Each dialog call:
+
 1. Constructs the dialog's DOM content.
 2. Mounts it inside the overlay via `DialogHost`.
 3. Returns a `Promise<DialogResult<T>>` that resolves when the user commits or cancels.
@@ -25,9 +26,7 @@ The host manages focus trapping and Escape handling so individual dialogs don't 
 All dialogs resolve with a `DialogResult<T>` — a boolean-discriminated union defined in `clientAPI/`:
 
 ```ts
-type DialogResult<T> =
-  | { committed: true; value: T }
-  | { committed: false }
+type DialogResult<T> = { committed: true; value: T } | { committed: false };
 ```
 
 - **Commit**: `{ committed: true, value: T }` — the result value is present and typed.

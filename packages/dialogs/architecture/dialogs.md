@@ -26,7 +26,7 @@
 
 ## Anchor Picker
 
-**Purpose:** Let the user select an anchor by browsing the presentation's *logical* structure rather than clicking in the canvas.
+**Purpose:** Let the user select an anchor by browsing the presentation's _logical_ structure rather than clicking in the canvas.
 
 This dialog exists because some anchors have no useful visual representation. For example, `viewport-height` is a percentage-based anchor relative to the viewport — it appears in a list of logical anchors but cannot be pointed at on screen. The canvas-based picker in `view-editor` only handles anchors that correspond to visible elements.
 

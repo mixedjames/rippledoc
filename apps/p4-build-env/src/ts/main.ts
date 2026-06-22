@@ -400,7 +400,8 @@ function activateTool(toolKey: "select" | "anchorPicker"): void {
     focusedSection.style.display = "";
   }
   document.getElementById("toolSelect")!.dataset.active = String(isSelect);
-  document.getElementById("toolAnchorPicker")!.dataset.active = String(!isSelect);
+  document.getElementById("toolAnchorPicker")!.dataset.active =
+    String(!isSelect);
 }
 
 document

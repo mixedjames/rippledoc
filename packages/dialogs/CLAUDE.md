@@ -17,12 +17,12 @@ See [`architecture/architecture.md`](architecture/architecture.md) for the full 
 
 ## Dialogs
 
-| Dialog | Purpose |
-|---|---|
-| Global styles | Edit presentation-wide style defaults |
-| Named styles | Create, edit, and delete the presentation's named styles |
-| Anchor picker | Browse the presentation's logical structure to select an anchor |
-| Section manager | Reorder sections by drag-and-drop |
+| Dialog          | Purpose                                                         |
+| --------------- | --------------------------------------------------------------- |
+| Global styles   | Edit presentation-wide style defaults                           |
+| Named styles    | Create, edit, and delete the presentation's named styles        |
+| Anchor picker   | Browse the presentation's logical structure to select an anchor |
+| Section manager | Reorder sections by drag-and-drop                               |
 
 ## Architecture
 

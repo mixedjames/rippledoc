@@ -11,6 +11,7 @@ import type {
   FontWeight,
   ElementStyleProps,
   SectionStyleProps,
+  StyleRegistry,
 } from "@rippledoc/presentation4";
 import type { EditOperation } from "../../history/EditOperation";
 import type { EditorState } from "../../EditorState";
@@ -28,6 +29,40 @@ interface FontConsensus {
   weight: FontWeight | "mixed";
   color: Color | "mixed";
   italic: boolean | "mixed";
+}
+
+/**
+ * Where in the cascade a style property's value originates.
+ * "system" means no explicit value is set anywhere — the system default applies.
+ */
+type StyleSource =
+  | { level: "own" }
+  | { level: "named"; name: string }
+  | { level: "global" }
+  | { level: "system" };
+
+/** Consensus source across a multi-selection; "mixed" means elements disagree. */
+type SourceConsensus = StyleSource | "mixed";
+
+interface FontSourceConsensus {
+  family: SourceConsensus;
+  size: SourceConsensus;
+  weight: SourceConsensus;
+  color: SourceConsensus;
+  italic: SourceConsensus;
+}
+
+/** Options passed to fill/border section renderers. */
+interface SectionOpts {
+  source: SourceConsensus;
+  /** When provided, a "clear" button is shown that removes the section's own-level properties. */
+  onClear?: () => void;
+}
+
+/** Options passed to the font section renderer. */
+interface FontSectionOpts {
+  sources: FontSourceConsensus;
+  onClear?: () => void;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -96,6 +131,74 @@ function consensusFont(styles: ComputedElementStyle[]): FontConsensus {
   };
 }
 
+// ── Source helpers ─────────────────────────────────────────────────────────────
+
+function sourcesEqual(a: StyleSource, b: StyleSource): boolean {
+  if (a.level !== b.level) return false;
+  if (a.level === "named" && b.level === "named") return a.name === b.name;
+  return true;
+}
+
+function consensusSource(sources: StyleSource[]): SourceConsensus {
+  if (sources.length === 0) return { level: "system" };
+  const first = sources[0]!;
+  return sources.every((s) => sourcesEqual(s, first)) ? first : "mixed";
+}
+
+function elementPropSource<K extends keyof ElementStyleProps>(
+  el: Element,
+  key: K,
+  registry: StyleRegistry,
+): StyleSource {
+  if (el.styles.own[key] !== undefined) return { level: "own" };
+  for (const name of el.styles.named) {
+    if (registry.elementStyles.get(name)?.[key] !== undefined)
+      return { level: "named", name };
+  }
+  if (registry.globalElementStyle[key] !== undefined)
+    return { level: "global" };
+  return { level: "system" };
+}
+
+function sectionPropSource<K extends keyof SectionStyleProps>(
+  section: Section,
+  key: K,
+  registry: StyleRegistry,
+): StyleSource {
+  if (section.styles.own[key] !== undefined) return { level: "own" };
+  for (const name of section.styles.named) {
+    if (registry.sectionStyles.get(name)?.[key] !== undefined)
+      return { level: "named", name };
+  }
+  if (registry.globalSectionStyle[key] !== undefined)
+    return { level: "global" };
+  return { level: "system" };
+}
+
+/**
+ * Returns the annotation label for a source, or null when no annotation is needed
+ * (own styles are not annotated — the absence of a badge signals "set here").
+ */
+function sourceLabel(source: SourceConsensus): string | null {
+  if (source === "mixed" || source.level === "own") return null;
+  if (source.level === "named") return source.name;
+  if (source.level === "global") return "global";
+  return "default";
+}
+
+// ── Own-prop checks (for showing the clear button) ────────────────────────────
+
+function hasOwnFontProp(el: Element): boolean {
+  const own = el.styles.own;
+  return (
+    own.fontFamily !== undefined ||
+    own.fontSize !== undefined ||
+    own.fontWeight !== undefined ||
+    own.fontColor !== undefined ||
+    own.fontItalic !== undefined
+  );
+}
+
 // ── Type guard ────────────────────────────────────────────────────────────────
 
 function isMarkdown(el: Element): el is MarkdownElement {
@@ -132,6 +235,104 @@ function makeSectionStyleOp(
     execute() {
       for (const s of sections) {
         s.styles.set({ ...snapshots.get(s), ...patch });
+      }
+    },
+    undo() {
+      for (const s of sections) {
+        s.styles.set(snapshots.get(s)!);
+      }
+    },
+  };
+}
+
+function makeClearElementFillOp(elements: ReadonlySet<Element>): EditOperation {
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
+  return {
+    execute() {
+      for (const el of elements) {
+        const rest: ElementStyleProps = { ...snapshots.get(el)! };
+        delete rest.fill;
+        el.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const el of elements) {
+        el.styles.set(snapshots.get(el)!);
+      }
+    },
+  };
+}
+
+function makeClearElementBorderOp(
+  elements: ReadonlySet<Element>,
+): EditOperation {
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
+  return {
+    execute() {
+      for (const el of elements) {
+        const rest: ElementStyleProps = { ...snapshots.get(el)! };
+        delete rest.border;
+        el.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const el of elements) {
+        el.styles.set(snapshots.get(el)!);
+      }
+    },
+  };
+}
+
+function makeClearElementFontOp(elements: ReadonlySet<Element>): EditOperation {
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
+  return {
+    execute() {
+      for (const el of elements) {
+        const rest: ElementStyleProps = { ...snapshots.get(el)! };
+        delete rest.fontFamily;
+        delete rest.fontSize;
+        delete rest.fontWeight;
+        delete rest.fontColor;
+        delete rest.fontItalic;
+        el.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const el of elements) {
+        el.styles.set(snapshots.get(el)!);
+      }
+    },
+  };
+}
+
+function makeClearSectionFillOp(sections: ReadonlySet<Section>): EditOperation {
+  const snapshots = new Map([...sections].map((s) => [s, s.styles.own]));
+  return {
+    execute() {
+      for (const s of sections) {
+        const rest: SectionStyleProps = { ...snapshots.get(s)! };
+        delete rest.fill;
+        s.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const s of sections) {
+        s.styles.set(snapshots.get(s)!);
+      }
+    },
+  };
+}
+
+function makeClearSectionBorderOp(
+  sections: ReadonlySet<Section>,
+): EditOperation {
+  const snapshots = new Map([...sections].map((s) => [s, s.styles.own]));
+  return {
+    execute() {
+      for (const s of sections) {
+        const rest: SectionStyleProps = { ...snapshots.get(s)! };
+        delete rest.border;
+        s.styles.set(rest);
       }
     },
     undo() {
@@ -180,55 +381,162 @@ export class StylesPanel implements SidebarPanel {
   }
 
   private renderElementStyles_(elements: ReadonlySet<Element>): void {
-    const styles = [...elements].map((el) => el.styles.computed);
-    const markdownEls = [...elements].filter(isMarkdown);
+    const els = [...elements];
+    const styles = els.map((el) => el.styles.computed);
+    const registry = this.state_.presentation.styles;
+    const markdownEls = els.filter(isMarkdown);
 
     const fill = consensusFill(styles.map((s) => s.fill));
-    this.renderFillSection_(fill, (f) => {
-      this.push_(makeElementStyleOp(elements, { fill: f }));
-      this.update();
-    });
+    const fillSource = consensusSource(
+      els.map((el) => elementPropSource(el, "fill", registry)),
+    );
+    this.renderFillSection_(
+      fill,
+      {
+        source: fillSource,
+        onClear: els.some((el) => el.styles.own.fill !== undefined)
+          ? () => {
+              this.push_(makeClearElementFillOp(elements));
+              this.update();
+            }
+          : undefined,
+      },
+      (f) => {
+        this.push_(makeElementStyleOp(elements, { fill: f }));
+        this.update();
+      },
+    );
 
     const border = consensusBorder(styles.map((s) => s.border));
-    this.renderBorderSection_(border, (b) => {
-      this.push_(makeElementStyleOp(elements, { border: b }));
-      this.update();
-    });
+    const borderSource = consensusSource(
+      els.map((el) => elementPropSource(el, "border", registry)),
+    );
+    this.renderBorderSection_(
+      border,
+      {
+        source: borderSource,
+        onClear: els.some((el) => el.styles.own.border !== undefined)
+          ? () => {
+              this.push_(makeClearElementBorderOp(elements));
+              this.update();
+            }
+          : undefined,
+      },
+      (b) => {
+        this.push_(makeElementStyleOp(elements, { border: b }));
+        this.update();
+      },
+    );
 
     if (markdownEls.length > 0) {
       const mdStyles = markdownEls.map((el) => el.styles.computed);
       const font = consensusFont(mdStyles);
       const mdSet = new Set<Element>(markdownEls);
-      this.renderFontSection_(font, (patch) => {
-        this.push_(makeElementStyleOp(mdSet, patch));
-        this.update();
-      });
+      this.renderFontSection_(
+        font,
+        {
+          sources: {
+            family: consensusSource(
+              markdownEls.map((el) =>
+                elementPropSource(el, "fontFamily", registry),
+              ),
+            ),
+            size: consensusSource(
+              markdownEls.map((el) =>
+                elementPropSource(el, "fontSize", registry),
+              ),
+            ),
+            weight: consensusSource(
+              markdownEls.map((el) =>
+                elementPropSource(el, "fontWeight", registry),
+              ),
+            ),
+            color: consensusSource(
+              markdownEls.map((el) =>
+                elementPropSource(el, "fontColor", registry),
+              ),
+            ),
+            italic: consensusSource(
+              markdownEls.map((el) =>
+                elementPropSource(el, "fontItalic", registry),
+              ),
+            ),
+          },
+          onClear: markdownEls.some(hasOwnFontProp)
+            ? () => {
+                this.push_(makeClearElementFontOp(mdSet));
+                this.update();
+              }
+            : undefined,
+        },
+        (patch) => {
+          this.push_(makeElementStyleOp(mdSet, patch));
+          this.update();
+        },
+      );
     }
   }
 
   private renderSectionStyles_(sections: ReadonlySet<Section>): void {
-    const styles = [...sections].map((s) => s.styles.computed);
+    const secs = [...sections];
+    const styles = secs.map((s) => s.styles.computed);
+    const registry = this.state_.presentation.styles;
 
     const fill = consensusFill(styles.map((s) => s.fill));
-    this.renderFillSection_(fill, (f) => {
-      this.push_(makeSectionStyleOp(sections, { fill: f }));
-      this.update();
-    });
+    const fillSource = consensusSource(
+      secs.map((s) => sectionPropSource(s, "fill", registry)),
+    );
+    this.renderFillSection_(
+      fill,
+      {
+        source: fillSource,
+        onClear: secs.some((s) => s.styles.own.fill !== undefined)
+          ? () => {
+              this.push_(makeClearSectionFillOp(sections));
+              this.update();
+            }
+          : undefined,
+      },
+      (f) => {
+        this.push_(makeSectionStyleOp(sections, { fill: f }));
+        this.update();
+      },
+    );
 
     const border = consensusBorder(styles.map((s) => s.border));
-    this.renderBorderSection_(border, (b) => {
-      this.push_(makeSectionStyleOp(sections, { border: b }));
-      this.update();
-    });
+    const borderSource = consensusSource(
+      secs.map((s) => sectionPropSource(s, "border", registry)),
+    );
+    this.renderBorderSection_(
+      border,
+      {
+        source: borderSource,
+        onClear: secs.some((s) => s.styles.own.border !== undefined)
+          ? () => {
+              this.push_(makeClearSectionBorderOp(sections));
+              this.update();
+            }
+          : undefined,
+      },
+      (b) => {
+        this.push_(makeSectionStyleOp(sections, { border: b }));
+        this.update();
+      },
+    );
   }
 
   // ── Section renderers ─────────────────────────────────────────────────────
 
   private renderFillSection_(
     fill: Fill | "mixed",
+    opts: SectionOpts,
     onChange: (fill: Fill) => void,
   ): void {
-    const { section, body } = this.createSection_("Fill");
+    const { section, body } = this.createSection_(
+      "Fill",
+      opts.source,
+      opts.onClear,
+    );
     this.element.appendChild(section);
 
     const isMixed = fill === "mixed";
@@ -277,9 +585,14 @@ export class StylesPanel implements SidebarPanel {
 
   private renderBorderSection_(
     border: ComputedBorder | "mixed",
+    opts: SectionOpts,
     onChange: (b: Border) => void,
   ): void {
-    const { section, body } = this.createSection_("Border");
+    const { section, body } = this.createSection_(
+      "Border",
+      opts.source,
+      opts.onClear,
+    );
     this.element.appendChild(section);
 
     const isMixed = border === "mixed";
@@ -385,13 +698,23 @@ export class StylesPanel implements SidebarPanel {
 
   private renderFontSection_(
     font: FontConsensus,
+    opts: FontSectionOpts,
     onChange: (patch: ElementStyleProps) => void,
   ): void {
-    const { section, body } = this.createSection_("Font");
+    const { section, body } = this.createSection_(
+      "Font",
+      undefined,
+      opts.onClear,
+    );
     this.element.appendChild(section);
 
+    const { sources } = opts;
+
     // Family
-    const { row: familyRow, value: familyValue } = this.createRow_("Family");
+    const { row: familyRow, value: familyValue } = this.createRow_(
+      "Family",
+      sources.family,
+    );
     const familyInput = document.createElement("input");
     familyInput.type = "text";
     familyInput.className = "re-style-input re-style-input--text";
@@ -409,7 +732,10 @@ export class StylesPanel implements SidebarPanel {
 
     // Size — displays computed (basis) value; unit selector applies on write.
     // TODO: pre-select unit from element.styles.own.fontSize when present.
-    const { row: sizeRow, value: sizeValue } = this.createRow_("Size");
+    const { row: sizeRow, value: sizeValue } = this.createRow_(
+      "Size",
+      sources.size,
+    );
     const sizeInput = document.createElement("input");
     sizeInput.type = "number";
     sizeInput.className = "re-style-input re-style-input--number";
@@ -439,7 +765,10 @@ export class StylesPanel implements SidebarPanel {
     body.appendChild(sizeRow);
 
     // Weight
-    const { row: weightRow, value: weightValue } = this.createRow_("Weight");
+    const { row: weightRow, value: weightValue } = this.createRow_(
+      "Weight",
+      sources.weight,
+    );
     const weightOpts =
       font.weight === "mixed"
         ? [
@@ -461,19 +790,29 @@ export class StylesPanel implements SidebarPanel {
     weightValue.appendChild(weightSelect);
     body.appendChild(weightRow);
 
-    // Color
-    body.appendChild(
-      this.createColorRow_(
-        "Color",
-        font.color === "mixed" ? "mixed" : font.color,
-        (color) => {
-          onChange({ fontColor: color });
-        },
-      ),
+    // Color — createColorRow_ is 3 params, so the source badge is injected after the call.
+    const colorRow = this.createColorRow_(
+      "Color",
+      font.color === "mixed" ? "mixed" : font.color,
+      (color) => {
+        onChange({ fontColor: color });
+      },
     );
+    const colorSrcLabel = sourceLabel(sources.color);
+    if (colorSrcLabel !== null) {
+      const badge = document.createElement("span");
+      badge.className = "re-style-source re-style-source--row";
+      badge.textContent = colorSrcLabel;
+      // Insert between the label span (first child) and the value div (second child).
+      colorRow.insertBefore(badge, colorRow.children[1]!);
+    }
+    body.appendChild(colorRow);
 
     // Italic
-    const { row: italicRow, value: italicValue } = this.createRow_("Italic");
+    const { row: italicRow, value: italicValue } = this.createRow_(
+      "Italic",
+      sources.italic,
+    );
     const italicCheck = document.createElement("input");
     italicCheck.type = "checkbox";
     italicCheck.className = "re-style-check";
@@ -491,15 +830,36 @@ export class StylesPanel implements SidebarPanel {
 
   // ── Widget helpers ────────────────────────────────────────────────────────
 
-  private createSection_(title: string): {
-    section: HTMLElement;
-    body: HTMLElement;
-  } {
+  private createSection_(
+    title: string,
+    source?: SourceConsensus,
+    onClear?: () => void,
+  ): { section: HTMLElement; body: HTMLElement } {
     const section = document.createElement("div");
     section.className = "re-style-section";
     const titleEl = document.createElement("div");
     titleEl.className = "re-style-section__title";
-    titleEl.textContent = title;
+
+    const titleText = document.createElement("span");
+    titleText.textContent = title;
+    titleEl.appendChild(titleText);
+
+    const srcLabel = source !== undefined ? sourceLabel(source) : null;
+    if (srcLabel !== null) {
+      const badge = document.createElement("span");
+      badge.className = "re-style-source";
+      badge.textContent = srcLabel;
+      titleEl.appendChild(badge);
+    }
+
+    if (onClear !== undefined) {
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "re-style-clear";
+      clearBtn.textContent = "clear";
+      clearBtn.addEventListener("click", onClear);
+      titleEl.appendChild(clearBtn);
+    }
+
     const body = document.createElement("div");
     body.className = "re-style-section__body";
     section.appendChild(titleEl);
@@ -507,7 +867,10 @@ export class StylesPanel implements SidebarPanel {
     return { section, body };
   }
 
-  private createRow_(label: string): {
+  private createRow_(
+    label: string,
+    source?: SourceConsensus,
+  ): {
     row: HTMLElement;
     value: HTMLElement;
   } {
@@ -516,9 +879,16 @@ export class StylesPanel implements SidebarPanel {
     const lbl = document.createElement("span");
     lbl.className = "re-style-row__label";
     lbl.textContent = label;
+    row.appendChild(lbl);
+    const srcLabel = source !== undefined ? sourceLabel(source) : null;
+    if (srcLabel !== null) {
+      const badge = document.createElement("span");
+      badge.className = "re-style-source re-style-source--row";
+      badge.textContent = srcLabel;
+      row.appendChild(badge);
+    }
     const val = document.createElement("div");
     val.className = "re-style-row__value";
-    row.appendChild(lbl);
     row.appendChild(val);
     return { row, value: val };
   }

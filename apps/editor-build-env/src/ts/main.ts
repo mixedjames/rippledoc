@@ -53,7 +53,9 @@ const btnMultiSelect = document.getElementById(
 const btnUndo = document.getElementById("btnUndo")! as HTMLButtonElement;
 const btnRedo = document.getElementById("btnRedo")! as HTMLButtonElement;
 const btnNew = document.getElementById("btnNew")! as HTMLButtonElement;
-const btnGlobalStyles = document.getElementById("btnGlobalStyles")! as HTMLButtonElement;
+const btnGlobalStyles = document.getElementById(
+  "btnGlobalStyles",
+)! as HTMLButtonElement;
 
 const toolButtons: Record<EditorToolId, HTMLButtonElement> = {
   singleSelect: btnSingleSelect,

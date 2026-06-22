@@ -3,11 +3,16 @@ import type {
   Fill,
   Border,
   BorderEdgeStyle,
+  ComputedBorder,
   StyleValue,
   FontWeight,
   ElementStyleProps,
   SectionStyleProps,
   StyleRegistry,
+} from "@rippledoc/presentation4";
+import {
+  SYSTEM_DEFAULT_ELEMENT_STYLE,
+  SYSTEM_DEFAULT_SECTION_STYLE,
 } from "@rippledoc/presentation4";
 import type { DialogResult } from "../../clientAPI/DialogResult";
 import type { OperationSink } from "../../clientAPI/OperationSink";
@@ -29,9 +34,18 @@ function colorToHex(c: Color): string {
 
 function hexAlphaToColor(hex: string, alphaPct: number): Color {
   return {
-    r: parseInt(hex.slice(HEX_R_OFFSET, HEX_R_OFFSET + HEX_CHANNEL_WIDTH), HEX_RADIX),
-    g: parseInt(hex.slice(HEX_G_OFFSET, HEX_G_OFFSET + HEX_CHANNEL_WIDTH), HEX_RADIX),
-    b: parseInt(hex.slice(HEX_B_OFFSET, HEX_B_OFFSET + HEX_CHANNEL_WIDTH), HEX_RADIX),
+    r: parseInt(
+      hex.slice(HEX_R_OFFSET, HEX_R_OFFSET + HEX_CHANNEL_WIDTH),
+      HEX_RADIX,
+    ),
+    g: parseInt(
+      hex.slice(HEX_G_OFFSET, HEX_G_OFFSET + HEX_CHANNEL_WIDTH),
+      HEX_RADIX,
+    ),
+    b: parseInt(
+      hex.slice(HEX_B_OFFSET, HEX_B_OFFSET + HEX_CHANNEL_WIDTH),
+      HEX_RADIX,
+    ),
     a: alphaPct / 100,
   };
 }
@@ -64,12 +78,55 @@ function makeClearBtn(onClick: () => void): HTMLButtonElement {
   return btn;
 }
 
+// ── Default value rendering ───────────────────────────────────────────────────
+
+function renderDefaultText(text: string): HTMLElement {
+  const span = el("span", "rdoc-dlg-default-val");
+  span.textContent = text;
+  return span;
+}
+
+function renderDefaultSwatch(c: Color): HTMLElement {
+  const swatch = el("span", "rdoc-dlg-default-swatch");
+  swatch.style.backgroundColor = `rgba(${c.r},${c.g},${c.b},${c.a})`;
+  return swatch;
+}
+
+function renderDefaultColor(c: Color): HTMLElement {
+  const label = el("span", "rdoc-dlg-default-val");
+  label.textContent = `${colorToHex(c)} ${Math.round(c.a * 100)}%`;
+  const wrap = el("div", "rdoc-dlg-group");
+  wrap.append(renderDefaultSwatch(c), label);
+  return wrap;
+}
+
+function renderDefaultFill(f: Fill): HTMLElement {
+  if (f.type === "none") return renderDefaultText("None");
+  const label = el("span", "rdoc-dlg-default-val");
+  label.textContent = "Solid";
+  const wrap = el("div", "rdoc-dlg-group");
+  wrap.append(label, renderDefaultSwatch(f.color));
+  return wrap;
+}
+
+function renderDefaultBorder(b: ComputedBorder): HTMLElement {
+  if (b.type === "none") return renderDefaultText("None");
+  const label = el("span", "rdoc-dlg-default-val");
+  label.textContent = `${b.width} basis ${b.style}`;
+  const wrap = el("div", "rdoc-dlg-group");
+  wrap.append(label, renderDefaultSwatch(b.color));
+  return wrap;
+}
+
 // ── Inline colour inputs ──────────────────────────────────────────────────────
 //
 // Used inside FillControl and BorderControl where a colour is always required
 // once the type is set — no unset state, no nested clear button.
 
-function makeColorInputs(initial: Color): { element: HTMLElement; getValue: () => Color } {
+function makeColorInputs(initial: Color): {
+  element: HTMLElement;
+  getValue: () => Color;
+} {
   const hexInput = el("input", "rdoc-dlg-input");
   hexInput.type = "color";
   hexInput.value = colorToHex(initial);
@@ -89,7 +146,8 @@ function makeColorInputs(initial: Color): { element: HTMLElement; getValue: () =
 
   return {
     element,
-    getValue: () => hexAlphaToColor(hexInput.value, parseFloat(alphaInput.value)),
+    getValue: () =>
+      hexAlphaToColor(hexInput.value, parseFloat(alphaInput.value)),
   };
 }
 
@@ -124,7 +182,12 @@ class ColorControl {
     alphaLabel.textContent = "%";
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.hexInput_, this.alphaInput_, alphaLabel, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.hexInput_,
+      this.alphaInput_,
+      alphaLabel,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -136,7 +199,10 @@ class ColorControl {
 
   getValue(): Color | undefined {
     if (!this.active_) return undefined;
-    return hexAlphaToColor(this.hexInput_.value, parseFloat(this.alphaInput_.value));
+    return hexAlphaToColor(
+      this.hexInput_.value,
+      parseFloat(this.alphaInput_.value),
+    );
   }
 
   private onActivate_(): void {
@@ -163,23 +229,34 @@ class FillControl {
   readonly element: HTMLElement;
   private type_: "unset" | "none" | "solid";
   private readonly typeSelect_: HTMLSelectElement;
-  private readonly colorInputs_: { element: HTMLElement; getValue: () => Color };
+  private readonly colorInputs_: {
+    element: HTMLElement;
+    getValue: () => Color;
+  };
   private readonly unsetView_: HTMLElement;
   private readonly setView_: HTMLElement;
 
   constructor(initial: Fill | undefined) {
     this.type_ = initial === undefined ? "unset" : initial.type;
-    const initColor = initial?.type === "solid" ? initial.color : DEFAULT_FILL_COLOR;
+    const initColor =
+      initial?.type === "solid" ? initial.color : DEFAULT_FILL_COLOR;
 
     this.colorInputs_ = makeColorInputs(initColor);
 
     this.typeSelect_ = el("select", "rdoc-dlg-select");
-    this.typeSelect_.append(new Option("None", "none"), new Option("Solid", "solid"));
+    this.typeSelect_.append(
+      new Option("None", "none"),
+      new Option("Solid", "solid"),
+    );
     this.typeSelect_.value = this.type_ === "solid" ? "solid" : "none";
     this.typeSelect_.addEventListener("change", () => this.onTypeChange_());
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.typeSelect_, this.colorInputs_.element, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.typeSelect_,
+      this.colorInputs_.element,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -215,7 +292,8 @@ class FillControl {
     const isUnset = this.type_ === "unset";
     this.unsetView_.style.display = isUnset ? "" : "none";
     this.setView_.style.display = isUnset ? "none" : "";
-    this.colorInputs_.element.style.display = this.type_ === "solid" ? "" : "none";
+    this.colorInputs_.element.style.display =
+      this.type_ === "solid" ? "" : "none";
   }
 }
 
@@ -230,7 +308,10 @@ class BorderControl {
   private readonly typeSelect_: HTMLSelectElement;
   private readonly widthInput_: HTMLInputElement;
   private readonly styleSelect_: HTMLSelectElement;
-  private readonly colorInputs_: { element: HTMLElement; getValue: () => Color };
+  private readonly colorInputs_: {
+    element: HTMLElement;
+    getValue: () => Color;
+  };
   private readonly details_: HTMLElement;
   private readonly unsetView_: HTMLElement;
   private readonly setView_: HTMLElement;
@@ -239,7 +320,8 @@ class BorderControl {
     this.type_ = initial === undefined ? "unset" : initial.type;
     const initWidth = initial?.type === "border" ? initial.width.value : 1;
     const initStyle = initial?.type === "border" ? initial.style : "solid";
-    const initColor = initial?.type === "border" ? initial.color : DEFAULT_BORDER_COLOR;
+    const initColor =
+      initial?.type === "border" ? initial.color : DEFAULT_BORDER_COLOR;
 
     this.colorInputs_ = makeColorInputs(initColor);
 
@@ -257,15 +339,26 @@ class BorderControl {
     }
 
     this.typeSelect_ = el("select", "rdoc-dlg-select");
-    this.typeSelect_.append(new Option("None", "none"), new Option("Border", "border"));
+    this.typeSelect_.append(
+      new Option("None", "none"),
+      new Option("Border", "border"),
+    );
     this.typeSelect_.value = this.type_ === "border" ? "border" : "none";
     this.typeSelect_.addEventListener("change", () => this.onTypeChange_());
 
     this.details_ = el("div", "rdoc-dlg-group");
-    this.details_.append(this.widthInput_, this.styleSelect_, this.colorInputs_.element);
+    this.details_.append(
+      this.widthInput_,
+      this.styleSelect_,
+      this.colorInputs_.element,
+    );
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.typeSelect_, this.details_, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.typeSelect_,
+      this.details_,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -278,9 +371,17 @@ class BorderControl {
   getValue(): Border | undefined {
     if (this.type_ === "unset") return undefined;
     if (this.type_ === "none") return { type: "none" };
-    const width: StyleValue = { unit: "basis", value: parseFloat(this.widthInput_.value) || 1 };
+    const width: StyleValue = {
+      unit: "basis",
+      value: parseFloat(this.widthInput_.value) || 1,
+    };
     const style = this.styleSelect_.value as BorderEdgeStyle;
-    return { type: "border", width, style, color: this.colorInputs_.getValue() };
+    return {
+      type: "border",
+      width,
+      style,
+      color: this.colorInputs_.getValue(),
+    };
   }
 
   private onActivate_(): void {
@@ -325,7 +426,10 @@ class FontFamilyControl {
     this.input_.placeholder = "e.g. sans-serif";
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.input_, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.input_,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -336,7 +440,7 @@ class FontFamilyControl {
   }
 
   getValue(): string | undefined {
-    return this.active_ ? (this.input_.value || undefined) : undefined;
+    return this.active_ ? this.input_.value || undefined : undefined;
   }
 
   private onActivate_(): void {
@@ -380,7 +484,11 @@ class FontSizeControl {
     unit.textContent = "basis";
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.input_, unit, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.input_,
+      unit,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -416,8 +524,11 @@ class FontSizeControl {
 
 // ── FontWeightControl ─────────────────────────────────────────────────────────
 
-// eslint-disable-next-line no-magic-numbers
-const FONT_WEIGHTS: FontWeight[] = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+/* eslint-disable no-magic-numbers */
+const FONT_WEIGHTS: FontWeight[] = [
+  100, 200, 300, 400, 500, 600, 700, 800, 900,
+];
+/* eslint-enable no-magic-numbers */
 const DEFAULT_FONT_WEIGHT: FontWeight = 400;
 
 class FontWeightControl {
@@ -438,7 +549,10 @@ class FontWeightControl {
     }
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(this.select_, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      this.select_,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -449,7 +563,9 @@ class FontWeightControl {
   }
 
   getValue(): FontWeight | undefined {
-    return this.active_ ? (Number(this.select_.value) as FontWeight) : undefined;
+    return this.active_
+      ? (Number(this.select_.value) as FontWeight)
+      : undefined;
   }
 
   private onActivate_(): void {
@@ -493,7 +609,10 @@ class FontItalicControl {
     toggle.append(this.italicBtn_, this.normalBtn_);
 
     this.setView_ = el("div", "rdoc-dlg-group");
-    this.setView_.append(toggle, makeClearBtn(() => this.onClear_()));
+    this.setView_.append(
+      toggle,
+      makeClearBtn(() => this.onClear_()),
+    );
 
     this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
 
@@ -529,28 +648,45 @@ class FontItalicControl {
   }
 
   private updateToggleState_(): void {
-    this.italicBtn_.classList.toggle("rdoc-dlg-toggle-btn--active", this.value_ === true);
-    this.normalBtn_.classList.toggle("rdoc-dlg-toggle-btn--active", this.value_ === false);
+    this.italicBtn_.classList.toggle(
+      "rdoc-dlg-toggle-btn--active",
+      this.value_ === true,
+    );
+    this.normalBtn_.classList.toggle(
+      "rdoc-dlg-toggle-btn--active",
+      this.value_ === false,
+    );
   }
 }
 
 // ── Layout helpers ────────────────────────────────────────────────────────────
 
-function buildRow(label: string, control: HTMLElement): HTMLElement {
+function buildRow(
+  label: string,
+  control: HTMLElement,
+  defaultEl?: HTMLElement,
+): HTMLElement {
   const row = el("div", "rdoc-dlg-row");
   const lbl = el("span", "rdoc-dlg-row-label");
   lbl.textContent = label;
   const wrap = el("div", "rdoc-dlg-row-control");
   wrap.appendChild(control);
-  row.append(lbl, wrap);
+  const defCell = el("div", "rdoc-dlg-row-default");
+  if (defaultEl !== undefined) defCell.appendChild(defaultEl);
+  row.append(lbl, wrap, defCell);
   return row;
 }
 
 function buildSection(title: string, rows: HTMLElement[]): HTMLElement {
   const section = el("div", "rdoc-dlg-section");
+  const spacer = el("span", "rdoc-dlg-section-header-spacer");
   const heading = el("p", "rdoc-dlg-section-title");
   heading.textContent = title;
-  section.appendChild(heading);
+  const defLabel = el("span", "rdoc-dlg-section-default-label");
+  defLabel.textContent = "System default";
+  const header = el("div", "rdoc-dlg-section-header");
+  header.append(spacer, heading, defLabel);
+  section.appendChild(header);
   for (const row of rows) section.appendChild(row);
   return section;
 }
@@ -635,25 +771,44 @@ function buildContent(
     close({ committed: true, value: undefined });
   };
 
+  const ed = SYSTEM_DEFAULT_ELEMENT_STYLE;
+  const sd = SYSTEM_DEFAULT_SECTION_STYLE;
+
   const body = el("div", "rdoc-dlg-body");
   body.append(
     buildSection("Elements", [
-      buildRow("Fill", eFill.element),
-      buildRow("Border", eBorder.element),
-      buildRow("Family", eFontFamily.element),
-      buildRow("Size", eFontSize.element),
-      buildRow("Weight", eFontWeight.element),
-      buildRow("Color", eFontColor.element),
-      buildRow("Italic", eFontItalic.element),
+      buildRow("Fill", eFill.element, renderDefaultFill(ed.fill)),
+      buildRow("Border", eBorder.element, renderDefaultBorder(ed.border)),
+      buildRow("Family", eFontFamily.element, renderDefaultText(ed.fontFamily)),
+      buildRow(
+        "Size",
+        eFontSize.element,
+        renderDefaultText(`${ed.fontSize} basis`),
+      ),
+      buildRow(
+        "Weight",
+        eFontWeight.element,
+        renderDefaultText(String(ed.fontWeight)),
+      ),
+      buildRow("Color", eFontColor.element, renderDefaultColor(ed.fontColor)),
+      buildRow(
+        "Italic",
+        eFontItalic.element,
+        renderDefaultText(ed.fontItalic ? "Italic" : "Normal"),
+      ),
     ]),
     buildSection("Sections", [
-      buildRow("Fill", sFill.element),
-      buildRow("Border", sBorder.element),
+      buildRow("Fill", sFill.element, renderDefaultFill(sd.fill)),
+      buildRow("Border", sBorder.element, renderDefaultBorder(sd.border)),
     ]),
   );
 
   const dialog = el("div");
-  dialog.append(buildHeader("Global Styles"), body, buildFooter(onDismiss, onCommit));
+  dialog.append(
+    buildHeader("Global Styles"),
+    body,
+    buildFooter(onDismiss, onCommit),
+  );
 
   return { element: dialog, onDismiss };
 }
@@ -665,5 +820,7 @@ export function openGlobalStylesDialog(
   styles: StyleRegistry,
   sink: OperationSink,
 ): Promise<DialogResult<void>> {
-  return host.show<DialogResult<void>>((close) => buildContent(styles, sink, close));
+  return host.show<DialogResult<void>>((close) =>
+    buildContent(styles, sink, close),
+  );
 }

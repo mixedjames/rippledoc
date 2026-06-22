@@ -39,6 +39,14 @@ export class CoreStyleRegistry implements StyleRegistry {
     this.onSectionStylesChanged_();
   }
 
+  get elementStyles(): ReadonlyMap<string, ElementStyleProps> {
+    return this.elementStyles_;
+  }
+
+  get sectionStyles(): ReadonlyMap<string, SectionStyleProps> {
+    return this.sectionStyles_;
+  }
+
   get globalElementStyle(): ElementStyleProps {
     return this.globalElementStyle_;
   }

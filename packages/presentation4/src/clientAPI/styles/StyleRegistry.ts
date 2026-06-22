@@ -26,6 +26,12 @@ export interface StyleRegistry {
    */
   defineSectionStyle(name: string, style: SectionStyleProps): void;
 
+  /** All named element styles, keyed by name. */
+  get elementStyles(): ReadonlyMap<string, ElementStyleProps>;
+
+  /** All named section styles, keyed by name. */
+  get sectionStyles(): ReadonlyMap<string, SectionStyleProps>;
+
   /** The author's global element style override. Partial — merged with system defaults. */
   get globalElementStyle(): ElementStyleProps;
   setGlobalElementStyle(style: ElementStyleProps): void;

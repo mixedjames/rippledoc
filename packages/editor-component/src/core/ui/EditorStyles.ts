@@ -107,12 +107,35 @@ const EDITOR_CSS = `
 }
 
 .re-style-section__title {
+  display: flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--re-panel-empty-fg);
   margin-bottom: 6px;
+}
+
+.re-style-clear {
+  margin-left: auto;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: var(--re-panel-empty-fg);
+  font-size: 9px;
+  font-style: italic;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 14px;
+}
+
+.re-style-clear:hover {
+  color: var(--re-panel-header-fg);
+  background: var(--re-panel-header-hover-bg);
 }
 
 .re-style-row {
@@ -176,6 +199,26 @@ const EDITOR_CSS = `
 
 .re-style-check {
   cursor: pointer;
+}
+
+/* Source-level badge — appears in section titles and between row label and value. */
+.re-style-source {
+  font-weight: normal;
+  font-size: 9px;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #aaa;
+  margin-left: 4px;
+}
+
+.re-style-source--row {
+  flex-shrink: 0;
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 0;
 }
 
 /* ── Anchors panel ─────────────────────────────────────────────────────────── */

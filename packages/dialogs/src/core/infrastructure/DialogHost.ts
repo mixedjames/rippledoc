@@ -27,7 +27,10 @@ export class DialogHost {
   }
 
   show<T>(
-    builder: (close: (result: T) => void) => { element: HTMLElement; onDismiss: () => void },
+    builder: (close: (result: T) => void) => {
+      element: HTMLElement;
+      onDismiss: () => void;
+    },
   ): Promise<T> {
     return new Promise((resolve) => {
       const close = (result: T): void => {
@@ -43,14 +46,18 @@ export class DialogHost {
       this.backdrop_.classList.add("rdoc-dlg-backdrop--open");
 
       this.previousFocus_ =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
 
       this.escapeHandler_ = (e: KeyboardEvent): void => {
         if (e.key === "Escape") onDismiss();
       };
       document.addEventListener("keydown", this.escapeHandler_);
 
-      const first = element.querySelector<HTMLElement>("button, input, select, [tabindex]");
+      const first = element.querySelector<HTMLElement>(
+        "button, input, select, [tabindex]",
+      );
       first?.focus();
     });
   }
