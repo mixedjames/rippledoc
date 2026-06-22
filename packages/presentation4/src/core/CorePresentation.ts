@@ -5,6 +5,8 @@ import type {
 import type { PresentationRoot } from "../clientAPI/PresentationRoot";
 import type { LayoutManager } from "../clientAPI/LayoutManager";
 import type { StyleRegistry } from "../clientAPI/styles/StyleRegistry";
+import type { NamedElementStyle } from "../clientAPI/styles/NamedElementStyle";
+import type { NamedSectionStyle } from "../clientAPI/styles/NamedSectionStyle";
 import type { Layout } from "../clientAPI/Layout";
 import type { Anchor } from "../anchors/Anchor";
 import type {
@@ -141,10 +143,12 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     this.eventController_ = new EventController<PresentationEvents>();
     this.eventContext_ = new EventContext(this.eventController_);
 
-    this.styles_ = new CoreStyleRegistry(
-      () => this.onAllElementStylesChanged_(),
-      () => this.onAllSectionStylesChanged_(),
-    );
+    this.styles_ = new CoreStyleRegistry({
+      onElementStylesChanged: () => this.onAllElementStylesChanged_(),
+      onSectionStylesChanged: () => this.onAllSectionStylesChanged_(),
+      isElementStyleInUse: (style) => this.isElementStyleInUse_(style),
+      isSectionStyleInUse: (style) => this.isSectionStyleInUse_(style),
+    });
 
     this.root_ = new CorePresentationRoot(this);
 
@@ -207,6 +211,9 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
       this.triggers_.map((t, i) => [t, i] as const),
     );
     const ctx: SerializeContext = { layouts, anchorLookups, triggerIndex };
+    // TODO: styles not yet serialized — PresentationMemento needs elementStyles,
+    // sectionStyles, globalElementStyle, globalSectionStyle, and per-element/section
+    // ownStyle and namedStyles (stored as name strings, re-linked by object on load).
     return {
       version: 1,
       layouts: layouts.map((l) => ({
@@ -249,6 +256,18 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
 
   get coreStyleRegistry(): CoreStyleRegistry {
     return this.styles_;
+  }
+
+  private isElementStyleInUse_(style: NamedElementStyle): boolean {
+    return this.root_.coreSections.some((section) =>
+      section.coreElements.some((element) => element.named.includes(style)),
+    );
+  }
+
+  private isSectionStyleInUse_(style: NamedSectionStyle): boolean {
+    return this.root_.coreSections.some((section) =>
+      section.named.includes(style),
+    );
   }
 
   private onAllElementStylesChanged_(): void {

@@ -120,7 +120,7 @@ export class EditorPinManager {
   }
 
   disconnect(): void {
-    this.unsubscribe_.forEach((fn) => fn());
+    for (const fn of this.unsubscribe_) fn();
     this.unsubscribe_.length = 0;
 
     // Unwrap: replace the wrapper with the original element div.

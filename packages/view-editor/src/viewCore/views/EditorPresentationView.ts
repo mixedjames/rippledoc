@@ -17,7 +17,7 @@ export type EditorViewConfig = {
  *   const editor = createEditorView({ container: "#app" });
  *   presentation.attachView(editor.viewFactory);
  *   editor.events.on("element:picked", ({ element }) => { ... });
- *   editor.selection.add(someElement);
+ *   editor.selection.addElement(someElement);
  */
 export function createEditorView(
   config: EditorViewConfig,

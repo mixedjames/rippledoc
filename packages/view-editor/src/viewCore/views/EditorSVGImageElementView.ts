@@ -4,10 +4,17 @@ import type { EditorSectionView } from "./EditorSectionView";
 import { EditorElementView } from "./EditorElementView";
 
 export class EditorSVGImageElementView extends EditorElementView {
+  private readonly abort_: AbortController = new AbortController();
+
   constructor(owner: p4.SVGImageElementViewOwner, parent: EditorSectionView) {
     super(owner, parent);
     this.element.classList.add("svg-image-element");
     this.loadSVG_(owner.src);
+  }
+
+  override destroy(): void {
+    this.abort_.abort();
+    super.destroy();
   }
 
   private loadSVG_(src: string): void {
@@ -21,7 +28,7 @@ export class EditorSVGImageElementView extends EditorElementView {
     placeholder.setAttribute("height", "100%");
     this.contentElement.appendChild(placeholder);
 
-    fetch(src)
+    fetch(src, { signal: this.abort_.signal })
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -48,6 +55,7 @@ export class EditorSVGImageElementView extends EditorElementView {
         this.notifyContentChanged();
       })
       .catch((err) => {
+        if (this.abort_.signal.aborted) return;
         console.error(err);
       });
   }

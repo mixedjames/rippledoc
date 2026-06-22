@@ -18,6 +18,7 @@ import type {
   ComputedSectionStyle,
   SectionStyles,
 } from "../clientAPI/styles/SectionStyleProps";
+import type { NamedSectionStyle } from "../clientAPI/styles/NamedSectionStyle";
 import type { CoreStyleRegistry } from "./CoreStyleRegistry";
 import type { PresentationView } from "../viewAPI/PresentationView";
 import type { SectionView } from "../viewAPI/SectionView";
@@ -60,7 +61,7 @@ export class CoreSection
   private view_: SectionView;
   private readonly animations_: CoreSectionAnimations;
   private ownStyle_: SectionStyleProps = {};
-  private namedStyles_: string[] = [];
+  private namedStyles_: NamedSectionStyle[] = [];
   private computedStyle_: ComputedSectionStyle;
 
   constructor(root: CorePresentationRoot, name: string) {
@@ -168,22 +169,22 @@ export class CoreSection
     this.recomputeAndPushStyle_();
   }
 
-  addNamed(name: string): void {
-    if (!this.namedStyles_.includes(name)) {
-      this.namedStyles_.push(name);
+  addNamed(style: NamedSectionStyle): void {
+    if (!this.namedStyles_.includes(style)) {
+      this.namedStyles_.push(style);
       this.recomputeAndPushStyle_();
     }
   }
 
-  removeNamed(name: string): void {
-    const index = this.namedStyles_.indexOf(name);
+  removeNamed(style: NamedSectionStyle): void {
+    const index = this.namedStyles_.indexOf(style);
     if (index >= 0) {
       this.namedStyles_.splice(index, 1);
       this.recomputeAndPushStyle_();
     }
   }
 
-  get named(): readonly string[] {
+  get named(): ReadonlyArray<NamedSectionStyle> {
     return this.namedStyles_;
   }
 
@@ -288,12 +289,9 @@ export class CoreSection
 
   private buildComputedStyle_(): ComputedSectionStyle {
     const registry = this.root_.styleRegistry;
-    const namedProps = this.namedStyles_.map(
-      (name) => registry.lookupSectionStyle(name) ?? {},
-    );
     return resolveSectionStyle({
       own: this.ownStyle_,
-      named: namedProps,
+      named: this.namedStyles_.map((s) => s.props),
       authorGlobal: registry.globalSectionStyle,
     });
   }

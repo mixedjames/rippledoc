@@ -178,11 +178,21 @@ describe("element selection — setElements", () => {
     expect(listener).toHaveBeenCalledOnce();
   });
 
-  it("setElements([]) is equivalent to clear()", () => {
+  it("setElements([]) empties the element selection", () => {
     const ctrl = new EditorViewControllerImpl();
     ctrl.selection.addElement(makeEl());
     ctrl.selection.setElements([]);
     expect(ctrl.selection.elements.size).toBe(0);
+  });
+
+  it("setElements([]) on an already-empty selection fires no event", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const listener = vi.fn();
+    ctrl.events.on("selection:changed", listener);
+
+    ctrl.selection.setElements([]);
+
+    expect(listener).not.toHaveBeenCalled();
   });
 });
 
@@ -270,6 +280,16 @@ describe("section selection — setSections", () => {
 
     expect(ctrl.selection.hasSection(s1)).toBe(false);
     expect(ctrl.selection.hasSection(s2)).toBe(true);
+  });
+
+  it("setSections([]) on an already-empty selection fires no event", () => {
+    const ctrl = new EditorViewControllerImpl();
+    const listener = vi.fn();
+    ctrl.events.on("selection:changed", listener);
+
+    ctrl.selection.setSections([]);
+
+    expect(listener).not.toHaveBeenCalled();
   });
 });
 

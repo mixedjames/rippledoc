@@ -36,6 +36,11 @@ export class EditorViewControllerImpl implements EditorViewController {
 
   // Set once by createEditorView() immediately after construction, before
   // this object is returned to callers. Non-null thereafter.
+  // ?FIXME: The null window exists because the factory closure must capture `ctrl`
+  // by reference, so `ctrl` must be constructed before the factory is created.
+  // A cleaner alternative: accept a factory initializer in the constructor —
+  //   constructor(init: (self: EditorViewControllerImpl) => p4.PresentationViewFactory)
+  // — so viewFactory_ can be readonly non-null from the first line of the constructor.
   private viewFactory_: p4.PresentationViewFactory | null = null;
 
   constructor() {
@@ -52,7 +57,12 @@ export class EditorViewControllerImpl implements EditorViewController {
   }
 
   get viewFactory(): p4.PresentationViewFactory {
-    return this.viewFactory_!;
+    if (this.viewFactory_ === null) {
+      throw new Error(
+        "EditorViewControllerImpl: viewFactory accessed before setFactory() was called",
+      );
+    }
+    return this.viewFactory_;
   }
 
   get events(): EditorViewEventSource {
@@ -198,10 +208,11 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   }
 
   setElements(elements: Iterable<p4.Element>): void {
+    const hadData = this.sectionSet_.size > 0 || this.elementSet_.size > 0;
     this.sectionSet_.clear();
     this.elementSet_.clear();
     for (const el of elements) this.elementSet_.add(el);
-    this.ctrl_.onSelectionChanged();
+    if (hadData || this.elementSet_.size > 0) this.ctrl_.onSelectionChanged();
   }
 
   hasElement(element: p4.Element): boolean {
@@ -232,10 +243,11 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   }
 
   setSections(sections: Iterable<p4.Section>): void {
+    const hadData = this.sectionSet_.size > 0 || this.elementSet_.size > 0;
     this.elementSet_.clear();
     this.sectionSet_.clear();
     for (const s of sections) this.sectionSet_.add(s);
-    this.ctrl_.onSelectionChanged();
+    if (hadData || this.sectionSet_.size > 0) this.ctrl_.onSelectionChanged();
   }
 
   hasSection(section: p4.Section): boolean {

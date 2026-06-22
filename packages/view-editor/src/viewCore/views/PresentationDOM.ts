@@ -14,7 +14,7 @@ import type { ViewMode } from "../../clientAPI/ViewMode";
  *         viewport (div, overflow-y:auto, tabIndex=0 — the scroll and keyboard container)
  *           backgrounds (div — one child per section, for section backgrounds)
  *           elements   (div — one child per element, in global virtual coords)
- *         overlay (div, pointer-events:none — future: selection UI overlays)
+ *         overlay (div, pointer-events:none — contains the pins layer)
  *           pins (div)
  *
  * backgrounds and elements are both absolutely positioned and sized to

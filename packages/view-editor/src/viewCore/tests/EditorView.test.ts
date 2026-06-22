@@ -16,9 +16,12 @@ import { createPresentation } from "@rippledoc/presentation4";
 import type { ViewablePresentation } from "@rippledoc/presentation4";
 import { createEditorView } from "../views/EditorPresentationView";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
-import type { Element } from "@rippledoc/presentation4/viewAPI";
+import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Work around collision between DOM Element and p4 Element/Section types.
+type Element_ = globalThis.Element;
 
 /** Navigate into the shadow DOM and return the .viewport element. */
 function getViewport(container: HTMLElement): Element_ {
@@ -31,8 +34,21 @@ function getElementDivs(container: HTMLElement): NodeListOf<Element_> {
   return getViewport(container).querySelectorAll(".element");
 }
 
-// Work around collision between DOM Element and p4 Element types in this file.
-type Element_ = globalThis.Element;
+/** Return all .section-background divs in the backgrounds layer. */
+function getSectionBackgrounds(container: HTMLElement): NodeListOf<Element_> {
+  return getViewport(container)
+    .querySelector(".backgrounds")!
+    .querySelectorAll(".section-background");
+}
+
+/** Return all selected section backgrounds. */
+function getSelectedSectionBackgrounds(
+  container: HTMLElement,
+): NodeListOf<Element_> {
+  return getViewport(container)
+    .querySelector(".backgrounds")!
+    .querySelectorAll(".section-background.selected");
+}
 
 // ── Shared setup ─────────────────────────────────────────────────────────────
 
@@ -88,6 +104,14 @@ describe("pre-attach validity", () => {
 
     const focused = getViewport(container).querySelectorAll(".element.focused");
     expect(focused).toHaveLength(1);
+  });
+
+  it("section selection set before attachView is reflected in background div class on attach", () => {
+    const section = presentation.root.addSection() as unknown as Section;
+    editor.selection.addSection(section);
+    presentation.attachView(editor.viewFactory);
+
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(1);
   });
 });
 
@@ -228,6 +252,58 @@ describe("focus — CSS class on element divs", () => {
   });
 });
 
+// ── Section selection → DOM ───────────────────────────────────────────────────
+
+describe("section selection — CSS class on section background divs", () => {
+  let sec1: Section;
+  let sec2: Section;
+
+  beforeEach(() => {
+    sec1 = presentation.root.addSection() as unknown as Section;
+    sec2 = presentation.root.addSection() as unknown as Section;
+    presentation.attachView(editor.viewFactory);
+  });
+
+  it("two section background divs are present after attaching two sections", () => {
+    expect(getSectionBackgrounds(container)).toHaveLength(2);
+  });
+
+  it("no section background has the selected class initially", () => {
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(0);
+  });
+
+  it("addSection() adds the selected class to the matching background div", () => {
+    editor.selection.addSection(sec1);
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(1);
+  });
+
+  it("addSection() on two sections selects both background divs", () => {
+    editor.selection.addSection(sec1);
+    editor.selection.addSection(sec2);
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(2);
+  });
+
+  it("removeSection() clears the selected class", () => {
+    editor.selection.addSection(sec1);
+    editor.selection.removeSection(sec1);
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(0);
+  });
+
+  it("clear() removes selected class from all section backgrounds", () => {
+    editor.selection.addSection(sec1);
+    editor.selection.addSection(sec2);
+    editor.selection.clear();
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(0);
+  });
+
+  it("setElements() cross-clears sections — no background div remains selected", () => {
+    // setElements fires selection:changed (hadData=true) which clears the section chrome.
+    editor.selection.addSection(sec1);
+    editor.selection.setElements([]);
+    expect(getSelectedSectionBackgrounds(container)).toHaveLength(0);
+  });
+});
+
 // ── View swap ─────────────────────────────────────────────────────────────────
 
 describe("view swap — mode and selection survive re-attach", () => {
@@ -239,5 +315,18 @@ describe("view swap — mode and selection survive re-attach", () => {
     presentation.attachView(editor.viewFactory);
 
     expect(getViewport(container).getAttribute("data-mode")).toBe("player");
+  });
+
+  it("element selection survives re-attach — selected class appears on new view's div", () => {
+    const section = presentation.root.addSection();
+    const el = section.addMarkdownElement("hello");
+    presentation.attachView(editor.viewFactory);
+    editor.selection.addElement(el as unknown as Element);
+
+    presentation.attachView(editor.viewFactory);
+
+    expect(
+      getViewport(container).querySelectorAll(".element.selected"),
+    ).toHaveLength(1);
   });
 });

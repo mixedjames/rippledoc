@@ -13,6 +13,8 @@ export type {
   ComputedSectionStyle,
   SectionStyles,
 } from "./SectionStyleProps";
+export type { NamedElementStyle } from "./NamedElementStyle";
+export type { NamedSectionStyle } from "./NamedSectionStyle";
 export type { StyleRegistry } from "./StyleRegistry";
 export {
   SYSTEM_DEFAULT_ELEMENT_STYLE,

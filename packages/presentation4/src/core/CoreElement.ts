@@ -23,6 +23,7 @@ import type {
   ComputedElementStyle,
   ElementStyles,
 } from "../clientAPI/styles/ElementStyleProps";
+import type { NamedElementStyle } from "../clientAPI/styles/NamedElementStyle";
 import { AnchoredObjectBase } from "./AnchoredObjectBase";
 import { NullElementView } from "./nullView/NullElementView";
 import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExpression";
@@ -54,7 +55,7 @@ export abstract class CoreElement
   private view_: ElementView;
   private readonly animations_: CoreElementAnimations;
   private ownStyle_: ElementStyleProps = {};
-  private namedStyles_: string[] = [];
+  private namedStyles_: NamedElementStyle[] = [];
   private computedStyle_: ComputedElementStyle;
 
   // ── Content-dependent dimension state ────────────────────────────────────
@@ -217,22 +218,22 @@ export abstract class CoreElement
     this.recomputeAndPushStyle_();
   }
 
-  addNamed(name: string): void {
-    if (!this.namedStyles_.includes(name)) {
-      this.namedStyles_.push(name);
+  addNamed(style: NamedElementStyle): void {
+    if (!this.namedStyles_.includes(style)) {
+      this.namedStyles_.push(style);
       this.recomputeAndPushStyle_();
     }
   }
 
-  removeNamed(name: string): void {
-    const index = this.namedStyles_.indexOf(name);
+  removeNamed(style: NamedElementStyle): void {
+    const index = this.namedStyles_.indexOf(style);
     if (index >= 0) {
       this.namedStyles_.splice(index, 1);
       this.recomputeAndPushStyle_();
     }
   }
 
-  get named(): readonly string[] {
+  get named(): ReadonlyArray<NamedElementStyle> {
     return this.namedStyles_;
   }
 
@@ -249,12 +250,9 @@ export abstract class CoreElement
 
   private buildComputedStyle_(): ComputedElementStyle {
     const registry = this.section_.styleRegistry;
-    const namedProps = this.namedStyles_.map(
-      (name) => registry.lookupElementStyle(name) ?? {},
-    );
     return resolveElementStyle({
       own: this.ownStyle_,
-      named: namedProps,
+      named: this.namedStyles_.map((s) => s.props),
       authorGlobal: registry.globalElementStyle,
     });
   }

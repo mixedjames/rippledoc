@@ -56,6 +56,9 @@ const btnNew = document.getElementById("btnNew")! as HTMLButtonElement;
 const btnGlobalStyles = document.getElementById(
   "btnGlobalStyles",
 )! as HTMLButtonElement;
+const btnNamedStyles = document.getElementById(
+  "btnNamedStyles",
+)! as HTMLButtonElement;
 
 const toolButtons: Record<EditorToolId, HTMLButtonElement> = {
   singleSelect: btnSingleSelect,
@@ -83,6 +86,10 @@ btnNew.addEventListener("click", () => {
 
 btnGlobalStyles.addEventListener("click", () => {
   void dialogs.openGlobalStyles(currentPresentation.styles);
+});
+
+btnNamedStyles.addEventListener("click", () => {
+  void dialogs.openNamedStyles(currentPresentation);
 });
 
 const selectionStatus = document.getElementById(

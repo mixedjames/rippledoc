@@ -3,6 +3,7 @@ import type { Border, ComputedBorder } from "./Border";
 import type { Color } from "./Color";
 import type { StyleValue } from "./StyleValue";
 import type { FontWeight } from "./Font";
+import type { NamedElementStyle } from "./NamedElementStyle";
 
 /**
  * The visual style properties that can be applied to an element.
@@ -57,12 +58,12 @@ export interface ElementStyles {
   /** Set the own style. Overrides named and global styles for any property specified. */
   set(style: ElementStyleProps): void;
   /**
-   * Append a named style. Named styles are evaluated in the order they were
-   * added; earlier entries take priority.
+   * Append a named style by reference. Named styles are evaluated in the order
+   * they were added; earlier entries take priority.
    */
-  addNamed(name: string): void;
-  /** Remove a previously added named style. No-op if the name is not present. */
-  removeNamed(name: string): void;
+  addNamed(style: NamedElementStyle): void;
+  /** Remove a previously added named style. No-op if not present. */
+  removeNamed(style: NamedElementStyle): void;
   /** The named styles currently applied, in priority order. */
-  get named(): readonly string[];
+  get named(): ReadonlyArray<NamedElementStyle>;
 }

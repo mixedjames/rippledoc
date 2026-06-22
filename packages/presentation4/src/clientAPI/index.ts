@@ -69,8 +69,12 @@ export type {
   FontWeight,
   ElementStyleProps,
   ComputedElementStyle,
+  ElementStyles,
   SectionStyleProps,
   ComputedSectionStyle,
+  SectionStyles,
+  NamedElementStyle,
+  NamedSectionStyle,
   StyleRegistry,
 } from "./styles/index";
 export {

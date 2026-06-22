@@ -1,5 +1,6 @@
 import type { Fill } from "./Fill";
 import type { Border, ComputedBorder } from "./Border";
+import type { NamedSectionStyle } from "./NamedSectionStyle";
 
 /**
  * The visual style properties that can be applied to a section.
@@ -37,12 +38,12 @@ export interface SectionStyles {
   /** Set the own style. Overrides named and global styles for any property specified. */
   set(style: SectionStyleProps): void;
   /**
-   * Append a named style. Named styles are evaluated in the order they were
-   * added; earlier entries take priority.
+   * Append a named style by reference. Named styles are evaluated in the order
+   * they were added; earlier entries take priority.
    */
-  addNamed(name: string): void;
-  /** Remove a previously added named style. No-op if the name is not present. */
-  removeNamed(name: string): void;
+  addNamed(style: NamedSectionStyle): void;
+  /** Remove a previously added named style. No-op if not present. */
+  removeNamed(style: NamedSectionStyle): void;
   /** The named styles currently applied, in priority order. */
-  get named(): readonly string[];
+  get named(): ReadonlyArray<NamedSectionStyle>;
 }

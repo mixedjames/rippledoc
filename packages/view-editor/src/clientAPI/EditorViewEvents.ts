@@ -2,8 +2,10 @@ import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
 import type { FocusState } from "./FocusState";
 
 export type EditorViewEvents = {
-  /** Fired on pointerdown over an element. Distinct from pointerDown so
-   *  clients can treat a simple tap as a pick without also handling pointerDown. */
+  /** Fired on pointerdown over an element. Semantic signal for selection —
+   *  prefer this over pointerDown when the intent is "user picked this element".
+   *  Both events fire on the same pointerdown; the distinction is naming intent,
+   *  not timing or filtering. */
   "element:picked": { element: Element; source: PointerEvent };
   "element:pointerDown": { element: Element; source: PointerEvent };
   "element:pointerUp": { element: Element; source: PointerEvent };

@@ -163,9 +163,9 @@ function elementPropSource<K extends keyof ElementStyleProps>(
   registry: StyleRegistry,
 ): StyleSource {
   if (el.styles.own[key] !== undefined) return { level: "own" };
-  for (const name of el.styles.named) {
-    if (registry.elementStyles.get(name)?.[key] !== undefined)
-      return { level: "named", name };
+  for (const style of el.styles.named) {
+    if (style.props[key] !== undefined)
+      return { level: "named", name: style.name };
   }
   if (registry.globalElementStyle[key] !== undefined)
     return { level: "global" };
@@ -178,9 +178,9 @@ function sectionPropSource<K extends keyof SectionStyleProps>(
   registry: StyleRegistry,
 ): StyleSource {
   if (section.styles.own[key] !== undefined) return { level: "own" };
-  for (const name of section.styles.named) {
-    if (registry.sectionStyles.get(name)?.[key] !== undefined)
-      return { level: "named", name };
+  for (const style of section.styles.named) {
+    if (style.props[key] !== undefined)
+      return { level: "named", name: style.name };
   }
   if (registry.globalSectionStyle[key] !== undefined)
     return { level: "global" };
