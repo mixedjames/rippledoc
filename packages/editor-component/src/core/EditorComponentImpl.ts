@@ -85,6 +85,9 @@ export class EditorComponentImpl implements EditorComponent {
       this.state_,
       (op) => this.pushOperation_(op),
       (cb) => this.requestPick_(cb),
+      (el) => {
+        void this.delegate_.requestMarkdownEdit(el);
+      },
     );
     this.layout_.element.appendChild(this.sidebar_.element);
 

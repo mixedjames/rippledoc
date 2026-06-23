@@ -1,3 +1,5 @@
+import type { MarkdownElement } from "@rippledoc/presentation4";
+
 /**
  * The contract the shell must satisfy for the editor to request OS-level
  * operations: file access, text editing, and confirmation dialogs.
@@ -14,12 +16,12 @@ export interface EditorDelegate {
   requestImageImport(): Promise<{ src: string } | null>;
 
   /**
-   * Open a text-editing UI for a markdown element and return the edited string.
-   * `current` is the element's existing markdown content; the shell can pre-
-   * populate its dialog with it. Return `null` if the user cancels — the editor
-   * will leave the element unchanged.
+   * Open a markdown editing dialog for `element`. The implementation is
+   * responsible for applying the edit and registering it with undo/redo history
+   * (typically via `dialogs.openMarkdownEditor`, which uses `OperationSink`).
+   * Resolves when the dialog closes, regardless of whether the user saved or cancelled.
    */
-  requestTextEdit(current: string): Promise<string | null>;
+  requestMarkdownEdit(element: MarkdownElement): Promise<void>;
 
   /**
    * Show a confirmation prompt with `message` and return `true` if the user

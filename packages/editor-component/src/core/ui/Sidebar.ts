@@ -1,3 +1,4 @@
+import type { MarkdownElement } from "@rippledoc/presentation4";
 import type { EditorState } from "../EditorState";
 import type { EditOperation } from "../history/EditOperation";
 import type { AnchorPickResult } from "../tools/AnchorPickerTool";
@@ -29,12 +30,13 @@ export class Sidebar {
     state: EditorState,
     push: (op: EditOperation) => void,
     requestPick: (callback: (result: AnchorPickResult) => void) => void,
+    openMarkdownEditor: (element: MarkdownElement) => void,
   ) {
     this.element = document.createElement("div");
     this.element.className = "re-sidebar";
 
     const styles = new StylesPanel(state, push);
-    const properties = new PropertiesPanel(state, push);
+    const properties = new PropertiesPanel(state, push, openMarkdownEditor);
     const anchors = new AnchorsPanel(state, push, requestPick);
     this.panels_ = [styles, properties, anchors];
 

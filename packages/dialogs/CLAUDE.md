@@ -21,6 +21,7 @@ See [`architecture/architecture.md`](architecture/architecture.md) for the full 
 | --------------- | --------------------------------------------------------------- |
 | Global styles   | Edit presentation-wide style defaults                           |
 | Named styles    | Create, edit, and delete the presentation's named styles        |
+| Markdown editor | Edit the markdown source text of a `MarkdownElement`            |
 | Anchor picker   | Browse the presentation's logical structure to select an anchor |
 | Section manager | Reorder sections by drag-and-drop                               |
 

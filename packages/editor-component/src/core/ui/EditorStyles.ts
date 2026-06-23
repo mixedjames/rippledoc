@@ -95,6 +95,30 @@ const EDITOR_CSS = `
   font-style: italic;
 }
 
+.re-panel-label {
+  font-size: 11px;
+  color: var(--re-panel-empty-fg);
+  margin-bottom: 6px;
+}
+
+.re-panel-action-btn {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  background: var(--re-input-bg);
+  border: 1px solid var(--re-input-border);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--re-input-fg);
+  text-align: left;
+  cursor: pointer;
+}
+
+.re-panel-action-btn:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
 /* ── Styles panel ─────────────────────────────────────────────────────────── */
 
 .re-style-section {

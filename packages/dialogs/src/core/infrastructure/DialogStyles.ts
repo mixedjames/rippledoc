@@ -283,6 +283,29 @@ const DIALOG_CSS = `
   background: #e4e4e4;
 }
 
+/* Markdown editor dialog */
+.rdoc-dlg-md-textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #fff;
+  border: 1px solid #c8c8c8;
+  border-radius: 3px;
+  padding: 8px;
+  box-sizing: border-box;
+  outline: none;
+  white-space: pre-wrap;
+  tab-size: 2;
+}
+
+.rdoc-dlg-md-textarea:focus {
+  border-color: hsl(220 80% 52%);
+}
+
 /* Named styles dialog */
 .rdoc-dlg-box--wide {
   min-width: 680px;

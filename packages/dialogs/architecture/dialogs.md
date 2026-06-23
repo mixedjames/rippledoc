@@ -24,6 +24,18 @@
 
 ---
 
+## Markdown Editor
+
+**Purpose:** Edit the raw Markdown source of a `MarkdownElement`. Not WYSIWYG — the user edits the Markdown text directly in a plain textarea.
+
+**Reads:** `element.markdown` to pre-populate the textarea.
+
+**Commits:** Calls `element.setMarkdown(newText)` on save, wrapped in an `OperationSink` operation so the change participates in undo/redo. Cancel discards edits.
+
+**Result:** `Promise<DialogResult<void>>` — `committed: true` means the user saved; `committed: false` means they cancelled.
+
+---
+
 ## Anchor Picker
 
 **Purpose:** Let the user select an anchor by browsing the presentation's _logical_ structure rather than clicking in the canvas.

@@ -20,7 +20,7 @@ export type EditorToolId = "singleSelect" | "multiSelect";
  * **Content**
  * - `importImage` — triggers `delegate.requestImageImport()`; inserts the
  *                   returned image into the selection target.
- * - `editText`    — triggers `delegate.requestTextEdit(current)` for the
+ * - `editText`    — triggers `delegate.requestMarkdownEdit(element)` for the
  *                   selected markdown element.
  *
  * **Tools** — `tool:<EditorToolId>`

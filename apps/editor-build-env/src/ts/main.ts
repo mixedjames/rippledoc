@@ -18,9 +18,8 @@ const delegate: EditorDelegate = {
     // TODO: wire up a file picker
     return null;
   },
-  async requestTextEdit(current) {
-    const result = window.prompt("Edit text:", current);
-    return result ?? null;
+  async requestMarkdownEdit(element) {
+    await dialogs.openMarkdownEditor(element);
   },
   async requestConfirm(message) {
     return window.confirm(message);

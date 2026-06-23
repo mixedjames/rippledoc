@@ -80,15 +80,15 @@ One tool is active at a time. Tools receive an `EditorToolContext` (view events,
 
 ## Command Status
 
-| Command                                  | Status                                                   |
-| ---------------------------------------- | -------------------------------------------------------- |
-| `undo` / `redo`                          | Done                                                     |
-| `tool:singleSelect` / `tool:multiSelect` | Done                                                     |
-| `addSection`                             | Not yet implemented                                      |
-| `deleteSelected`                         | Not yet implemented                                      |
-| `importImage`                            | Not yet implemented — uses `delegate.requestImageImport` |
-| `editText`                               | Not yet implemented — uses `delegate.requestTextEdit`    |
-| `loadPresentation`                       | Stub — throws                                            |
+| Command                                  | Status                                                    |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `undo` / `redo`                          | Done                                                      |
+| `tool:singleSelect` / `tool:multiSelect` | Done                                                      |
+| `addSection`                             | Not yet implemented                                       |
+| `deleteSelected`                         | Not yet implemented                                       |
+| `importImage`                            | Not yet implemented — uses `delegate.requestImageImport`  |
+| `editText`                               | Not yet implemented — uses `delegate.requestMarkdownEdit` |
+| `loadPresentation`                       | Stub — throws                                             |
 
 ## Styles Panel Status
 

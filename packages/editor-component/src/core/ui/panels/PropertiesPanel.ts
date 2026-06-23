@@ -1,6 +1,8 @@
-import type { Element } from "@rippledoc/presentation4";
-import type { MarkdownElement } from "@rippledoc/presentation4";
-import type { BitmapImageElement } from "@rippledoc/presentation4";
+import type {
+  Element,
+  MarkdownElement,
+  BitmapImageElement,
+} from "@rippledoc/presentation4";
 import type { EditorState } from "../../EditorState";
 import type { SidebarPanel, PushOperation } from "./SidebarPanel";
 
@@ -26,12 +28,17 @@ function isBitmapImage(el: Element): el is BitmapImageElement {
 export class PropertiesPanel implements SidebarPanel {
   readonly element: HTMLElement;
   private state_: EditorState;
-
   private push_: PushOperation;
+  private openMarkdownEditor_: (element: MarkdownElement) => void;
 
-  constructor(state: EditorState, push: PushOperation) {
+  constructor(
+    state: EditorState,
+    push: PushOperation,
+    openMarkdownEditor: (element: MarkdownElement) => void,
+  ) {
     this.state_ = state;
     this.push_ = push;
+    this.openMarkdownEditor_ = openMarkdownEditor;
     this.element = document.createElement("div");
     this.update();
   }
@@ -69,14 +76,17 @@ export class PropertiesPanel implements SidebarPanel {
 
   private renderMarkdownProps_(el: MarkdownElement): void {
     const label = document.createElement("div");
-    label.textContent = `Markdown element`;
+    label.className = "re-panel-label";
+    label.textContent = "Markdown element";
     this.element.appendChild(label);
-    // TODO: inline markdown editor (delegates to EditorDelegate.requestTextEdit)
-    const preview = document.createElement("pre");
-    preview.style.cssText =
-      "margin:4px 0;font-size:10px;overflow:hidden;white-space:pre-wrap;max-height:80px";
-    preview.textContent = el.markdown;
-    this.element.appendChild(preview);
+
+    const btn = document.createElement("button");
+    btn.className = "re-panel-action-btn";
+    btn.textContent = "Edit Markdown…";
+    btn.addEventListener("click", () => {
+      this.openMarkdownEditor_(el);
+    });
+    this.element.appendChild(btn);
   }
 
   private renderImageProps_(el: BitmapImageElement): void {

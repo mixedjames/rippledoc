@@ -27,7 +27,7 @@
  *
  * const delegate: EditorDelegate = {
  *   requestImageImport: () => showFilePicker(),
- *   requestTextEdit:    (current) => showTextDialog(current),
+ *   requestMarkdownEdit: (element) => dialogs.openMarkdownEditor(element),
  *   requestConfirm:     (message) => confirm(message),
  * };
  *
