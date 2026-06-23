@@ -357,6 +357,126 @@ export class BorderControl {
   }
 }
 
+// ── BorderRadiusControl ───────────────────────────────────────────────────────
+
+export class BorderRadiusControl {
+  readonly element: HTMLElement;
+  private active_: boolean;
+  private readonly input_: HTMLInputElement;
+  private readonly unsetView_: HTMLElement;
+  private readonly setView_: HTMLElement;
+
+  constructor(initial: StyleValue | undefined) {
+    this.active_ = initial !== undefined;
+
+    this.input_ = el("input", "rdoc-dlg-input rdoc-dlg-input--num");
+    this.input_.type = "number";
+    this.input_.min = "0";
+    this.input_.step = "1";
+    this.input_.value = String(initial?.value ?? 0);
+
+    const unit = el("span", "rdoc-dlg-unit");
+    unit.textContent = "basis";
+
+    this.setView_ = el("div", "rdoc-dlg-group");
+    this.setView_.append(
+      this.input_,
+      unit,
+      makeClearBtn(() => this.onClear_()),
+    );
+
+    this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
+
+    this.element = el("div", "rdoc-dlg-group");
+    this.element.append(this.unsetView_, this.setView_);
+
+    this.updateView_();
+  }
+
+  getValue(): StyleValue | undefined {
+    if (!this.active_) return undefined;
+    const v = parseFloat(this.input_.value);
+    if (isNaN(v) || v < 0) return undefined;
+    return { unit: "basis", value: v };
+  }
+
+  private onActivate_(): void {
+    this.active_ = true;
+    this.updateView_();
+    this.input_.focus();
+  }
+
+  private onClear_(): void {
+    this.active_ = false;
+    this.updateView_();
+  }
+
+  private updateView_(): void {
+    this.unsetView_.style.display = this.active_ ? "none" : "";
+    this.setView_.style.display = this.active_ ? "" : "none";
+  }
+}
+
+// ── PaddingControl ────────────────────────────────────────────────────────────
+
+export class PaddingControl {
+  readonly element: HTMLElement;
+  private active_: boolean;
+  private readonly input_: HTMLInputElement;
+  private readonly unsetView_: HTMLElement;
+  private readonly setView_: HTMLElement;
+
+  constructor(initial: StyleValue | undefined) {
+    this.active_ = initial !== undefined;
+
+    this.input_ = el("input", "rdoc-dlg-input rdoc-dlg-input--num");
+    this.input_.type = "number";
+    this.input_.min = "0";
+    this.input_.step = "1";
+    this.input_.value = String(initial?.value ?? 0);
+
+    const unit = el("span", "rdoc-dlg-unit");
+    unit.textContent = "basis";
+
+    this.setView_ = el("div", "rdoc-dlg-group");
+    this.setView_.append(
+      this.input_,
+      unit,
+      makeClearBtn(() => this.onClear_()),
+    );
+
+    this.unsetView_ = makeUnsetBtn(() => this.onActivate_());
+
+    this.element = el("div", "rdoc-dlg-group");
+    this.element.append(this.unsetView_, this.setView_);
+
+    this.updateView_();
+  }
+
+  getValue(): StyleValue | undefined {
+    if (!this.active_) return undefined;
+    const v = parseFloat(this.input_.value);
+    if (isNaN(v) || v < 0) return undefined;
+    return { unit: "basis", value: v };
+  }
+
+  private onActivate_(): void {
+    this.active_ = true;
+    this.updateView_();
+    this.input_.focus();
+  }
+
+  private onClear_(): void {
+    this.active_ = false;
+    this.updateView_();
+  }
+
+  private updateView_(): void {
+    this.unsetView_.style.display = this.active_ ? "none" : "";
+    this.setView_.style.display = this.active_ ? "" : "none";
+  }
+}
+
 // ── FontFamilyControl ─────────────────────────────────────────────────────────
 
 export class FontFamilyControl {

@@ -11,6 +11,8 @@ import {
   ColorControl,
   FillControl,
   BorderControl,
+  BorderRadiusControl,
+  PaddingControl,
   FontFamilyControl,
   FontSizeControl,
   FontWeightControl,
@@ -92,6 +94,8 @@ function buildElementDetailBody(
   const p = style.props;
   const fill = new FillControl(p.fill);
   const border = new BorderControl(p.border);
+  const borderRadius = new BorderRadiusControl(p.borderRadius);
+  const padding = new PaddingControl(p.padding);
   const fontFamily = new FontFamilyControl(p.fontFamily);
   const fontSize = new FontSizeControl(p.fontSize);
   const fontWeight = new FontWeightControl(p.fontWeight);
@@ -104,6 +108,8 @@ function buildElementDetailBody(
     return {
       fill: fill.getValue(),
       border: border.getValue(),
+      borderRadius: borderRadius.getValue(),
+      padding: padding.getValue(),
       fontFamily: fontFamily.getValue(),
       fontSize: fontSize.getValue(),
       fontWeight: fontWeight.getValue(),
@@ -128,6 +134,8 @@ function buildElementDetailBody(
   body.append(
     buildRow("Fill", fill.element),
     buildRow("Border", border.element),
+    buildRow("Border Radius", borderRadius.element),
+    buildRow("Padding", padding.element),
     buildRow("Family", fontFamily.element),
     buildRow("Size", fontSize.element),
     buildRow("Weight", fontWeight.element),
@@ -152,11 +160,16 @@ function buildSectionDetailBody(
   const p = style.props;
   const fill = new FillControl(p.fill);
   const border = new BorderControl(p.border);
+  const borderRadius = new BorderRadiusControl(p.borderRadius);
 
   let committed: SectionStyleProps = { ...style.props };
 
   function readControls(): SectionStyleProps {
-    return { fill: fill.getValue(), border: border.getValue() };
+    return {
+      fill: fill.getValue(),
+      border: border.getValue(),
+      borderRadius: borderRadius.getValue(),
+    };
   }
 
   function onChanged(): void {
@@ -175,6 +188,7 @@ function buildSectionDetailBody(
   body.append(
     buildRow("Fill", fill.element),
     buildRow("Border", border.element),
+    buildRow("Border Radius", borderRadius.element),
   );
   body.addEventListener("change", onChanged);
   body.addEventListener("click", onChanged);

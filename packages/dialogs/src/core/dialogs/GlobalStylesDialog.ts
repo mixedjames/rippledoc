@@ -19,6 +19,8 @@ import {
   ColorControl,
   FillControl,
   BorderControl,
+  BorderRadiusControl,
+  PaddingControl,
   FontFamilyControl,
   FontSizeControl,
   FontWeightControl,
@@ -123,6 +125,8 @@ function buildContent(
 
   const eFill = new FillControl(es.fill);
   const eBorder = new BorderControl(es.border);
+  const eBorderRadius = new BorderRadiusControl(es.borderRadius);
+  const ePadding = new PaddingControl(es.padding);
   const eFontFamily = new FontFamilyControl(es.fontFamily);
   const eFontSize = new FontSizeControl(es.fontSize);
   const eFontWeight = new FontWeightControl(es.fontWeight);
@@ -130,6 +134,7 @@ function buildContent(
   const eFontItalic = new FontItalicControl(es.fontItalic);
   const sFill = new FillControl(ss.fill);
   const sBorder = new BorderControl(ss.border);
+  const sBorderRadius = new BorderRadiusControl(ss.borderRadius);
 
   const onDismiss = (): void => close({ committed: false });
 
@@ -137,6 +142,8 @@ function buildContent(
     const newElement: ElementStyleProps = {
       fill: eFill.getValue(),
       border: eBorder.getValue(),
+      borderRadius: eBorderRadius.getValue(),
+      padding: ePadding.getValue(),
       fontFamily: eFontFamily.getValue(),
       fontSize: eFontSize.getValue(),
       fontWeight: eFontWeight.getValue(),
@@ -146,6 +153,7 @@ function buildContent(
     const newSection: SectionStyleProps = {
       fill: sFill.getValue(),
       border: sBorder.getValue(),
+      borderRadius: sBorderRadius.getValue(),
     };
 
     const op = {
@@ -172,6 +180,16 @@ function buildContent(
     buildSection("Elements", [
       buildRow("Fill", eFill.element, renderDefaultFill(ed.fill)),
       buildRow("Border", eBorder.element, renderDefaultBorder(ed.border)),
+      buildRow(
+        "Border Radius",
+        eBorderRadius.element,
+        renderDefaultText(`${ed.borderRadius} basis`),
+      ),
+      buildRow(
+        "Padding",
+        ePadding.element,
+        renderDefaultText(`${ed.padding} basis`),
+      ),
       buildRow("Family", eFontFamily.element, renderDefaultText(ed.fontFamily)),
       buildRow(
         "Size",
@@ -193,6 +211,11 @@ function buildContent(
     buildSection("Sections", [
       buildRow("Fill", sFill.element, renderDefaultFill(sd.fill)),
       buildRow("Border", sBorder.element, renderDefaultBorder(sd.border)),
+      buildRow(
+        "Border Radius",
+        sBorderRadius.element,
+        renderDefaultText(`${sd.borderRadius} basis`),
+      ),
     ]),
   );
 
