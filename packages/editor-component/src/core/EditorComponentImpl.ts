@@ -67,6 +67,7 @@ export class EditorComponentImpl implements EditorComponent {
 
   private activeTool_: EditorTool = NULL_TOOL;
   private selectionUnsub_: () => void = () => {};
+  private styleRegistryUnsub_: () => void = () => {};
 
   constructor(delegate: EditorDelegate) {
     this.delegate_ = delegate;
@@ -98,7 +99,24 @@ export class EditorComponentImpl implements EditorComponent {
         this.sidebar_.update();
       },
     );
+    this.styleRegistryUnsub_ = this.subscribeStyleRegistry_(presentation);
     this.activateTool_(this.state_.activeToolId);
+  }
+
+  private subscribeStyleRegistry_(presentation: Presentation): () => void {
+    const refresh = () => this.sidebar_.update();
+    const ev = presentation.events;
+    const unsubs = [
+      ev.on("style:elementStyleCreated", refresh),
+      ev.on("style:elementStyleDeleted", refresh),
+      ev.on("style:elementStyleRenamed", refresh),
+      ev.on("style:sectionStyleCreated", refresh),
+      ev.on("style:sectionStyleDeleted", refresh),
+      ev.on("style:sectionStyleRenamed", refresh),
+    ];
+    return () => {
+      for (const u of unsubs) u();
+    };
   }
 
   get element(): HTMLElement {
@@ -127,6 +145,7 @@ export class EditorComponentImpl implements EditorComponent {
         this.sidebar_.update();
       },
     );
+    this.styleRegistryUnsub_ = this.subscribeStyleRegistry_(presentation);
 
     this.activateTool_(this.state_.activeToolId);
     this.history_.clear();
@@ -151,11 +170,13 @@ export class EditorComponentImpl implements EditorComponent {
 
     if (command === "undo") {
       this.history_.undo();
+      this.sidebar_.update();
       this.emitter_.emit("commandStateChanged", {});
       return;
     }
     if (command === "redo") {
       this.history_.redo();
+      this.sidebar_.update();
       this.emitter_.emit("commandStateChanged", {});
       return;
     }
@@ -237,6 +258,8 @@ export class EditorComponentImpl implements EditorComponent {
     this.activeTool_ = NULL_TOOL;
     this.selectionUnsub_();
     this.selectionUnsub_ = () => {};
+    this.styleRegistryUnsub_();
+    this.styleRegistryUnsub_ = () => {};
     // CorePresentation.attachView() calls this.view_.destroy() before swapping,
     // which removes the EditorPresentationView's root div from the canvas.
     this.state_.presentation.attachView(() => new NullPresentationView());

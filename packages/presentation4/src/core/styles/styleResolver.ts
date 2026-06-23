@@ -110,6 +110,14 @@ export function resolveElementStyle(
     authorGlobal.border,
     systemDefault.border,
   );
+  const brBasis = globalBasisFor(
+    authorGlobal.borderRadius,
+    systemDefault.borderRadius,
+  );
+  const paddingBasis = globalBasisFor(
+    authorGlobal.padding,
+    systemDefault.padding,
+  );
 
   const rawBorder = first("border");
   const border: ComputedBorder =
@@ -123,9 +131,23 @@ export function resolveElementStyle(
       ? applyStyleValue(rawFontSize, fontSizeBasis)
       : systemDefault.fontSize;
 
+  const rawBorderRadius = first("borderRadius");
+  const borderRadius =
+    rawBorderRadius !== undefined
+      ? applyStyleValue(rawBorderRadius, brBasis)
+      : systemDefault.borderRadius;
+
+  const rawPadding = first("padding");
+  const padding =
+    rawPadding !== undefined
+      ? applyStyleValue(rawPadding, paddingBasis)
+      : systemDefault.padding;
+
   return {
     fill: first("fill") ?? systemDefault.fill,
     border,
+    borderRadius,
+    padding,
     fontFamily: first("fontFamily") ?? systemDefault.fontFamily,
     fontSize,
     fontWeight: first("fontWeight") ?? systemDefault.fontWeight,
@@ -164,6 +186,10 @@ export function resolveSectionStyle(
     authorGlobal.border,
     systemDefault.border,
   );
+  const brBasis = globalBasisFor(
+    authorGlobal.borderRadius,
+    systemDefault.borderRadius,
+  );
 
   const rawBorder = first("border");
   const border: ComputedBorder =
@@ -171,8 +197,15 @@ export function resolveSectionStyle(
       ? resolveBorder(rawBorder, bwBasis)
       : systemDefault.border;
 
+  const rawBorderRadius = first("borderRadius");
+  const borderRadius =
+    rawBorderRadius !== undefined
+      ? applyStyleValue(rawBorderRadius, brBasis)
+      : systemDefault.borderRadius;
+
   return {
     fill: first("fill") ?? systemDefault.fill,
     border,
+    borderRadius,
   };
 }

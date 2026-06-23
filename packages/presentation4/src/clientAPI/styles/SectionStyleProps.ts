@@ -1,5 +1,6 @@
 import type { Fill } from "./Fill";
 import type { Border, ComputedBorder } from "./Border";
+import type { StyleValue } from "./StyleValue";
 import type { NamedSectionStyle } from "./NamedSectionStyle";
 
 /**
@@ -18,6 +19,7 @@ import type { NamedSectionStyle } from "./NamedSectionStyle";
 export interface SectionStyleProps {
   fill?: Fill;
   border?: Border;
+  borderRadius?: StyleValue;
 }
 
 /**
@@ -27,6 +29,8 @@ export interface SectionStyleProps {
 export interface ComputedSectionStyle {
   fill: Fill;
   border: ComputedBorder;
+  /** Border radius in basis units. */
+  borderRadius: number;
 }
 
 /** Style accessor bag returned by `section.styles`. */

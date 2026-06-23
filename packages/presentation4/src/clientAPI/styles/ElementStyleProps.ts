@@ -24,6 +24,8 @@ import type { NamedElementStyle } from "./NamedElementStyle";
 export interface ElementStyleProps {
   fill?: Fill;
   border?: Border;
+  borderRadius?: StyleValue;
+  padding?: StyleValue;
   fontFamily?: string;
   fontSize?: StyleValue;
   fontWeight?: FontWeight;
@@ -41,6 +43,10 @@ export interface ElementStyleProps {
 export interface ComputedElementStyle {
   fill: Fill;
   border: ComputedBorder;
+  /** Border radius in basis units. */
+  borderRadius: number;
+  /** Padding in basis units (applied uniformly to all four sides). */
+  padding: number;
   fontFamily: string;
   /** Font size in basis units. */
   fontSize: number;

@@ -11,8 +11,11 @@ interface CoreNamedElementStyleOptions {
   props: ElementStyleProps;
   // Validates the new name against siblings; throws if taken.
   validateName: (name: string, self: CoreNamedElementStyle) => void;
-  // Notifies the registry that this style's content has changed.
+  // Notifies the registry that props changed — triggers cascade recomputation.
   onChange: () => void;
+  // Notifies the registry that this style was renamed. Name changes do not
+  // affect computed styles, so no cascade recomputation is needed.
+  onRename: (self: CoreNamedElementStyle) => void;
 }
 
 class CoreNamedElementStyle implements NamedElementStyle {
@@ -23,12 +26,14 @@ class CoreNamedElementStyle implements NamedElementStyle {
     self: CoreNamedElementStyle,
   ) => void;
   private readonly onChange_: () => void;
+  private readonly onRename_: (self: CoreNamedElementStyle) => void;
 
   constructor(opts: CoreNamedElementStyleOptions) {
     this.name_ = opts.name;
     this.props_ = opts.props;
     this.validateName_ = opts.validateName;
     this.onChange_ = opts.onChange;
+    this.onRename_ = opts.onRename;
   }
 
   get name(): string {
@@ -42,7 +47,7 @@ class CoreNamedElementStyle implements NamedElementStyle {
   setName(name: string): void {
     this.validateName_(name, this);
     this.name_ = name;
-    this.onChange_();
+    this.onRename_(this);
   }
 
   setProps(props: ElementStyleProps): void {
@@ -58,6 +63,7 @@ interface CoreNamedSectionStyleOptions {
   props: SectionStyleProps;
   validateName: (name: string, self: CoreNamedSectionStyle) => void;
   onChange: () => void;
+  onRename: (self: CoreNamedSectionStyle) => void;
 }
 
 class CoreNamedSectionStyle implements NamedSectionStyle {
@@ -68,12 +74,14 @@ class CoreNamedSectionStyle implements NamedSectionStyle {
     self: CoreNamedSectionStyle,
   ) => void;
   private readonly onChange_: () => void;
+  private readonly onRename_: (self: CoreNamedSectionStyle) => void;
 
   constructor(opts: CoreNamedSectionStyleOptions) {
     this.name_ = opts.name;
     this.props_ = opts.props;
     this.validateName_ = opts.validateName;
     this.onChange_ = opts.onChange;
+    this.onRename_ = opts.onRename;
   }
 
   get name(): string {
@@ -87,7 +95,7 @@ class CoreNamedSectionStyle implements NamedSectionStyle {
   setName(name: string): void {
     this.validateName_(name, this);
     this.name_ = name;
-    this.onChange_();
+    this.onRename_(this);
   }
 
   setProps(props: SectionStyleProps): void {
@@ -115,6 +123,13 @@ interface CoreStyleRegistryOptions {
   // Injected by CorePresentation to enforce delete-if-in-use contract.
   isElementStyleInUse: (style: NamedElementStyle) => boolean;
   isSectionStyleInUse: (style: NamedSectionStyle) => boolean;
+  // Lifecycle event callbacks — emitted by CorePresentation as PresentationEvents.
+  onElementStyleCreated: (style: NamedElementStyle) => void;
+  onElementStyleDeleted: (style: NamedElementStyle) => void;
+  onElementStyleRenamed: (style: NamedElementStyle) => void;
+  onSectionStyleCreated: (style: NamedSectionStyle) => void;
+  onSectionStyleDeleted: (style: NamedSectionStyle) => void;
+  onSectionStyleRenamed: (style: NamedSectionStyle) => void;
 }
 
 export class CoreStyleRegistry implements StyleRegistry {
@@ -127,12 +142,24 @@ export class CoreStyleRegistry implements StyleRegistry {
   private readonly onSectionStylesChanged_: () => void;
   private readonly isElementStyleInUse_: (style: NamedElementStyle) => boolean;
   private readonly isSectionStyleInUse_: (style: NamedSectionStyle) => boolean;
+  private readonly onElementStyleCreated_: (style: NamedElementStyle) => void;
+  private readonly onElementStyleDeleted_: (style: NamedElementStyle) => void;
+  private readonly onElementStyleRenamed_: (style: NamedElementStyle) => void;
+  private readonly onSectionStyleCreated_: (style: NamedSectionStyle) => void;
+  private readonly onSectionStyleDeleted_: (style: NamedSectionStyle) => void;
+  private readonly onSectionStyleRenamed_: (style: NamedSectionStyle) => void;
 
   constructor(opts: CoreStyleRegistryOptions) {
     this.onElementStylesChanged_ = opts.onElementStylesChanged;
     this.onSectionStylesChanged_ = opts.onSectionStylesChanged;
     this.isElementStyleInUse_ = opts.isElementStyleInUse;
     this.isSectionStyleInUse_ = opts.isSectionStyleInUse;
+    this.onElementStyleCreated_ = opts.onElementStyleCreated;
+    this.onElementStyleDeleted_ = opts.onElementStyleDeleted;
+    this.onElementStyleRenamed_ = opts.onElementStyleRenamed;
+    this.onSectionStyleCreated_ = opts.onSectionStyleCreated;
+    this.onSectionStyleDeleted_ = opts.onSectionStyleDeleted;
+    this.onSectionStyleRenamed_ = opts.onSectionStyleRenamed;
   }
 
   // ── StyleRegistry (clientAPI) ─────────────────────────────────────────────
@@ -147,9 +174,11 @@ export class CoreStyleRegistry implements StyleRegistry {
       props,
       validateName: (n, self) => this.checkElementNameUnique_(n, self),
       onChange: () => this.onElementStylesChanged_(),
+      onRename: (self) => this.onElementStyleRenamed_(self),
     });
     this.elementStyles_.push(style);
     this.onElementStylesChanged_();
+    this.onElementStyleCreated_(style);
     return style;
   }
 
@@ -167,6 +196,7 @@ export class CoreStyleRegistry implements StyleRegistry {
     }
     this.elementStyles_.splice(index, 1);
     this.onElementStylesChanged_();
+    this.onElementStyleDeleted_(style);
   }
 
   get elementStyles(): ReadonlyArray<NamedElementStyle> {
@@ -183,9 +213,11 @@ export class CoreStyleRegistry implements StyleRegistry {
       props,
       validateName: (n, self) => this.checkSectionNameUnique_(n, self),
       onChange: () => this.onSectionStylesChanged_(),
+      onRename: (self) => this.onSectionStyleRenamed_(self),
     });
     this.sectionStyles_.push(style);
     this.onSectionStylesChanged_();
+    this.onSectionStyleCreated_(style);
     return style;
   }
 
@@ -203,6 +235,7 @@ export class CoreStyleRegistry implements StyleRegistry {
     }
     this.sectionStyles_.splice(index, 1);
     this.onSectionStylesChanged_();
+    this.onSectionStyleDeleted_(style);
   }
 
   get sectionStyles(): ReadonlyArray<NamedSectionStyle> {

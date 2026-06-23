@@ -148,6 +148,18 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
       onSectionStylesChanged: () => this.onAllSectionStylesChanged_(),
       isElementStyleInUse: (style) => this.isElementStyleInUse_(style),
       isSectionStyleInUse: (style) => this.isSectionStyleInUse_(style),
+      onElementStyleCreated: (style) =>
+        this.eventController_.emit("style:elementStyleCreated", { style }),
+      onElementStyleDeleted: (style) =>
+        this.eventController_.emit("style:elementStyleDeleted", { style }),
+      onElementStyleRenamed: (style) =>
+        this.eventController_.emit("style:elementStyleRenamed", { style }),
+      onSectionStyleCreated: (style) =>
+        this.eventController_.emit("style:sectionStyleCreated", { style }),
+      onSectionStyleDeleted: (style) =>
+        this.eventController_.emit("style:sectionStyleDeleted", { style }),
+      onSectionStyleRenamed: (style) =>
+        this.eventController_.emit("style:sectionStyleRenamed", { style }),
     });
 
     this.root_ = new CorePresentationRoot(this);

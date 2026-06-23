@@ -118,6 +118,8 @@ export class EditorElementView implements p4.ElementView {
 
     this.element_.style.background = fillToCss(style.fill);
     this.element_.style.border = borderToCss(style.border, scale);
+    this.element_.style.borderRadius = `${style.borderRadius * scale}px`;
+    this.element_.style.padding = `${style.padding * scale}px`;
 
     this.contentWrapper_.style.fontFamily = style.fontFamily;
     this.contentWrapper_.style.fontSize = `${style.fontSize * scale}px`;

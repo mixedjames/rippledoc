@@ -12,6 +12,8 @@ import type {
   ElementStyleProps,
   SectionStyleProps,
   StyleRegistry,
+  NamedElementStyle,
+  NamedSectionStyle,
 } from "@rippledoc/presentation4";
 import type { EditOperation } from "../../history/EditOperation";
 import type { EditorState } from "../../EditorState";
@@ -62,6 +64,15 @@ interface FontSourceConsensus {
   weight: SourceConsensus;
   color: SourceConsensus;
   italic: SourceConsensus;
+}
+
+/** Options passed to `createNamedTag_`. */
+interface NamedTagOpts {
+  name: string;
+  partial: boolean;
+  /** Tooltip shown when the style is partially applied. */
+  title?: string;
+  onRemove: () => void;
 }
 
 /** Options passed to fill/border section renderers. */
@@ -120,6 +131,11 @@ function consensusFill(fills: Fill[]): Fill | "mixed" {
 function consensusBorder(borders: ComputedBorder[]): ComputedBorder | "mixed" {
   const first = borders[0]!;
   return borders.every((b) => bordersEqual(b, first)) ? first : "mixed";
+}
+
+function consensusNumber(values: number[]): number | "mixed" {
+  const first = values[0]!;
+  return values.every((v) => v === first) ? first : "mixed";
 }
 
 function consensusFont(styles: ComputedElementStyle[]): FontConsensus {
@@ -295,6 +311,46 @@ function makeClearElementBorderOp(
   };
 }
 
+function makeClearElementBorderRadiusOp(
+  elements: ReadonlySet<Element>,
+): EditOperation {
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
+  return {
+    execute() {
+      for (const el of elements) {
+        const rest: ElementStyleProps = { ...snapshots.get(el)! };
+        delete rest.borderRadius;
+        el.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const el of elements) {
+        el.styles.set(snapshots.get(el)!);
+      }
+    },
+  };
+}
+
+function makeClearElementPaddingOp(
+  elements: ReadonlySet<Element>,
+): EditOperation {
+  const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
+  return {
+    execute() {
+      for (const el of elements) {
+        const rest: ElementStyleProps = { ...snapshots.get(el)! };
+        delete rest.padding;
+        el.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const el of elements) {
+        el.styles.set(snapshots.get(el)!);
+      }
+    },
+  };
+}
+
 function makeClearElementFontOp(elements: ReadonlySet<Element>): EditOperation {
   const snapshots = new Map([...elements].map((el) => [el, el.styles.own]));
   return {
@@ -351,6 +407,90 @@ function makeClearSectionBorderOp(
       for (const s of sections) {
         s.styles.set(snapshots.get(s)!);
       }
+    },
+  };
+}
+
+function makeClearSectionBorderRadiusOp(
+  sections: ReadonlySet<Section>,
+): EditOperation {
+  const snapshots = new Map([...sections].map((s) => [s, s.styles.own]));
+  return {
+    execute() {
+      for (const s of sections) {
+        const rest: SectionStyleProps = { ...snapshots.get(s)! };
+        delete rest.borderRadius;
+        s.styles.set(rest);
+      }
+    },
+    undo() {
+      for (const s of sections) {
+        s.styles.set(snapshots.get(s)!);
+      }
+    },
+  };
+}
+
+function makeAddElementNamedOp(
+  elements: ReadonlySet<Element>,
+  style: NamedElementStyle,
+): EditOperation {
+  const targets = [...elements].filter(
+    (el) => !el.styles.named.includes(style),
+  );
+  return {
+    execute() {
+      for (const el of targets) el.styles.addNamed(style);
+    },
+    undo() {
+      for (const el of targets) el.styles.removeNamed(style);
+    },
+  };
+}
+
+function makeRemoveElementNamedOp(
+  elements: ReadonlySet<Element>,
+  style: NamedElementStyle,
+): EditOperation {
+  // Undo re-adds at the end of the named list. Cascade position is not restored.
+  // Acceptable in v1 — there is no reordering UI.
+  const targets = [...elements].filter((el) => el.styles.named.includes(style));
+  return {
+    execute() {
+      for (const el of targets) el.styles.removeNamed(style);
+    },
+    undo() {
+      for (const el of targets) el.styles.addNamed(style);
+    },
+  };
+}
+
+function makeAddSectionNamedOp(
+  sections: ReadonlySet<Section>,
+  style: NamedSectionStyle,
+): EditOperation {
+  const targets = [...sections].filter((s) => !s.styles.named.includes(style));
+  return {
+    execute() {
+      for (const s of targets) s.styles.addNamed(style);
+    },
+    undo() {
+      for (const s of targets) s.styles.removeNamed(style);
+    },
+  };
+}
+
+function makeRemoveSectionNamedOp(
+  sections: ReadonlySet<Section>,
+  style: NamedSectionStyle,
+): EditOperation {
+  const targets = [...sections].filter((s) => s.styles.named.includes(style));
+  return {
+    execute() {
+      for (const s of targets) s.styles.removeNamed(style);
+    },
+    undo() {
+      for (const s of targets) s.styles.addNamed(style);
     },
   };
 }
@@ -416,6 +556,8 @@ export class StylesPanel implements SidebarPanel {
     const registry = this.state_.presentation.styles;
     const markdownEls = els.filter(isMarkdown);
 
+    this.renderNamedElementStyles_(elements);
+
     const fill = consensusFill(styles.map((s) => s.fill));
     const fillSource = consensusSource(
       els.map((el) => elementPropSource(el, "fill", registry)),
@@ -454,6 +596,56 @@ export class StylesPanel implements SidebarPanel {
       },
       (b) => {
         this.push_(makeElementStyleOp(elements, { border: b }));
+        this.update();
+      },
+    );
+
+    const borderRadius = consensusNumber(styles.map((s) => s.borderRadius));
+    const borderRadiusSource = consensusSource(
+      els.map((el) => elementPropSource(el, "borderRadius", registry)),
+    );
+    this.renderBorderRadiusSection_(
+      borderRadius,
+      {
+        source: borderRadiusSource,
+        onClear: els.some((el) => el.styles.own.borderRadius !== undefined)
+          ? () => {
+              this.push_(makeClearElementBorderRadiusOp(elements));
+              this.update();
+            }
+          : undefined,
+      },
+      (v) => {
+        this.push_(
+          makeElementStyleOp(elements, {
+            borderRadius: { unit: "basis", value: v },
+          }),
+        );
+        this.update();
+      },
+    );
+
+    const padding = consensusNumber(styles.map((s) => s.padding));
+    const paddingSource = consensusSource(
+      els.map((el) => elementPropSource(el, "padding", registry)),
+    );
+    this.renderPaddingSection_(
+      padding,
+      {
+        source: paddingSource,
+        onClear: els.some((el) => el.styles.own.padding !== undefined)
+          ? () => {
+              this.push_(makeClearElementPaddingOp(elements));
+              this.update();
+            }
+          : undefined,
+      },
+      (v) => {
+        this.push_(
+          makeElementStyleOp(elements, {
+            padding: { unit: "basis", value: v },
+          }),
+        );
         this.update();
       },
     );
@@ -512,6 +704,8 @@ export class StylesPanel implements SidebarPanel {
     const styles = secs.map((s) => s.styles.computed);
     const registry = this.state_.presentation.styles;
 
+    this.renderNamedSectionStyles_(sections);
+
     const fill = consensusFill(styles.map((s) => s.fill));
     const fillSource = consensusSource(
       secs.map((s) => sectionPropSource(s, "fill", registry)),
@@ -553,6 +747,173 @@ export class StylesPanel implements SidebarPanel {
         this.update();
       },
     );
+
+    const borderRadius = consensusNumber(styles.map((s) => s.borderRadius));
+    const borderRadiusSource = consensusSource(
+      secs.map((s) => sectionPropSource(s, "borderRadius", registry)),
+    );
+    this.renderBorderRadiusSection_(
+      borderRadius,
+      {
+        source: borderRadiusSource,
+        onClear: secs.some((s) => s.styles.own.borderRadius !== undefined)
+          ? () => {
+              this.push_(makeClearSectionBorderRadiusOp(sections));
+              this.update();
+            }
+          : undefined,
+      },
+      (v) => {
+        this.push_(
+          makeSectionStyleOp(sections, {
+            borderRadius: { unit: "basis", value: v },
+          }),
+        );
+        this.update();
+      },
+    );
+  }
+
+  // ── Named style renderers ─────────────────────────────────────────────────
+
+  private renderNamedElementStyles_(elements: ReadonlySet<Element>): void {
+    const els = [...elements];
+    const allStyles = this.state_.presentation.styles.elementStyles;
+    if (allStyles.length === 0) return;
+
+    const { section, body } = this.createSection_("Named Styles");
+    this.element.appendChild(section);
+
+    const appliedAny = allStyles.filter((s) =>
+      els.some((el) => el.styles.named.includes(s)),
+    );
+    if (appliedAny.length > 0) {
+      const tagsRow = document.createElement("div");
+      tagsRow.className = "re-style-named-tags";
+      for (const style of appliedAny) {
+        const count = els.filter((el) =>
+          el.styles.named.includes(style),
+        ).length;
+        const partial = count < els.length;
+        tagsRow.appendChild(
+          this.createNamedTag_({
+            name: style.name,
+            partial,
+            title: partial
+              ? `Applied to ${count} of ${els.length} selected`
+              : undefined,
+            onRemove: () => {
+              this.push_(makeRemoveElementNamedOp(elements, style));
+              this.update();
+            },
+          }),
+        );
+      }
+      body.appendChild(tagsRow);
+    }
+
+    const notAll = allStyles.filter(
+      (s) => !els.every((el) => el.styles.named.includes(s)),
+    );
+    if (notAll.length > 0) {
+      const addSelect = this.createSelect_(
+        [
+          { value: "", label: "+ Add style" },
+          ...notAll.map((s) => ({ value: s.name, label: s.name })),
+        ],
+        "",
+      );
+      addSelect.classList.add("re-style-named-add");
+      addSelect.addEventListener("change", () => {
+        const name = addSelect.value;
+        if (!name) return;
+        const style = allStyles.find((s) => s.name === name)!;
+        this.push_(makeAddElementNamedOp(elements, style));
+        addSelect.value = "";
+        this.update();
+      });
+      body.appendChild(addSelect);
+    }
+  }
+
+  private renderNamedSectionStyles_(sections: ReadonlySet<Section>): void {
+    const secs = [...sections];
+    const allStyles = this.state_.presentation.styles.sectionStyles;
+    if (allStyles.length === 0) return;
+
+    const { section, body } = this.createSection_("Named Styles");
+    this.element.appendChild(section);
+
+    const appliedAny = allStyles.filter((s) =>
+      secs.some((sec) => sec.styles.named.includes(s)),
+    );
+    if (appliedAny.length > 0) {
+      const tagsRow = document.createElement("div");
+      tagsRow.className = "re-style-named-tags";
+      for (const style of appliedAny) {
+        const count = secs.filter((sec) =>
+          sec.styles.named.includes(style),
+        ).length;
+        const partial = count < secs.length;
+        tagsRow.appendChild(
+          this.createNamedTag_({
+            name: style.name,
+            partial,
+            title: partial
+              ? `Applied to ${count} of ${secs.length} selected`
+              : undefined,
+            onRemove: () => {
+              this.push_(makeRemoveSectionNamedOp(sections, style));
+              this.update();
+            },
+          }),
+        );
+      }
+      body.appendChild(tagsRow);
+    }
+
+    const notAll = allStyles.filter(
+      (s) => !secs.every((sec) => sec.styles.named.includes(s)),
+    );
+    if (notAll.length > 0) {
+      const addSelect = this.createSelect_(
+        [
+          { value: "", label: "+ Add style" },
+          ...notAll.map((s) => ({ value: s.name, label: s.name })),
+        ],
+        "",
+      );
+      addSelect.classList.add("re-style-named-add");
+      addSelect.addEventListener("change", () => {
+        const name = addSelect.value;
+        if (!name) return;
+        const style = allStyles.find((s) => s.name === name)!;
+        this.push_(makeAddSectionNamedOp(sections, style));
+        addSelect.value = "";
+        this.update();
+      });
+      body.appendChild(addSelect);
+    }
+  }
+
+  private createNamedTag_(opts: NamedTagOpts): HTMLElement {
+    const tag = document.createElement("span");
+    tag.className = opts.partial
+      ? "re-style-named-tag re-style-named-tag--partial"
+      : "re-style-named-tag";
+    if (opts.title) tag.title = opts.title;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "re-style-named-tag__name";
+    nameSpan.textContent = opts.name;
+    tag.appendChild(nameSpan);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "re-style-named-tag__remove";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", opts.onRemove);
+    tag.appendChild(removeBtn);
+    return tag;
   }
 
   // ── Section renderers ─────────────────────────────────────────────────────
@@ -856,6 +1217,70 @@ export class StylesPanel implements SidebarPanel {
     });
     italicValue.appendChild(italicCheck);
     body.appendChild(italicRow);
+  }
+
+  private renderBorderRadiusSection_(
+    borderRadius: number | "mixed",
+    opts: SectionOpts,
+    onChange: (v: number) => void,
+  ): void {
+    const { section, body } = this.createSection_(
+      "Border Radius",
+      opts.source,
+      opts.onClear,
+    );
+    this.element.appendChild(section);
+
+    const { row, value: valueEl } = this.createRow_("Radius");
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "re-style-input re-style-input--number";
+    input.min = "0";
+    if (borderRadius === "mixed") {
+      input.placeholder = "—";
+    } else {
+      input.value = String(borderRadius);
+    }
+    input.addEventListener("change", () => {
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v < 0) return;
+      onChange(v);
+    });
+    valueEl.appendChild(input);
+    valueEl.appendChild(document.createTextNode(" basis"));
+    body.appendChild(row);
+  }
+
+  private renderPaddingSection_(
+    padding: number | "mixed",
+    opts: SectionOpts,
+    onChange: (v: number) => void,
+  ): void {
+    const { section, body } = this.createSection_(
+      "Padding",
+      opts.source,
+      opts.onClear,
+    );
+    this.element.appendChild(section);
+
+    const { row, value: valueEl } = this.createRow_("Padding");
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "re-style-input re-style-input--number";
+    input.min = "0";
+    if (padding === "mixed") {
+      input.placeholder = "—";
+    } else {
+      input.value = String(padding);
+    }
+    input.addEventListener("change", () => {
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v < 0) return;
+      onChange(v);
+    });
+    valueEl.appendChild(input);
+    valueEl.appendChild(document.createTextNode(" basis"));
+    body.appendChild(row);
   }
 
   // ── Widget helpers ────────────────────────────────────────────────────────

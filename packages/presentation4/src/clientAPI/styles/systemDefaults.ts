@@ -15,6 +15,8 @@ import type { ComputedSectionStyle } from "./SectionStyleProps";
 export const SYSTEM_DEFAULT_ELEMENT_STYLE: ComputedElementStyle = {
   fill: { type: "none" },
   border: { type: "none" },
+  borderRadius: 0,
+  padding: 0,
   fontFamily: "sans-serif",
   fontSize: 18,
   fontWeight: 400,
@@ -31,4 +33,5 @@ export const SYSTEM_DEFAULT_ELEMENT_STYLE: ComputedElementStyle = {
 export const SYSTEM_DEFAULT_SECTION_STYLE: ComputedSectionStyle = {
   fill: { type: "none" },
   border: { type: "none" },
+  borderRadius: 0,
 };

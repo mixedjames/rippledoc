@@ -58,12 +58,14 @@ export class PropertiesPanel implements SidebarPanel {
 
     // sel.size === 1 is checked above; cast is safe
     const element = sel.values().next().value as Element;
+    this.renderNameRow_(element);
+
     if (isMarkdown(element)) {
       this.renderMarkdownProps_(element);
     } else if (isBitmapImage(element)) {
       this.renderImageProps_(element);
     } else {
-      this.renderEmpty_("SVG element selected.");
+      this.renderTypeLabel_("SVG image");
     }
   }
 
@@ -74,11 +76,81 @@ export class PropertiesPanel implements SidebarPanel {
     this.element.appendChild(msg);
   }
 
-  private renderMarkdownProps_(el: MarkdownElement): void {
+  private renderNameRow_(el: Element): void {
+    const row = document.createElement("div");
+    row.className = "re-style-row";
+
+    const label = document.createElement("span");
+    label.className = "re-style-row__label";
+    label.textContent = "Name";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "re-style-input re-style-input--text";
+    input.value = el.name;
+
+    const valueWrap = document.createElement("div");
+    valueWrap.className = "re-style-row__value";
+    valueWrap.appendChild(input);
+
+    row.appendChild(label);
+    row.appendChild(valueWrap);
+    this.element.appendChild(row);
+
+    const error = document.createElement("div");
+    error.className = "re-prop-error";
+    error.style.display = "none";
+    this.element.appendChild(error);
+
+    const commit = () => {
+      const newName = input.value.trim();
+      if (newName === "" || newName === el.name) {
+        input.value = el.name;
+        error.style.display = "none";
+        return;
+      }
+
+      const isDuplicate = el.section
+        .getElements()
+        .some((other) => other !== el && other.name === newName);
+      if (isDuplicate) {
+        error.textContent = `"${newName}" is already in use.`;
+        error.style.display = "";
+        input.value = el.name;
+        return;
+      }
+
+      error.style.display = "none";
+      const oldName = el.name;
+      this.push_({
+        execute: () => el.setName(newName),
+        undo: () => el.setName(oldName),
+      });
+    };
+
+    input.addEventListener("blur", commit);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        input.blur();
+      } else if (e.key === "Escape") {
+        input.value = el.name;
+        error.style.display = "none";
+        input.blur();
+      }
+    });
+  }
+
+  private renderTypeLabel_(text: string): void {
     const label = document.createElement("div");
     label.className = "re-panel-label";
-    label.textContent = "Markdown element";
+    label.style.marginTop = "8px";
+    label.textContent = text;
     this.element.appendChild(label);
+  }
+
+  private renderMarkdownProps_(el: MarkdownElement): void {
+    this.renderTypeLabel_("Markdown element");
 
     const btn = document.createElement("button");
     btn.className = "re-panel-action-btn";
@@ -90,10 +162,8 @@ export class PropertiesPanel implements SidebarPanel {
   }
 
   private renderImageProps_(el: BitmapImageElement): void {
-    const label = document.createElement("div");
-    label.textContent = `Image element`;
-    this.element.appendChild(label);
-    // TODO: src/alt inputs (delegates to EditorDelegate.requestImageImport)
+    this.renderTypeLabel_("Image element");
+
     const src = document.createElement("div");
     src.style.cssText =
       "margin-top:4px;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";

@@ -96,6 +96,7 @@ export class EditorSectionView implements p4.SectionView {
 
     this.backgroundElement_.style.background = fillToCss(style.fill);
     this.backgroundElement_.style.border = borderToCss(style.border, scale);
+    this.backgroundElement_.style.borderRadius = `${style.borderRadius * scale}px`;
   }
 
   createMarkdownElementView(

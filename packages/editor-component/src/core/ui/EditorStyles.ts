@@ -119,6 +119,15 @@ const EDITOR_CSS = `
   border-color: #999;
 }
 
+/* ── Properties panel ────────────────────────────────────────────────────── */
+
+.re-prop-error {
+  font-size: 10px;
+  color: #c0392b;
+  margin-top: 2px;
+  padding: 0 2px;
+}
+
 /* ── Styles panel ─────────────────────────────────────────────────────────── */
 
 .re-style-section {
@@ -243,6 +252,63 @@ const EDITOR_CSS = `
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-left: 0;
+}
+
+/* ── Named style tags (Styles panel) ──────────────────────────────────────── */
+
+.re-style-named-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.re-style-named-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px 2px 7px;
+  background: #d4e4ff;
+  color: #1a3a6b;
+  border: 1px solid #a8c4f0;
+  border-radius: 10px;
+  font-size: 10px;
+  max-width: 100%;
+}
+
+.re-style-named-tag--partial {
+  background: #eaeaea;
+  color: #666;
+  border-color: #ccc;
+  font-style: italic;
+}
+
+.re-style-named-tag__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.re-style-named-tag__remove {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.re-style-named-tag__remove:hover {
+  opacity: 1;
+}
+
+.re-style-named-add {
+  width: 100%;
+  margin-top: 2px;
 }
 
 /* ── Anchors panel ─────────────────────────────────────────────────────────── */

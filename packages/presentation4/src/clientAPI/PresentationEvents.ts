@@ -7,6 +7,8 @@ import type { PresentationRoot } from "./PresentationRoot";
 import type { Layout } from "./Layout";
 import type { Pin } from "./animation/Pin";
 import type { KeyFrameAnimation } from "./animation/KeyFrameAnimation";
+import type { NamedElementStyle } from "./styles/NamedElementStyle";
+import type { NamedSectionStyle } from "./styles/NamedSectionStyle";
 
 export type PresentationEvents = {
   "section:added": { section: Section; index: number };
@@ -36,6 +38,21 @@ export type PresentationEvents = {
   "section:styleChanged": { section: Section };
   "section:nameChanged": { section: Section; name: string };
   "element:nameChanged": { element: Element; name: string };
+  /** Emitted when a named element style is added to the registry. */
+  "style:elementStyleCreated": { style: NamedElementStyle };
+  /** Emitted when a named element style is removed from the registry. */
+  "style:elementStyleDeleted": { style: NamedElementStyle };
+  /**
+   * Emitted when a named element style is renamed. The style object already
+   * carries the new name (consistent with `section:nameChanged`).
+   */
+  "style:elementStyleRenamed": { style: NamedElementStyle };
+  /** Emitted when a named section style is added to the registry. */
+  "style:sectionStyleCreated": { style: NamedSectionStyle };
+  /** Emitted when a named section style is removed from the registry. */
+  "style:sectionStyleDeleted": { style: NamedSectionStyle };
+  /** Emitted when a named section style is renamed. */
+  "style:sectionStyleRenamed": { style: NamedSectionStyle };
 };
 
 /**
