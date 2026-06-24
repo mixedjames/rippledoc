@@ -20,6 +20,7 @@ import {
   type SerializeContext,
 } from "./serialize/SerializeContext";
 import { serializeTriggerLayoutGeometry } from "./serialize/serializeGeometry";
+import type { EventContext } from "./EventContext";
 
 enum TriggerState {
   Before = "before",
@@ -41,13 +42,19 @@ export class CoreScrollTrigger
   extends AnchoredObjectBase
   implements ScrollTrigger
 {
-  private readonly name_: string;
+  private name_: string;
+  private readonly eventContext_: EventContext;
   private readonly listeners_ = new TypedEmitter<ScrollTriggerEvents>();
   private lastState_: TriggerState = TriggerState.Before;
 
-  constructor(layoutManager: LayoutManager, options: ScrollTriggerOptions) {
+  constructor(
+    layoutManager: LayoutManager,
+    eventContext: EventContext,
+    options: ScrollTriggerOptions,
+  ) {
     super(layoutManager);
 
+    this.eventContext_ = eventContext;
     this.name_ = options.name ?? "";
 
     // Triggers are infinitely thin horizontally — they only span a vertical range.
@@ -79,6 +86,11 @@ export class CoreScrollTrigger
 
   get name(): string {
     return this.name_;
+  }
+
+  setName(name: string): void {
+    this.name_ = name;
+    this.eventContext_.emit("trigger:nameChanged", { trigger: this, name });
   }
 
   // ── Layout lifecycle ──────────────────────────────────────────────────────

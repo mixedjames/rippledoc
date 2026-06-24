@@ -4,6 +4,7 @@ import type { SidebarPanel, PushOperation } from "./SidebarPanel";
 import type {
   Element,
   Section,
+  ScrollTrigger,
   Anchor,
   AnchorExpression,
   HorizontalAnchorSet,
@@ -36,7 +37,7 @@ type AnchorEntry = {
 };
 
 type DetailState = {
-  subject: Element | Section;
+  subject: Element | Section | ScrollTrigger;
   entry: AnchorEntry;
 };
 
@@ -47,8 +48,15 @@ type ExprType = "constant" | "offset" | "fraction" | "fitContent";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function isElement(subject: Element | Section): subject is Element {
+function isElement(subject: Element | Section | ScrollTrigger): subject is Element {
   return "setHorizontalAnchors" in subject;
+}
+
+function isScrollTrigger(
+  subject: Element | Section | ScrollTrigger,
+): subject is ScrollTrigger {
+  // ScrollTrigger has no addMarkdownElement (Section) and no setHorizontalAnchors (Element).
+  return !isElement(subject) && !("addMarkdownElement" in subject);
 }
 
 /** True for width and height — the size group whose anchors support fit-content mode. */
@@ -132,7 +140,7 @@ function buildHSwapDerivedOp(
 }
 
 function buildVSwapDerivedOp(
-  subject: Element | Section,
+  subject: Element | Section | ScrollTrigger,
   { currentDerived, newDerived }: { currentDerived: VSlot; newDerived: VSlot },
   onDone: () => void,
 ): EditOperation {
@@ -202,7 +210,7 @@ function buildHConstantOp(
 }
 
 function buildVConstantOp(
-  subject: Element | Section,
+  subject: Element | Section | ScrollTrigger,
   { slot, value }: { slot: VSlot; value: number },
   onDone: () => void,
 ): EditOperation {
@@ -272,7 +280,7 @@ function buildHRefOp(
 }
 
 function buildVRefOp(
-  subject: Element | Section,
+  subject: Element | Section | ScrollTrigger,
   {
     slot,
     base,
@@ -567,9 +575,9 @@ export class AnchorsPanel implements SidebarPanel {
   private focusOnRender_ = false;
   // True while the AnchorPickerTool is active waiting for a canvas click.
   private pickInProgress_ = false;
-  // The element/section chosen in Stage 1. Cleared after the slot is committed
-  // or when the pick flow is exited.
-  private anchorPickingTarget_: Element | Section | null = null;
+  // The element/section/trigger chosen in Stage 1. Cleared after the slot is
+  // committed or when the pick flow is exited.
+  private anchorPickingTarget_: Element | Section | ScrollTrigger | null = null;
 
   constructor(
     state: EditorState,
@@ -587,9 +595,9 @@ export class AnchorsPanel implements SidebarPanel {
     this.element.innerHTML = "";
     const sel = this.state_.viewController.selection;
 
-    const { elements, sections } = sel;
-    let subject: Element | Section | null = null;
-    let kind: "element" | "section" | null = null;
+    const { elements, sections, triggers } = sel;
+    let subject: Element | Section | ScrollTrigger | null = null;
+    let kind: "element" | "section" | "trigger" | null = null;
 
     if (elements.size === 1) {
       subject = [...elements][0]!;
@@ -597,6 +605,9 @@ export class AnchorsPanel implements SidebarPanel {
     } else if (sections.size === 1) {
       subject = [...sections][0]!;
       kind = "section";
+    } else if (triggers.size === 1) {
+      subject = [...triggers][0]!;
+      kind = "trigger";
     }
 
     // Clear drill-down when the subject changes.
@@ -609,11 +620,12 @@ export class AnchorsPanel implements SidebarPanel {
     }
 
     if (!subject) {
-      const multi = elements.size > 1 || sections.size > 1;
+      const multi =
+        elements.size > 1 || sections.size > 1 || triggers.size > 1;
       this.renderEmpty_(
         multi
-          ? "Select a single element or section to edit anchors."
-          : "Select an element or section to edit anchors.",
+          ? "Select a single element, section, or trigger to edit anchors."
+          : "Select an element, section, or trigger to edit anchors.",
       );
       return;
     }
@@ -622,6 +634,8 @@ export class AnchorsPanel implements SidebarPanel {
       this.renderDetail_(subject, this.detail_.entry);
     } else if (kind === "element") {
       this.renderElementAnchors_(subject as Element);
+    } else if (kind === "trigger") {
+      this.renderTriggerAnchors_(subject as ScrollTrigger);
     } else {
       this.renderSectionAnchors_(subject as Section);
     }
@@ -658,6 +672,15 @@ export class AnchorsPanel implements SidebarPanel {
     ]);
   }
 
+  private renderTriggerAnchors_(trigger: ScrollTrigger): void {
+    const a = trigger.anchors;
+    this.renderGroup_(trigger, "Vertical", [
+      { name: "top", anchor: a.top, axis: "vertical" },
+      { name: "height", anchor: a.height, axis: "vertical" },
+      { name: "bottom", anchor: a.bottom, axis: "vertical" },
+    ]);
+  }
+
   private renderSectionAnchors_(sec: Section): void {
     const a = sec.anchors;
     this.renderGroup_(sec, "Vertical", [
@@ -674,7 +697,7 @@ export class AnchorsPanel implements SidebarPanel {
   }
 
   private renderGroup_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     title: string,
     entries: AnchorEntry[],
   ): void {
@@ -694,7 +717,7 @@ export class AnchorsPanel implements SidebarPanel {
   }
 
   private makeListRow_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
   ): HTMLElement {
     const row = document.createElement("div");
@@ -735,7 +758,10 @@ export class AnchorsPanel implements SidebarPanel {
 
   // ── Detail view ───────────────────────────────────────────────────────────
 
-  private renderDetail_(subject: Element | Section, entry: AnchorEntry): void {
+  private renderDetail_(
+    subject: Element | Section | ScrollTrigger,
+    entry: AnchorEntry,
+  ): void {
     // Keep the subject element visually focused throughout the detail view,
     // including after a target pick overwrites focus. Sections have no chrome.
     if (isElement(subject)) {
@@ -958,12 +984,13 @@ export class AnchorsPanel implements SidebarPanel {
   }
 
   private renderSwapDerivedDropdown_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
   ): void {
     // For sections, top is system-managed and must never become a free constraint,
-    // so exclude it from the options the user can make derived.
-    const isSection = !isElement(subject);
+    // so exclude it from the options the user can make derived. Triggers don't
+    // have this restriction — all three vertical anchors are user-settable.
+    const isActualSection = !isElement(subject) && !isScrollTrigger(subject);
     const allSlots: AnchorSlot[] =
       entry.axis === "horizontal"
         ? ["left", "right", "width"]
@@ -986,7 +1013,9 @@ export class AnchorsPanel implements SidebarPanel {
 
     const options = allSlots.filter(
       (s) =>
-        s !== entry.name && !(isSection && s === "top") && s !== fitContentSlot,
+        s !== entry.name &&
+        !(isActualSection && s === "top") &&
+        s !== fitContentSlot,
     );
 
     const row = document.createElement("div");
@@ -1045,7 +1074,7 @@ export class AnchorsPanel implements SidebarPanel {
   // ── Anchor picking ────────────────────────────────────────────────────────
 
   private renderAnchorPicking_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
     type: "offset" | "fraction",
   ): void {
@@ -1078,12 +1107,12 @@ export class AnchorsPanel implements SidebarPanel {
     const prompt = document.createElement("p");
     prompt.className = "re-anchor-pick-prompt";
     prompt.textContent =
-      "Click an element or section in the canvas, or press Escape to cancel.";
+      "Click an element, section, or scroll trigger in the canvas, or press Escape to cancel.";
     this.element.appendChild(prompt);
   }
 
   private renderSlotList_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
     type: "offset" | "fraction",
   ): void {
@@ -1214,10 +1243,10 @@ export class AnchorsPanel implements SidebarPanel {
   /** Renders the anchor slot list for `target` inline, highlighting `currentBase`.
    *  Clicking a non-current slot calls `onSlotSelected` with the new base anchor. */
   private renderInlineSlotList_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
     currentBase: Anchor,
-    target: Element | Section,
+    target: Element | Section | ScrollTrigger,
     onSlotSelected: (base: Anchor) => void,
   ): void {
     const group = slotPickGroup(entry.name);
@@ -1272,7 +1301,7 @@ export class AnchorsPanel implements SidebarPanel {
   // ── Offset / fraction editing ─────────────────────────────────────────────
 
   private renderOffsetEdit_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
     expr: OffsetAnchorExpression,
   ): void {
@@ -1425,7 +1454,7 @@ export class AnchorsPanel implements SidebarPanel {
   }
 
   private renderFractionEdit_(
-    subject: Element | Section,
+    subject: Element | Section | ScrollTrigger,
     entry: AnchorEntry,
     expr: FractionAnchorExpression,
   ): void {
@@ -1653,8 +1682,14 @@ function slotPickGroup(slot: AnchorSlot): PickGroup {
 /** Anchor slots on `target` that are valid picks for `group`. */
 function validSlotsForGroup(
   group: PickGroup,
-  target: Element | Section,
+  target: Element | Section | ScrollTrigger,
 ): AnchorSlot[] {
+  if (isScrollTrigger(target)) {
+    // Triggers are vertical-only; no horizontal anchors exist on them.
+    if (group === "h") return [];
+    if (group === "v") return ["top", "bottom"];
+    return ["height"]; // "s"
+  }
   const isSection = !isElement(target);
   if (group === "h") return isSection ? [] : ["left", "right"];
   if (group === "v") return ["top", "bottom"];
@@ -1663,7 +1698,7 @@ function validSlotsForGroup(
 }
 
 type AnchorInfo = {
-  target: Element | Section;
+  target: Element | Section | ScrollTrigger;
   targetLabel: string;
   slot: AnchorSlot;
 };
@@ -1690,14 +1725,25 @@ function findAnchorInfo(anchor: Anchor, pres: Presentation): AnchorInfo | null {
         };
     }
   }
+  for (const trigger of pres.triggers) {
+    const ta = trigger.anchors as Record<AnchorSlot, Anchor | undefined>;
+    const slot = vSlots.find((s) => ta[s] === anchor);
+    if (slot)
+      return {
+        target: trigger,
+        targetLabel: trigger.name || "Trigger",
+        slot,
+      };
+  }
   return null;
 }
 
 /** Human-readable label for a picked target object. */
 function resolveTargetLabel(
-  target: Element | Section,
+  target: Element | Section | ScrollTrigger,
   pres: Presentation,
 ): string {
+  if (isScrollTrigger(target)) return target.name || "Trigger";
   for (const section of pres.root.getSections()) {
     if (section === target) return section.name;
     for (const el of section.getElements()) {

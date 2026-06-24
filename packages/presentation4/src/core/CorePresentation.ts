@@ -208,9 +208,19 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
     return this.styles_;
   }
 
+  get triggers(): readonly ScrollTrigger[] {
+    return this.triggers_;
+  }
+
   addScrollTrigger(options: ScrollTriggerOptions): ScrollTrigger {
-    const trigger = new CoreScrollTrigger(this.layout_, options);
+    const trigger = new CoreScrollTrigger(
+      this.layout_,
+      this.eventContext_,
+      options,
+    );
+    const index = this.triggers_.length;
     this.triggers_.push(trigger);
+    this.eventController_.emit("trigger:added", { trigger, index });
     return trigger;
   }
 

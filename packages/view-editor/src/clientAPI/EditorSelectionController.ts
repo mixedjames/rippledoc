@@ -1,4 +1,8 @@
-import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
+import type {
+  Element,
+  Section,
+  ScrollTrigger,
+} from "@rippledoc/presentation4/viewAPI";
 import type { FocusState } from "./FocusState";
 
 /**
@@ -30,6 +34,14 @@ export interface EditorSelectionController {
   setSections(sections: Iterable<Section>): void;
   hasSection(section: Section): boolean;
   readonly sections: ReadonlySet<Section>;
+
+  /** Add a trigger. Clears all elements and sections if either set was non-empty. */
+  addTrigger(trigger: ScrollTrigger): void;
+  removeTrigger(trigger: ScrollTrigger): void;
+  /** Replace the entire trigger selection. Clears elements and sections. */
+  setTriggers(triggers: Iterable<ScrollTrigger>): void;
+  hasTrigger(trigger: ScrollTrigger): boolean;
+  readonly triggers: ReadonlySet<ScrollTrigger>;
 
   clear(): void;
 

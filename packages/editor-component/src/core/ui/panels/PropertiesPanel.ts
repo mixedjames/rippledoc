@@ -2,6 +2,7 @@ import type {
   Element,
   MarkdownElement,
   BitmapImageElement,
+  ScrollTrigger,
 } from "@rippledoc/presentation4";
 import type { EditorState } from "../../EditorState";
 import type { SidebarPanel, PushOperation } from "./SidebarPanel";
@@ -45,6 +46,19 @@ export class PropertiesPanel implements SidebarPanel {
 
   update(): void {
     this.element.innerHTML = "";
+    const triggers = this.state_.viewController.selection.triggers;
+
+    if (triggers.size === 1) {
+      const trigger = triggers.values().next().value as ScrollTrigger;
+      this.renderTriggerNameRow_(trigger);
+      this.renderTypeLabel_("Scroll trigger");
+      return;
+    }
+    if (triggers.size > 1) {
+      this.renderEmpty_(`${triggers.size} triggers selected.`);
+      return;
+    }
+
     const sel = this.state_.viewController.selection.elements;
 
     if (sel.size === 0) {
@@ -136,6 +150,49 @@ export class PropertiesPanel implements SidebarPanel {
       } else if (e.key === "Escape") {
         input.value = el.name;
         error.style.display = "none";
+        input.blur();
+      }
+    });
+  }
+
+  private renderTriggerNameRow_(trigger: ScrollTrigger): void {
+    const row = document.createElement("div");
+    row.className = "re-style-row";
+
+    const label = document.createElement("span");
+    label.className = "re-style-row__label";
+    label.textContent = "Name";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "re-style-input re-style-input--text";
+    input.value = trigger.name;
+
+    const valueWrap = document.createElement("div");
+    valueWrap.className = "re-style-row__value";
+    valueWrap.appendChild(input);
+
+    row.appendChild(label);
+    row.appendChild(valueWrap);
+    this.element.appendChild(row);
+
+    const commit = () => {
+      const newName = input.value.trim();
+      if (newName === trigger.name) return;
+      const oldName = trigger.name;
+      this.push_({
+        execute: () => trigger.setName(newName),
+        undo: () => trigger.setName(oldName),
+      });
+    };
+
+    input.addEventListener("blur", commit);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        input.blur();
+      } else if (e.key === "Escape") {
+        input.value = trigger.name;
         input.blur();
       }
     });

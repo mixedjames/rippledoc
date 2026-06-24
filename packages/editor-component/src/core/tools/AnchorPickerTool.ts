@@ -1,13 +1,14 @@
 import { NullTool } from "@rippledoc/view-editor";
 import type { EditorViewController } from "@rippledoc/view-editor";
-import type { Element, Section } from "@rippledoc/presentation4";
+import type { Element, Section, ScrollTrigger } from "@rippledoc/presentation4";
 import type { EditorTool, EditorToolContext } from "./EditorTool";
 
-export type AnchorPickResult = Element | Section | null; // null = cancelled via Escape
+export type AnchorPickResult = Element | Section | ScrollTrigger | null; // null = cancelled via Escape
 
 /**
- * One-shot tool that waits for the user to click an element or section in the
- * canvas, then calls the callback and deactivates. Escape cancels (null result).
+ * One-shot tool that waits for the user to click an element, section, or scroll
+ * trigger in the canvas, then calls the callback and deactivates. Escape cancels
+ * (null result).
  *
  * Picked elements become the view-editor's focused element for visual chrome.
  * Self-pick is permitted — whether it is a valid anchor target depends on the
@@ -29,6 +30,9 @@ export class AnchorPickerTool implements EditorTool {
       onSectionPicked: ({ section }) => {
         // Sections have no focused-element chrome — just pass through.
         this.finish_(section);
+      },
+      onTriggerPicked: ({ trigger }) => {
+        this.finish_(trigger);
       },
       onKeyDown: ({ source }) => {
         if (source.key === "Escape") this.finish_(null);

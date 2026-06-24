@@ -15,6 +15,9 @@ export class SingleSelectorTool implements EditorTool {
       onSectionPicked: ({ section }) => {
         context.selection.setSections([section]);
       },
+      onTriggerPicked: ({ trigger }) => {
+        context.selection.setTriggers([trigger]);
+      },
     });
   }
 

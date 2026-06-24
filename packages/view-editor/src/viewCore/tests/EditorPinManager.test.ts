@@ -312,6 +312,7 @@ describe("selection chrome — clone sync", () => {
     ctrl.emit("selection:changed", {
       elements: new Set([owner]) as unknown as ReadonlySet<p4.Element>,
       sections: new Set() as ReadonlySet<p4.Section>,
+      triggers: new Set() as ReadonlySet<p4.ScrollTrigger>,
     });
 
     expect(clone().classList.contains("selected")).toBe(true);
@@ -326,6 +327,7 @@ describe("selection chrome — clone sync", () => {
     ctrl.emit("selection:changed", {
       elements: new Set([owner]) as unknown as ReadonlySet<p4.Element>,
       sections: new Set() as ReadonlySet<p4.Section>,
+      triggers: new Set() as ReadonlySet<p4.ScrollTrigger>,
     });
 
     expect(clone().classList.contains("selected")).toBe(false);
@@ -381,6 +383,7 @@ describe("disconnect", () => {
     ctrl.emit("selection:changed", {
       elements: new Set([owner]) as unknown as ReadonlySet<p4.Element>,
       sections: new Set() as ReadonlySet<p4.Section>,
+      triggers: new Set() as ReadonlySet<p4.ScrollTrigger>,
     });
 
     // Clone is detached and gone; pinsContainer is empty — no throw, no side-effect.

@@ -18,6 +18,7 @@ export interface EditorTool {
   onSectionPicked?(payload: EditorViewEvents["section:picked"]): void;
   onSectionPointerDown?(payload: EditorViewEvents["section:pointerDown"]): void;
   onSectionPointerUp?(payload: EditorViewEvents["section:pointerUp"]): void;
+  onTriggerPicked?(payload: EditorViewEvents["trigger:picked"]): void;
   onKeyDown?(payload: EditorViewEvents["key:down"]): void;
   onKeyUp?(payload: EditorViewEvents["key:up"]): void;
 }

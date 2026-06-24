@@ -27,6 +27,7 @@ export class EditorViewControllerImpl implements EditorViewController {
   private mode_: ViewMode = "editor";
   private readonly elementSet_: Set<p4.Element> = new Set();
   private readonly sectionSet_: Set<p4.Section> = new Set();
+  private readonly triggerSet_: Set<p4.ScrollTrigger> = new Set();
   private readonly selection_: EditorSelectionControllerImpl;
   private readonly emitter_ = new TypedEmitter<EditorViewEvents>();
   private activeTool_: EditorTool = NullTool;
@@ -48,6 +49,7 @@ export class EditorViewControllerImpl implements EditorViewController {
       this,
       this.elementSet_,
       this.sectionSet_,
+      this.triggerSet_,
     );
   }
 
@@ -138,6 +140,9 @@ export class EditorViewControllerImpl implements EditorViewController {
       case "section:picked":
         tool.onSectionPicked?.(payload as EditorViewEvents["section:picked"]);
         break;
+      case "trigger:picked":
+        tool.onTriggerPicked?.(payload as EditorViewEvents["trigger:picked"]);
+        break;
       case "section:pointerDown":
         tool.onSectionPointerDown?.(
           payload as EditorViewEvents["section:pointerDown"],
@@ -163,6 +168,7 @@ export class EditorViewControllerImpl implements EditorViewController {
     this.emitter_.emit("selection:changed", {
       elements: this.elementSet_ as ReadonlySet<p4.Element>,
       sections: this.sectionSet_ as ReadonlySet<p4.Section>,
+      triggers: this.triggerSet_ as ReadonlySet<p4.ScrollTrigger>,
     });
   }
 
@@ -176,26 +182,30 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   private readonly ctrl_: EditorViewControllerImpl;
   private readonly elementSet_: Set<p4.Element>;
   private readonly sectionSet_: Set<p4.Section>;
+  private readonly triggerSet_: Set<p4.ScrollTrigger>;
   private focusedElement_: p4.Element | null = null;
 
   constructor(
     ctrl: EditorViewControllerImpl,
     elementSet: Set<p4.Element>,
     sectionSet: Set<p4.Section>,
+    triggerSet: Set<p4.ScrollTrigger>,
   ) {
     this.ctrl_ = ctrl;
     this.elementSet_ = elementSet;
     this.sectionSet_ = sectionSet;
+    this.triggerSet_ = triggerSet;
   }
 
   // ── Element ops ─────────────────────────────────────────────────────────────
 
   addElement(element: p4.Element): void {
     const clearedSections = this.clearSectionsIfNeeded_();
+    const clearedTriggers = this.clearTriggersIfNeeded_();
     if (!this.elementSet_.has(element)) {
       this.elementSet_.add(element);
       this.ctrl_.onSelectionChanged();
-    } else if (clearedSections) {
+    } else if (clearedSections || clearedTriggers) {
       this.ctrl_.onSelectionChanged();
     }
   }
@@ -208,9 +218,13 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   }
 
   setElements(elements: Iterable<p4.Element>): void {
-    const hadData = this.sectionSet_.size > 0 || this.elementSet_.size > 0;
+    const hadData =
+      this.sectionSet_.size > 0 ||
+      this.elementSet_.size > 0 ||
+      this.triggerSet_.size > 0;
     this.sectionSet_.clear();
     this.elementSet_.clear();
+    this.triggerSet_.clear();
     for (const el of elements) this.elementSet_.add(el);
     if (hadData || this.elementSet_.size > 0) this.ctrl_.onSelectionChanged();
   }
@@ -227,10 +241,11 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
 
   addSection(section: p4.Section): void {
     const clearedElements = this.clearElementsIfNeeded_();
+    const clearedTriggers = this.clearTriggersIfNeeded_();
     if (!this.sectionSet_.has(section)) {
       this.sectionSet_.add(section);
       this.ctrl_.onSelectionChanged();
-    } else if (clearedElements) {
+    } else if (clearedElements || clearedTriggers) {
       this.ctrl_.onSelectionChanged();
     }
   }
@@ -243,9 +258,13 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   }
 
   setSections(sections: Iterable<p4.Section>): void {
-    const hadData = this.sectionSet_.size > 0 || this.elementSet_.size > 0;
+    const hadData =
+      this.sectionSet_.size > 0 ||
+      this.elementSet_.size > 0 ||
+      this.triggerSet_.size > 0;
     this.elementSet_.clear();
     this.sectionSet_.clear();
+    this.triggerSet_.clear();
     for (const s of sections) this.sectionSet_.add(s);
     if (hadData || this.sectionSet_.size > 0) this.ctrl_.onSelectionChanged();
   }
@@ -258,12 +277,57 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
     return this.sectionSet_;
   }
 
+  // ── Trigger ops ─────────────────────────────────────────────────────────────
+
+  addTrigger(trigger: p4.ScrollTrigger): void {
+    const clearedOthers =
+      this.clearElementsIfNeeded_() || this.clearSectionsIfNeeded_();
+    if (!this.triggerSet_.has(trigger)) {
+      this.triggerSet_.add(trigger);
+      this.ctrl_.onSelectionChanged();
+    } else if (clearedOthers) {
+      this.ctrl_.onSelectionChanged();
+    }
+  }
+
+  removeTrigger(trigger: p4.ScrollTrigger): void {
+    if (this.triggerSet_.has(trigger)) {
+      this.triggerSet_.delete(trigger);
+      this.ctrl_.onSelectionChanged();
+    }
+  }
+
+  setTriggers(triggers: Iterable<p4.ScrollTrigger>): void {
+    const hadData =
+      this.elementSet_.size > 0 ||
+      this.sectionSet_.size > 0 ||
+      this.triggerSet_.size > 0;
+    this.elementSet_.clear();
+    this.sectionSet_.clear();
+    this.triggerSet_.clear();
+    for (const t of triggers) this.triggerSet_.add(t);
+    if (hadData || this.triggerSet_.size > 0) this.ctrl_.onSelectionChanged();
+  }
+
+  hasTrigger(trigger: p4.ScrollTrigger): boolean {
+    return this.triggerSet_.has(trigger);
+  }
+
+  get triggers(): ReadonlySet<p4.ScrollTrigger> {
+    return this.triggerSet_;
+  }
+
   // ── Combined ops ────────────────────────────────────────────────────────────
 
   clear(): void {
-    if (this.elementSet_.size > 0 || this.sectionSet_.size > 0) {
+    if (
+      this.elementSet_.size > 0 ||
+      this.sectionSet_.size > 0 ||
+      this.triggerSet_.size > 0
+    ) {
       this.elementSet_.clear();
       this.sectionSet_.clear();
+      this.triggerSet_.clear();
       this.ctrl_.onSelectionChanged();
     }
   }
@@ -305,6 +369,15 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
   private clearElementsIfNeeded_(): boolean {
     if (this.elementSet_.size > 0) {
       this.elementSet_.clear();
+      return true;
+    }
+    return false;
+  }
+
+  /** Clears triggers if any are selected. Returns true if anything was cleared. */
+  private clearTriggersIfNeeded_(): boolean {
+    if (this.triggerSet_.size > 0) {
+      this.triggerSet_.clear();
       return true;
     }
     return false;

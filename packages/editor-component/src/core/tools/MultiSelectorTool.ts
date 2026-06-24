@@ -23,6 +23,13 @@ export class MultiSelectorTool implements EditorTool {
           context.selection.addSection(section);
         }
       },
+      onTriggerPicked: ({ trigger }) => {
+        if (context.selection.hasTrigger(trigger)) {
+          context.selection.removeTrigger(trigger);
+        } else {
+          context.selection.addTrigger(trigger);
+        }
+      },
     });
   }
 

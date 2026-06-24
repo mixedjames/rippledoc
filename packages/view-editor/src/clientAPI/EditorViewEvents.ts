@@ -1,4 +1,8 @@
-import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
+import type {
+  Element,
+  Section,
+  ScrollTrigger,
+} from "@rippledoc/presentation4/viewAPI";
 import type { FocusState } from "./FocusState";
 
 export type EditorViewEvents = {
@@ -11,6 +15,8 @@ export type EditorViewEvents = {
   "element:pointerUp": { element: Element; source: PointerEvent };
   /** Fired on pointerdown over a section background (i.e. not over any element). */
   "section:picked": { section: Section; source: PointerEvent };
+  /** Fired on pointerdown over a trigger band. */
+  "trigger:picked": { trigger: ScrollTrigger; source: PointerEvent };
   "section:pointerDown": { section: Section; source: PointerEvent };
   "section:pointerUp": { section: Section; source: PointerEvent };
   /** Keyboard events fired while the presentation viewport has focus. */
@@ -20,6 +26,7 @@ export type EditorViewEvents = {
   "selection:changed": {
     elements: ReadonlySet<Element>;
     sections: ReadonlySet<Section>;
+    triggers: ReadonlySet<ScrollTrigger>;
   };
   /** Fired whenever the focused element changes. Carries the full new focus state. */
   "focus:changed": FocusState;

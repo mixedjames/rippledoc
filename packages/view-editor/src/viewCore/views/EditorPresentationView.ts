@@ -1,5 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import { EditorSectionView } from "./EditorSectionView";
+import { EditorTriggerBandView } from "./EditorTriggerBandView";
 import { PresentationDOM } from "./PresentationDOM";
 import { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
@@ -38,9 +39,11 @@ export class EditorPresentationView implements p4.PresentationView {
   private readonly onKeyDown_: (e: KeyboardEvent) => void;
   private readonly onKeyUp_: (e: KeyboardEvent) => void;
 
-  // Tracked so destroy() can cascade to section views even in the full-tree
-  // replacement path (where the model does not call sectionView.destroy()).
+  // Tracked so destroy() can cascade to section/trigger views even in the
+  // full-tree replacement path (where the model does not call destroy()).
   private readonly sectionViews_: EditorSectionView[] = [];
+  private readonly triggerBandViews_: EditorTriggerBandView[] = [];
+  private readonly unsubscribeTriggerAdded_: () => void;
 
   constructor(
     owner: p4.PresentationViewOwner,
@@ -79,6 +82,16 @@ export class EditorPresentationView implements p4.PresentationView {
     // Register after all listeners are wired so applyMode() can safely touch
     // the fully initialised DOM.
     this.controller_.registerView(this);
+
+    // Initialise bands for any triggers already on the presentation, then
+    // subscribe for future additions.
+    for (const trigger of owner.triggers) {
+      this.addTriggerBandView_(trigger);
+    }
+    this.unsubscribeTriggerAdded_ = owner.events.on(
+      "trigger:added",
+      ({ trigger }) => this.addTriggerBandView_(trigger),
+    );
   }
 
   get width(): number {
@@ -91,6 +104,7 @@ export class EditorPresentationView implements p4.PresentationView {
 
   layout(transform: p4.LayoutTransform): void {
     this.dom_.layout(transform);
+    for (const tbv of this.triggerBandViews_) tbv.layout(transform);
   }
 
   createSectionView(owner: p4.SectionViewOwner): p4.SectionView {
@@ -101,6 +115,19 @@ export class EditorPresentationView implements p4.PresentationView {
 
   applyMode(mode: ViewMode): void {
     this.dom_.setMode(mode);
+  }
+
+  private addTriggerBandView_(trigger: p4.ScrollTrigger): void {
+    const tbv = new EditorTriggerBandView(
+      trigger,
+      this.controller_,
+      this.owner_.events,
+      this.dom_.triggersContainer,
+    );
+    // Position immediately using the current transform so the band is never
+    // momentarily at 0,0 before the next layout pass.
+    tbv.layout(this.owner_.layoutTransform);
+    this.triggerBandViews_.push(tbv);
   }
 
   // Called by EditorSectionView.destroy() on single-node removal so the dead
@@ -115,6 +142,9 @@ export class EditorPresentationView implements p4.PresentationView {
     this.dom_.viewportContainer.removeEventListener("scroll", this.onScroll_);
     this.dom_.viewportContainer.removeEventListener("keydown", this.onKeyDown_);
     this.dom_.viewportContainer.removeEventListener("keyup", this.onKeyUp_);
+
+    this.unsubscribeTriggerAdded_();
+    for (const tbv of this.triggerBandViews_) tbv.destroy();
 
     // Full-tree cascade. Spread so that each sv.destroy() can safely call
     // onSectionViewDestroyed() (mutating sectionViews_) without corrupting iteration.

@@ -36,6 +36,9 @@ export interface Presentation {
   /** Named style registry and global style overrides for this presentation. */
   get styles(): StyleRegistry;
 
+  /** All scroll triggers added to this presentation, in insertion order. */
+  get triggers(): readonly ScrollTrigger[];
+
   /**
    * Create a scroll trigger that spans the given vertical range and emit
    * typed events as the scroll position crosses its boundaries.

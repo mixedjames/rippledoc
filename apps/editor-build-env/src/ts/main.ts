@@ -153,6 +153,23 @@ function seedPresentation(p: Presentation): void {
   );
   s2body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
   s2body.setAutoHeight({ top: offsetFrom(s2title.anchors.bottom, 20) });
+
+  // Demo scroll triggers.
+  p.addScrollTrigger({
+    name: "Heading Focus",
+    top: offsetFrom(s1.anchors.top, 0),
+    bottom: offsetFrom(s1.anchors.top, 400),
+  });
+  p.addScrollTrigger({
+    name: "Crossfade",
+    top: offsetFrom(s1.anchors.bottom, -200),
+    bottom: offsetFrom(s2.anchors.top, 200),
+  });
+  p.addScrollTrigger({
+    name: "Second Section",
+    top: offsetFrom(s2.anchors.top, 0),
+    bottom: offsetFrom(s2.anchors.bottom, 0),
+  });
 }
 
 // ── Initial state ─────────────────────────────────────────────────────────────

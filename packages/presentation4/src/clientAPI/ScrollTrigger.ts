@@ -62,4 +62,5 @@ export interface ScrollTrigger {
 
   /** Optional identifier supplied at construction time. */
   get name(): string;
+  setName(name: string): void;
 }

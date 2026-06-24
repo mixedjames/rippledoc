@@ -36,6 +36,7 @@ export class PresentationDOM {
   private readonly styles_: HTMLStyleElement = document.createElement("style");
   private readonly viewport_: HTMLElement = document.createElement("div");
   private readonly backgrounds_: HTMLElement = document.createElement("div");
+  private readonly triggers_: HTMLElement = document.createElement("div");
   private readonly elements_: HTMLElement = document.createElement("div");
   private readonly overlay_: HTMLElement = document.createElement("div");
   private readonly pins_: HTMLElement = document.createElement("div");
@@ -56,7 +57,7 @@ export class PresentationDOM {
     const basisWidth = this.presentationView_.owner.root.basisWidth;
     const totalHeight = this.presentationView_.owner.root.totalHeight;
 
-    for (const el of [this.backgrounds_, this.elements_]) {
+    for (const el of [this.backgrounds_, this.triggers_, this.elements_]) {
       el.style.left = `${tx}px`;
       el.style.width = `${basisWidth * scale}px`;
       el.style.height = `${totalHeight * scale}px`;
@@ -89,6 +90,10 @@ export class PresentationDOM {
     return this.elements_;
   }
 
+  get triggersContainer(): HTMLElement {
+    return this.triggers_;
+  }
+
   get pinsContainer(): HTMLElement {
     return this.pins_;
   }
@@ -107,6 +112,7 @@ export class PresentationDOM {
     this.shadowRoot_.appendChild(this.styles_);
     this.shadowRoot_.appendChild(this.viewport_);
     this.viewport_.appendChild(this.backgrounds_);
+    this.viewport_.appendChild(this.triggers_);
     this.viewport_.appendChild(this.elements_);
     this.shadowRoot_.appendChild(this.overlay_);
     this.overlay_.appendChild(this.pins_);
@@ -114,6 +120,7 @@ export class PresentationDOM {
     // Class names for external styling and test selection.
     this.viewport_.classList.add("viewport");
     this.backgrounds_.classList.add("backgrounds");
+    this.triggers_.classList.add("triggers");
     this.elements_.classList.add("elements");
     this.overlay_.classList.add("overlay");
     this.pins_.classList.add("pins");
@@ -153,6 +160,52 @@ export class PresentationDOM {
         outline: 2px dashed hsl(35 90% 50%);
         outline-offset: 1px;
       }
+
+      /* Trigger bands: hidden outside editor mode.
+         Rendered as a bracket — top line, bottom line, left-edge connector —
+         with no fill so they don't obscure content. */
+      .trigger-band {
+        display: none;
+        box-sizing: border-box;
+        position: absolute;
+        left: 0;
+        width: 180px;
+        background: transparent;
+        border-top: 1px solid hsl(270 70% 55%);
+        border-bottom: 1px solid hsl(270 70% 55%);
+        border-left: 3px solid hsl(270 70% 55%);
+        cursor: pointer;
+      }
+
+      .viewport[data-mode="editor"] .trigger-band {
+        display: block;
+      }
+
+      .trigger-band:hover {
+        background: hsl(270 70% 55% / 0.05);
+      }
+
+      .trigger-band.selected {
+        background: hsl(270 70% 55% / 0.10);
+        border-color: hsl(270 60% 40%);
+        border-left-width: 4px;
+      }
+
+      .trigger-band-label {
+        position: absolute;
+        top: 3px;
+        left: 6px;
+        font-size: 10px;
+        font-family: system-ui, sans-serif;
+        font-weight: 500;
+        color: hsl(270 60% 40%);
+        /* Opaque background so the label remains legible over any content. */
+        background: hsl(270 70% 97%);
+        padding: 0 4px;
+        border-radius: 2px;
+        pointer-events: none;
+        white-space: nowrap;
+      }
     `;
 
     // All layers fill the container absolutely.
@@ -160,6 +213,7 @@ export class PresentationDOM {
       this.viewport_,
       this.overlay_,
       this.backgrounds_,
+      this.triggers_,
       this.elements_,
       this.pins_,
     ]) {
@@ -175,13 +229,15 @@ export class PresentationDOM {
     this.viewport_.style.overflowX = "hidden";
     this.viewport_.style.overflowY = "auto";
 
-    // elements layer must overflow to show content beyond the viewport height.
+    // elements and triggers must overflow to show content beyond the viewport height.
     this.elements_.style.overflow = "visible";
+    this.triggers_.style.overflow = "visible";
 
-    // elements itself must not capture pointer events — only its child element
-    // divs should. This lets clicks on empty space fall through to the
-    // backgrounds layer, where section views listen for picking.
+    // elements and triggers must not capture pointer events on their containers —
+    // only the child divs opt in. This lets clicks on empty space fall through
+    // to the backgrounds layer where section views listen for picking.
     this.elements_.style.pointerEvents = "none";
+    this.triggers_.style.pointerEvents = "none";
 
     // overlay must not intercept pointer events (contains non-interactive chrome).
     this.overlay_.style.pointerEvents = "none";

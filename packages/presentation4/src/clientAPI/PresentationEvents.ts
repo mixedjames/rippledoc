@@ -9,6 +9,7 @@ import type { Pin } from "./animation/Pin";
 import type { KeyFrameAnimation } from "./animation/KeyFrameAnimation";
 import type { NamedElementStyle } from "./styles/NamedElementStyle";
 import type { NamedSectionStyle } from "./styles/NamedSectionStyle";
+import type { ScrollTrigger } from "./ScrollTrigger";
 
 export type PresentationEvents = {
   "section:added": { section: Section; index: number };
@@ -25,7 +26,11 @@ export type PresentationEvents = {
    * Emitted when an object's anchor expressions are updated, and for every object
    * whose anchor values are transitively affected via the dependency graph.
    */
-  "anchors:changed": { target: PresentationRoot | Section | Element };
+  "anchors:changed": { target: PresentationRoot | Section | Element | ScrollTrigger };
+  /** Emitted when a scroll trigger is added to the presentation. */
+  "trigger:added": { trigger: ScrollTrigger; index: number };
+  /** Emitted when a scroll trigger's name changes. */
+  "trigger:nameChanged": { trigger: ScrollTrigger; name: string };
   "layout:added": { layout: Layout };
   "layout:activeChanged": { layout: Layout };
   "element:pinAdded": { element: Element; pin: Pin };
