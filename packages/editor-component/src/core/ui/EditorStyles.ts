@@ -32,7 +32,6 @@ const EDITOR_CSS = `
   flex-shrink: 0;
   background: var(--re-sidebar-bg);
   color: var(--re-sidebar-fg);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--re-panel-border);
@@ -41,7 +40,13 @@ const EDITOR_CSS = `
 .re-panel {
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   border-bottom: 1px solid var(--re-panel-border);
+}
+
+.re-panel--open {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .re-panel__header {
@@ -73,10 +78,12 @@ const EDITOR_CSS = `
   display: inline-block;
   font-style: normal;
   transition: transform 0.15s ease;
+  /* default (closed): arrow points right */
+  transform: rotate(-90deg);
 }
 
-.re-panel--collapsed .re-panel__toggle {
-  transform: rotate(-90deg);
+.re-panel--open .re-panel__toggle {
+  transform: rotate(0deg);
 }
 
 .re-panel__body {
@@ -84,10 +91,15 @@ const EDITOR_CSS = `
   background: var(--re-panel-body-bg);
   color: var(--re-panel-body-fg);
   font-size: 12px;
+  display: none;
 }
 
-.re-panel--collapsed .re-panel__body {
-  display: none;
+.re-panel--open .re-panel__body {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .re-panel-empty {

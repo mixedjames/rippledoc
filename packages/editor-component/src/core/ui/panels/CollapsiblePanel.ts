@@ -1,10 +1,14 @@
-/** A titled panel with an expand/collapse toggle. Wraps any content element. */
+/**
+ * A titled accordion panel whose open/close state is controlled externally by `Sidebar`.
+ * Fires `onOpen` when the header is clicked; the caller decides whether to open this
+ * panel (and close others) by calling `open()` / `close()`.
+ */
 export class CollapsiblePanel {
   readonly element: HTMLElement;
-  private collapsed_ = false;
   private toggle_: HTMLElement;
+  private body_: HTMLElement;
 
-  constructor(title: string, content: HTMLElement) {
+  constructor(title: string, content: HTMLElement, onOpen: () => void) {
     this.element = document.createElement("div");
     this.element.className = "re-panel";
 
@@ -22,18 +26,21 @@ export class CollapsiblePanel {
 
     header.appendChild(titleEl);
     header.appendChild(this.toggle_);
-    header.addEventListener("click", () => this.toggleCollapsed_());
+    header.addEventListener("click", onOpen);
 
-    const body = document.createElement("div");
-    body.className = "re-panel__body";
-    body.appendChild(content);
+    this.body_ = document.createElement("div");
+    this.body_.className = "re-panel__body";
+    this.body_.appendChild(content);
 
     this.element.appendChild(header);
-    this.element.appendChild(body);
+    this.element.appendChild(this.body_);
   }
 
-  private toggleCollapsed_(): void {
-    this.collapsed_ = !this.collapsed_;
-    this.element.classList.toggle("re-panel--collapsed", this.collapsed_);
+  open(): void {
+    this.element.classList.add("re-panel--open");
+  }
+
+  close(): void {
+    this.element.classList.remove("re-panel--open");
   }
 }

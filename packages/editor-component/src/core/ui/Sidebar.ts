@@ -10,7 +10,8 @@ import type { SidebarPanel } from "./panels/SidebarPanel";
 
 /**
  * Assembles and owns the three sidebar panels: Styles, Properties, and Anchors.
- * Each panel is wrapped in a `CollapsiblePanel` chrome and appended to the sidebar element.
+ * Acts as the accordion controller: exactly one panel is open at a time.
+ * Headers are always visible; only the open panel's body scrolls.
  *
  * The sidebar does not subscribe to any events directly. Instead,
  * `EditorComponentImpl` calls `update()` whenever the selection changes, and
@@ -25,6 +26,8 @@ import type { SidebarPanel } from "./panels/SidebarPanel";
 export class Sidebar {
   readonly element: HTMLElement;
   private panels_: SidebarPanel[];
+  private accordionPanels_: CollapsiblePanel[];
+  private activeAccordionPanel_: CollapsiblePanel | null = null;
 
   constructor(
     state: EditorState,
@@ -40,15 +43,33 @@ export class Sidebar {
     const anchors = new AnchorsPanel(state, push, requestPick);
     this.panels_ = [styles, properties, anchors];
 
-    this.element.appendChild(
-      new CollapsiblePanel("Styles", styles.element).element,
+    const panelDefs: [string, SidebarPanel][] = [
+      ["Styles", styles],
+      ["Anchors", anchors],
+      ["Properties", properties],
+    ];
+    this.accordionPanels_ = panelDefs.map(([title, panel], i) =>
+      new CollapsiblePanel(title, panel.element, () => this.openAccordionPanel_(i)),
     );
-    this.element.appendChild(
-      new CollapsiblePanel("Properties", properties.element).element,
-    );
-    this.element.appendChild(
-      new CollapsiblePanel("Anchors", anchors.element).element,
-    );
+
+    for (const accordionPanel of this.accordionPanels_) {
+      this.element.appendChild(accordionPanel.element);
+    }
+
+    // Properties open by default (index 2, last panel).
+    // TODO: restore last-active panel when persistence is added.
+    this.openAccordionPanel_(2);
+  }
+
+  private openAccordionPanel_(index: number): void {
+    const isAlreadyOpen =
+      this.activeAccordionPanel_ === this.accordionPanels_[index];
+    const target = isAlreadyOpen
+      ? (index + 1) % this.accordionPanels_.length
+      : index;
+    this.activeAccordionPanel_?.close();
+    this.activeAccordionPanel_ = this.accordionPanels_[target]!;
+    this.activeAccordionPanel_.open();
   }
 
   update(): void {
