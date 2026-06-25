@@ -37,7 +37,7 @@ export interface KeyFrameAnimation extends Animation {
 /** Options supplied when adding a keyframe animation. */
 export type KeyFrameAnimationOptions = {
   trigger: ScrollTrigger;
-  keyFrames: KeyFrame[];
+  keyFrames: readonly KeyFrame[];
   duration: number;
   scrollDriven?: boolean;
   /** Omit to animate the element itself; supply to animate an SVG sub-component. */

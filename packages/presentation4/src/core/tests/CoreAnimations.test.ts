@@ -14,7 +14,10 @@ import type { KeyFrame } from "../../clientAPI/animation/KeyFrame";
 
 function makePresentation() {
   const p = new CorePresentation({ basisWidth: 1000, basisHeight: 800 });
-  const trigger = p.addScrollTrigger({ top: constant(0), height: constant(200) });
+  const trigger = p.addScrollTrigger({
+    top: constant(0),
+    height: constant(200),
+  });
   const section = p.root.addSection();
   section.setVerticalAnchors({ top: constant(0), height: constant(800) });
   const element = section.addMarkdownElement("hello");
@@ -228,7 +231,10 @@ describe("ElementAnimations — addKeyFrameAnimation", () => {
 
   it("multiple animations accumulate in keyFrameAnimations", () => {
     const { p, trigger, element } = makePresentation();
-    const t2 = p.addScrollTrigger({ top: constant(300), height: constant(200) });
+    const t2 = p.addScrollTrigger({
+      top: constant(300),
+      height: constant(200),
+    });
 
     const a1 = element.animations.addKeyFrameAnimation({
       trigger,
@@ -275,7 +281,10 @@ describe("ElementAnimations — addPin", () => {
 
   it("multiple pins accumulate", () => {
     const { p, trigger, element } = makePresentation();
-    const t2 = p.addScrollTrigger({ top: constant(300), height: constant(100) });
+    const t2 = p.addScrollTrigger({
+      top: constant(300),
+      height: constant(100),
+    });
 
     const pin1 = element.animations.addPin(trigger);
     const pin2 = element.animations.addPin(t2);
@@ -345,7 +354,10 @@ describe("SectionAnimations — addKeyFrameAnimation", () => {
 
   it("multiple animations accumulate in keyFrameAnimations", () => {
     const { p, trigger, section } = makePresentation();
-    const t2 = p.addScrollTrigger({ top: constant(300), height: constant(200) });
+    const t2 = p.addScrollTrigger({
+      top: constant(300),
+      height: constant(200),
+    });
 
     const a1 = section.animations.addKeyFrameAnimation({
       trigger,

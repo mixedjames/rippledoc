@@ -193,6 +193,11 @@ export class EditorComponentImpl implements EditorComponent {
     return true;
   }
 
+  // Not on the EditorComponent interface — accessed by the dev harness via cast.
+  setViewMode(mode: "editor" | "player"): void {
+    this.state_.viewController.setMode(mode);
+  }
+
   private switchTool_(id: EditorToolId): void {
     this.activeTool_.deactivate();
     this.state_.activeToolId = id;

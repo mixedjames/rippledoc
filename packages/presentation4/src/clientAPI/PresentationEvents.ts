@@ -26,7 +26,9 @@ export type PresentationEvents = {
    * Emitted when an object's anchor expressions are updated, and for every object
    * whose anchor values are transitively affected via the dependency graph.
    */
-  "anchors:changed": { target: PresentationRoot | Section | Element | ScrollTrigger };
+  "anchors:changed": {
+    target: PresentationRoot | Section | Element | ScrollTrigger;
+  };
   /** Emitted when a scroll trigger is added to the presentation. */
   "trigger:added": { trigger: ScrollTrigger; index: number };
   /** Emitted when a scroll trigger's name changes. */

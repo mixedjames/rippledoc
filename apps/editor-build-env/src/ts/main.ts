@@ -8,6 +8,7 @@ import {
   constant,
   offsetFrom,
   type Presentation,
+  type ScrollTrigger,
 } from "@rippledoc/presentation4";
 import { createDialogs, type OperationSink } from "@rippledoc/dialogs";
 
@@ -30,6 +31,11 @@ const delegate: EditorDelegate = {
 
 const editor = createEditorComponent(delegate);
 document.getElementById("editorMount")!.appendChild(editor.element);
+
+// Dev-harness cast: EditorComponentImpl.setViewMode() is not on the public
+// EditorComponent interface. Access it here without changing the public API.
+type PlayToggle = { setViewMode(mode: "editor" | "player"): void };
+const editorImpl = editor as unknown as PlayToggle;
 
 // ── Dialogs ───────────────────────────────────────────────────────────────────
 
@@ -58,6 +64,7 @@ const btnGlobalStyles = document.getElementById(
 const btnNamedStyles = document.getElementById(
   "btnNamedStyles",
 )! as HTMLButtonElement;
+const btnPlay = document.getElementById("btnPlay")! as HTMLButtonElement;
 
 const toolButtons: Record<EditorToolId, HTMLButtonElement> = {
   singleSelect: btnSingleSelect,
@@ -78,7 +85,19 @@ btnSingleSelect.addEventListener("click", () => exec("tool:singleSelect"));
 btnMultiSelect.addEventListener("click", () => exec("tool:multiSelect"));
 btnUndo.addEventListener("click", () => exec("undo"));
 btnRedo.addEventListener("click", () => exec("redo"));
+let playerMode = false;
+
+btnPlay.addEventListener("click", () => {
+  playerMode = !playerMode;
+  editorImpl.setViewMode(playerMode ? "player" : "editor");
+  btnPlay.textContent = playerMode ? "Edit" : "Play";
+  btnPlay.dataset.active = String(playerMode);
+});
+
 btnNew.addEventListener("click", () => {
+  playerMode = false;
+  btnPlay.textContent = "Play";
+  btnPlay.dataset.active = "false";
   currentPresentation = editor.newPresentation();
   seedPresentation(currentPresentation);
 });
@@ -144,6 +163,16 @@ function seedPresentation(p: Presentation): void {
   s1body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
   s1body.setAutoHeight({ top: offsetFrom(s1title.anchors.bottom, 20) });
 
+  // Animated demo element: fades and slides in as the trigger progresses.
+  const animBox = s1.addMarkdownElement(
+    "**Animated element** — scroll to reveal in player mode.",
+  );
+  animBox.setHorizontalAnchors({ left: constant(60), width: constant(500) });
+  animBox.setVerticalAnchors({
+    top: offsetFrom(s1.anchors.top, 200),
+    height: constant(80),
+  });
+
   const s2title = s2.addMarkdownElement("## Section Two");
   s2title.setHorizontalAnchors({ left: constant(60), width: constant(600) });
   s2title.setAutoHeight({ top: offsetFrom(s2.anchors.top, 40) });
@@ -155,7 +184,7 @@ function seedPresentation(p: Presentation): void {
   s2body.setAutoHeight({ top: offsetFrom(s2title.anchors.bottom, 20) });
 
   // Demo scroll triggers.
-  p.addScrollTrigger({
+  const headingFocusTrigger: ScrollTrigger = p.addScrollTrigger({
     name: "Heading Focus",
     top: offsetFrom(s1.anchors.top, 0),
     bottom: offsetFrom(s1.anchors.top, 400),
@@ -169,6 +198,16 @@ function seedPresentation(p: Presentation): void {
     name: "Second Section",
     top: offsetFrom(s2.anchors.top, 0),
     bottom: offsetFrom(s2.anchors.bottom, 0),
+  });
+
+  animBox.animations.addKeyFrameAnimation({
+    trigger: headingFocusTrigger,
+    duration: 1000,
+    scrollDriven: true,
+    keyFrames: [
+      { position: 0, opacity: 0, transform: "translateY(30px)" },
+      { position: 1000, opacity: 1, transform: "translateY(0px)" },
+    ],
   });
 }
 

@@ -48,8 +48,11 @@ export class Sidebar {
       ["Anchors", anchors],
       ["Properties", properties],
     ];
-    this.accordionPanels_ = panelDefs.map(([title, panel], i) =>
-      new CollapsiblePanel(title, panel.element, () => this.openAccordionPanel_(i)),
+    this.accordionPanels_ = panelDefs.map(
+      ([title, panel], i) =>
+        new CollapsiblePanel(title, panel.element, () =>
+          this.openAccordionPanel_(i),
+        ),
     );
 
     for (const accordionPanel of this.accordionPanels_) {

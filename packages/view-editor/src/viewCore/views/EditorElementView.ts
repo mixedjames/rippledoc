@@ -1,6 +1,7 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorSectionView } from "./EditorSectionView";
 import { EditorPinManager, NullEditorPinManager } from "./EditorPinManager";
+import { EditorAnimationManager } from "./EditorAnimationManager";
 import { fillToCss, borderToCss } from "./colorToCss";
 
 /**
@@ -33,6 +34,7 @@ export class EditorElementView implements p4.ElementView {
 
   private computedStyle_: p4.ComputedElementStyle | null = null;
   private readonly pinManager_: EditorPinManager | NullEditorPinManager;
+  private readonly animationManager_: EditorAnimationManager;
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
   private readonly unsubscribeSelection_: () => void;
@@ -93,6 +95,12 @@ export class EditorElementView implements p4.ElementView {
             presentationView: parent.presentationView,
           })
         : new NullEditorPinManager();
+
+    this.animationManager_ = new EditorAnimationManager({
+      owner,
+      target: this.element_,
+      host: parent.presentationView,
+    });
   }
 
   applyStyle(style: p4.ComputedElementStyle): void {
@@ -108,6 +116,7 @@ export class EditorElementView implements p4.ElementView {
     this.element_.style.height = `${anchors.height.value * scale}px`;
     this.applyStyles_();
     this.pinManager_.layout();
+    this.animationManager_.layout();
   }
 
   private applyStyles_(): void {
@@ -164,6 +173,7 @@ export class EditorElementView implements p4.ElementView {
     this.unsubscribeSelection_();
     this.unsubscribeFocus_();
     this.pinManager_.disconnect();
+    this.animationManager_.destroy();
     this.element_.remove();
     this.sectionView_.onElementViewDestroyed(this);
   }

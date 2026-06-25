@@ -5,6 +5,7 @@ import { PresentationDOM } from "./PresentationDOM";
 import { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
 import type { ViewMode } from "../../clientAPI/ViewMode";
+import type { EditorAnimationManager } from "./EditorAnimationManager";
 
 export type EditorViewConfig = {
   /** The DOM element (or CSS selector) that the presentation renders into. */
@@ -44,6 +45,11 @@ export class EditorPresentationView implements p4.PresentationView {
   private readonly sectionViews_: EditorSectionView[] = [];
   private readonly triggerBandViews_: EditorTriggerBandView[] = [];
   private readonly unsubscribeTriggerAdded_: () => void;
+
+  // Animation enable state. Starts false (editor mode); applyMode() keeps it
+  // in sync with the current view mode and notifies all registered managers.
+  private animationEnabled_: boolean = false;
+  private readonly animationManagers_: Set<EditorAnimationManager> = new Set();
 
   constructor(
     owner: p4.PresentationViewOwner,
@@ -115,6 +121,23 @@ export class EditorPresentationView implements p4.PresentationView {
 
   applyMode(mode: ViewMode): void {
     this.dom_.setMode(mode);
+    const enabled = mode === "player";
+    this.animationEnabled_ = enabled;
+    for (const manager of this.animationManagers_) {
+      manager.setEnabled(enabled);
+    }
+  }
+
+  get animationEnabled(): boolean {
+    return this.animationEnabled_;
+  }
+
+  registerAnimationManager(manager: EditorAnimationManager): void {
+    this.animationManagers_.add(manager);
+  }
+
+  unregisterAnimationManager(manager: EditorAnimationManager): void {
+    this.animationManagers_.delete(manager);
   }
 
   private addTriggerBandView_(trigger: p4.ScrollTrigger): void {

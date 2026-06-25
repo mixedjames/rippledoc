@@ -48,7 +48,9 @@ type ExprType = "constant" | "offset" | "fraction" | "fitContent";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function isElement(subject: Element | Section | ScrollTrigger): subject is Element {
+function isElement(
+  subject: Element | Section | ScrollTrigger,
+): subject is Element {
   return "setHorizontalAnchors" in subject;
 }
 
@@ -620,8 +622,7 @@ export class AnchorsPanel implements SidebarPanel {
     }
 
     if (!subject) {
-      const multi =
-        elements.size > 1 || sections.size > 1 || triggers.size > 1;
+      const multi = elements.size > 1 || sections.size > 1 || triggers.size > 1;
       this.renderEmpty_(
         multi
           ? "Select a single element, section, or trigger to edit anchors."
