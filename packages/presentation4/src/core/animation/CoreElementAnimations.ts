@@ -34,13 +34,23 @@ export class CoreElementAnimations implements ElementAnimations {
   }
 
   addPin(trigger: ScrollTrigger): Pin {
-    const pin = new CorePin(trigger);
+    const pin = new CorePin(trigger, this.eventContext_);
     this.pins_.push(pin);
     this.eventContext_.emit("element:pinAdded", {
       element: this.element_,
       pin,
     });
     return pin;
+  }
+
+  removePin(pin: Pin): void {
+    const idx = this.pins_.indexOf(pin as CorePin);
+    if (idx < 0) return;
+    this.pins_.splice(idx, 1);
+    this.eventContext_.emit("element:pinRemoved", {
+      element: this.element_,
+      pin,
+    });
   }
 
   addKeyFrameAnimation(options: KeyFrameAnimationOptions): KeyFrameAnimation {
@@ -51,6 +61,16 @@ export class CoreElementAnimations implements ElementAnimations {
       animation,
     });
     return animation;
+  }
+
+  removeKeyFrameAnimation(anim: KeyFrameAnimation): void {
+    const idx = this.keyFrameAnimations_.indexOf(anim as CoreKeyFrameAnimation);
+    if (idx < 0) return;
+    this.keyFrameAnimations_.splice(idx, 1);
+    this.eventContext_.emit("element:animationRemoved", {
+      element: this.element_,
+      animation: anim,
+    });
   }
 
   toMemento(triggerIndex: ReadonlyMap<ScrollTrigger, number>): {

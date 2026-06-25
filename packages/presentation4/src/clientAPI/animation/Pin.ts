@@ -12,4 +12,7 @@ import type { ScrollTrigger } from "../ScrollTrigger";
  */
 export interface Pin {
   get trigger(): ScrollTrigger;
+
+  /** Replace the scroll trigger. Emits pin:triggerChanged. */
+  setTrigger(trigger: ScrollTrigger): void;
 }

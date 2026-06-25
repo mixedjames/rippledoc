@@ -36,9 +36,23 @@ export type PresentationEvents = {
   "layout:added": { layout: Layout };
   "layout:activeChanged": { layout: Layout };
   "element:pinAdded": { element: Element; pin: Pin };
+  "element:pinRemoved": { element: Element; pin: Pin };
   "element:animationAdded": { element: Element; animation: KeyFrameAnimation };
+  "element:animationRemoved": {
+    element: Element;
+    animation: KeyFrameAnimation;
+  };
   "section:animationAdded": { section: Section; animation: KeyFrameAnimation };
+  "section:animationRemoved": {
+    section: Section;
+    animation: KeyFrameAnimation;
+  };
   "animation:keyFramesChanged": { animation: KeyFrameAnimation };
+  "animation:triggerChanged": { animation: KeyFrameAnimation };
+  "animation:durationChanged": { animation: KeyFrameAnimation };
+  "animation:scrollDrivenChanged": { animation: KeyFrameAnimation };
+  "animation:targetChanged": { animation: KeyFrameAnimation };
+  "pin:triggerChanged": { pin: Pin };
   /** Emitted when an element's computed style changes for any reason. */
   "element:styleChanged": { element: Element };
   /** Emitted when a section's computed style changes for any reason. */

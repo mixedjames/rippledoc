@@ -4,22 +4,6 @@ import type { EditorPresentationView } from "./EditorPresentationView";
 const STYLE_PRECISION = 2;
 
 /**
- * No-op pin manager for elements that have no pins. Avoids null checks at call
- * sites while adding zero overhead for the common unpinned case.
- */
-export class NullEditorPinManager {
-  get hasPins(): boolean {
-    return false;
-  }
-
-  layout(): void {}
-
-  onContentChanged(): void {}
-
-  disconnect(): void {}
-}
-
-/**
  * Implements the non-scrolling-overlay clone technique ported from presentation2.
  *
  * The viewport scrolls; the overlay/pins container does not. By placing a clone
@@ -34,6 +18,10 @@ export class NullEditorPinManager {
  *
  * deltaY_ tracks basis-space scroll distance consumed by completed pins so
  * that subsequent pins are positioned correctly.
+ *
+ * Pins added after construction are wired dynamically via element:pinAdded.
+ * Per-pin trigger subscriptions are tracked in pinUnsubs_ so individual pins
+ * can be cleanly removed via element:pinRemoved.
  */
 export class EditorPinManager {
   private readonly targetWrapper_: HTMLElement;
@@ -41,6 +29,12 @@ export class EditorPinManager {
   private readonly presentationView_: EditorPresentationView;
   private readonly elementDiv_: HTMLElement;
   private readonly unsubscribe_: Array<() => void> = [];
+  // Per-pin trigger subscriptions, keyed by pin for selective removal.
+  private readonly pinUnsubs_: Map<p4.Pin, Array<() => void>> = new Map();
+  // Notifies the animation manager to redirect drivers when pin state changes.
+  private readonly onRenderTargetChanged_:
+    | ((element: HTMLElement) => void)
+    | undefined;
 
   // Mutable: replaced when content is re-cloned.
   private clone_: HTMLElement;
@@ -58,10 +52,12 @@ export class EditorPinManager {
     elementDiv: HTMLElement;
     owner: p4.ElementViewOwner;
     presentationView: EditorPresentationView;
+    onRenderTargetChanged?: (element: HTMLElement) => void;
   }) {
     this.elementDiv_ = options.elementDiv;
     this.owner_ = options.owner;
     this.presentationView_ = options.presentationView;
+    this.onRenderTargetChanged_ = options.onRenderTargetChanged;
 
     this.targetWrapper_ = document.createElement("div");
     // Placeholder clone — content is re-cloned from the live element each time
@@ -70,7 +66,10 @@ export class EditorPinManager {
     this.clone_ = document.createElement("div");
 
     this.buildDOM_();
-    this.buildPins_();
+
+    for (const pin of this.owner_.animations.pins) {
+      this.addPin(pin);
+    }
 
     // Keep the clone's "selected" and "focused" classes in sync with the
     // original while a pin is active. Stored in unsubscribe_ so disconnect()
@@ -94,7 +93,7 @@ export class EditorPinManager {
   }
 
   get hasPins(): boolean {
-    return true;
+    return this.pinUnsubs_.size > 0;
   }
 
   layout(): void {
@@ -122,6 +121,11 @@ export class EditorPinManager {
   disconnect(): void {
     for (const fn of this.unsubscribe_) fn();
     this.unsubscribe_.length = 0;
+
+    for (const unsubs of this.pinUnsubs_.values()) {
+      for (const fn of unsubs) fn();
+    }
+    this.pinUnsubs_.clear();
 
     // Unwrap: replace the wrapper with the original element div.
     this.targetWrapper_.replaceWith(this.elementDiv_);
@@ -156,17 +160,33 @@ export class EditorPinManager {
     clone.classList.add("rdoc-pin-clone");
   }
 
-  // ── Trigger subscriptions ────────────────────────────────────────────────
+  // ── Pin wiring ────────────────────────────────────────────────────────────
 
-  private buildPins_(): void {
-    for (const pin of this.owner_.animations.pins) {
-      const trigger = pin.trigger;
-      this.unsubscribe_.push(
-        trigger.on("start", () => this.pinForward_(pin)),
-        trigger.on("reverseStart", () => this.pinReverse_(pin)),
-        trigger.on("end", () => this.unpinForward_(pin)),
-        trigger.on("reverseEnd", () => this.unpinReverse_(pin)),
-      );
+  addPin(pin: p4.Pin): void {
+    const trigger = pin.trigger;
+    const unsubs = [
+      trigger.on("start", () => this.pinForward_(pin)),
+      trigger.on("reverseStart", () => this.pinReverse_(pin)),
+      trigger.on("end", () => this.unpinForward_(pin)),
+      trigger.on("reverseEnd", () => this.unpinReverse_(pin)),
+    ];
+    this.pinUnsubs_.set(pin, unsubs);
+  }
+
+  removePin(pin: p4.Pin): void {
+    const unsubs = this.pinUnsubs_.get(pin);
+    if (!unsubs) return;
+    for (const fn of unsubs) fn();
+    this.pinUnsubs_.delete(pin);
+
+    // If the removed pin was mid-transition, restore the original and reset delta.
+    if (this.activePin_ === pin) {
+      this.activePin_ = null;
+      this.deltaY_ = 0;
+      this.onRenderTargetChanged_?.(this.elementDiv_);
+      this.showOriginal_();
+      this.hideClone_();
+      this.targetWrapper_.style.transform = "";
     }
   }
 
@@ -175,6 +195,8 @@ export class EditorPinManager {
   private pinForward_(pin: p4.Pin): void {
     this.activePin_ = pin;
     this.refreshClone_();
+    // Redirect animation drivers to the clone before making it visible.
+    this.onRenderTargetChanged_?.(this.clone_);
     this.positionClone_(pin);
     this.showClone_();
     this.hideOriginal_();
@@ -186,6 +208,8 @@ export class EditorPinManager {
     this.deltaY_ -= pin.trigger.height;
     this.activePin_ = pin;
     this.refreshClone_();
+    // Redirect animation drivers to the clone before making it visible.
+    this.onRenderTargetChanged_?.(this.clone_);
     this.positionClone_(pin);
     this.showClone_();
     this.hideOriginal_();
@@ -197,6 +221,8 @@ export class EditorPinManager {
     // visible jump when the end boundary is crossed at high scroll speed.
     this.deltaY_ += pin.trigger.height;
     this.activePin_ = null;
+    // Restore animation drivers to the original element before revealing it.
+    this.onRenderTargetChanged_?.(this.elementDiv_);
 
     const { scale } = this.layoutTransform_();
     this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;
@@ -208,6 +234,8 @@ export class EditorPinManager {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private unpinReverse_(_pin: p4.Pin): void {
     this.activePin_ = null;
+    // Restore animation drivers to the original element before revealing it.
+    this.onRenderTargetChanged_?.(this.elementDiv_);
 
     const { scale } = this.layoutTransform_();
     this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;

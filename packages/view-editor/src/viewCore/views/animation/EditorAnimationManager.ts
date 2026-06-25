@@ -32,7 +32,7 @@ interface AnimationHost {
  */
 export class EditorAnimationManager {
   private readonly owner_: p4.ElementViewOwner;
-  private readonly target_: HTMLElement;
+  private target_: HTMLElement;
   private readonly host_: AnimationHost;
   private readonly drivers_: Map<p4.KeyFrameAnimation, AnimationDriver> =
     new Map();
@@ -72,6 +72,14 @@ export class EditorAnimationManager {
   setEnabled(enabled: boolean): void {
     for (const driver of this.drivers_.values()) {
       driver.setEnabled(enabled);
+    }
+  }
+
+  /** Redirect all drivers to a new DOM element (live element ↔ pin clone). */
+  retarget(element: HTMLElement): void {
+    this.target_ = element;
+    for (const driver of this.drivers_.values()) {
+      driver.retarget(element);
     }
   }
 

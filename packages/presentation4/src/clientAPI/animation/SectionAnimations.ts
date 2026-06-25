@@ -13,4 +13,6 @@ export interface SectionAnimations {
   get keyFrameAnimations(): readonly KeyFrameAnimation[];
 
   addKeyFrameAnimation(options: KeyFrameAnimationOptions): KeyFrameAnimation;
+
+  removeKeyFrameAnimation(anim: KeyFrameAnimation): void;
 }

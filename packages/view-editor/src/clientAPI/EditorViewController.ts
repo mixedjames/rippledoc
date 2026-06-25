@@ -14,12 +14,18 @@ import type { EditorTool } from "./EditorTool";
  * cycles because they live on the controller, not the view.
  */
 export interface EditorViewController {
+  /** Pass to `presentation.attachView()` to mount the editor view. */
   readonly viewFactory: p4.PresentationViewFactory;
+  /** Subscribe to pointer, keyboard, selection, and focus events. */
   readonly events: EditorViewEventSource;
+  /** Current view mode. Defaults to `"editor"`. */
   readonly mode: ViewMode;
+  /** Switch between `"editor"` and `"player"` modes. */
   setMode(mode: ViewMode): void;
+  /** Manage the selected elements, sections, and triggers, and the focused element. */
   readonly selection: EditorSelectionController;
-  /** Replace the active tool. Pass NullTool to deactivate without nulls. */
+  /** Replace the active tool. Pass `NullTool` to deactivate without nulls. */
   setActiveTool(tool: EditorTool): void;
+  /** The currently active tool. `NullTool` when no tool is installed. */
   readonly activeTool: EditorTool;
 }

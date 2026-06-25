@@ -12,4 +12,6 @@ export interface ElementAnimations extends SectionAnimations {
   get pins(): readonly Pin[];
 
   addPin(trigger: ScrollTrigger): Pin;
+
+  removePin(pin: Pin): void;
 }

@@ -31,6 +31,15 @@ export function createEditorView(
   return ctrl;
 }
 
+/**
+ * Ephemeral presentation view for the editor. Created by the view factory when
+ * `presentation.attachView()` is called; destroyed when the presentation is replaced.
+ *
+ * Owns the Shadow DOM structure (via PresentationDOM), creates section and trigger band
+ * views, drives the animation enable/disable cycle on mode changes, and wires scroll
+ * and keyboard events through to the controller. The stable controller survives across
+ * attach/detach cycles — this class does not.
+ */
 export class EditorPresentationView implements p4.PresentationView {
   private readonly owner_: p4.PresentationViewOwner;
   private readonly controller_: EditorViewControllerImpl;

@@ -45,7 +45,7 @@ function buildKeyframes(
  */
 export class WaapiAnimationDriver implements AnimationDriver {
   private readonly animation_: p4.KeyFrameAnimation;
-  private readonly target_: Element;
+  private target_: Element;
   private waapi_: globalThis.Animation | null = null;
   private lastProgress_: number = 0;
 
@@ -127,6 +127,31 @@ export class WaapiAnimationDriver implements AnimationDriver {
       if (!this.waapi_) this.buildAnimation_();
     } else {
       this.clearAnimation_();
+    }
+  }
+
+  retarget(element: Element): void {
+    if (!this.waapi_) {
+      // Not enabled yet — just track the new target so buildAnimation_ uses it.
+      this.target_ = element;
+      return;
+    }
+    // Capture WAAPI state before clearAnimation_() discards the instance.
+    const currentTime = this.waapi_.currentTime ?? 0;
+    const playState = this.waapi_.playState;
+    const playbackRate = this.waapi_.playbackRate;
+
+    this.clearAnimation_();
+    this.target_ = element;
+    this.buildAnimation_(); // creates a fresh paused animation at t=0
+
+    if (this.animation_.isScrollDriven) {
+      // lastProgress_ is the authoritative position for scroll-driven; restore it.
+      this.waapi_.currentTime = this.lastProgress_ * this.animation_.duration;
+    } else {
+      this.waapi_.currentTime = currentTime;
+      this.waapi_.playbackRate = playbackRate;
+      if (playState === "running") this.waapi_.play();
     }
   }
 

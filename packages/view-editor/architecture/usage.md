@@ -34,18 +34,19 @@ Mode is surfaced as `data-mode` on the viewport element inside the Shadow DOM. C
 
 Subscribe via `editor.events.on(event, listener)`. Each call returns an unsubscribe function.
 
-| Event                 | Payload                  | When                                                         |
-| --------------------- | ------------------------ | ------------------------------------------------------------ |
-| `element:picked`      | `{ element, source }`    | Fired on `pointerdown` over an element                       |
-| `element:pointerDown` | `{ element, source }`    | Same tick as `element:picked`                                |
-| `element:pointerUp`   | `{ element, source }`    | Fired on `pointerup` over an element                         |
-| `section:picked`      | `{ section, source }`    | `pointerdown` on a section background (not over any element) |
-| `section:pointerDown` | `{ section, source }`    | Same tick as `section:picked`                                |
-| `section:pointerUp`   | `{ section, source }`    | `pointerup` on a section background                          |
-| `key:down`            | `{ source }`             | Keyboard event while the viewport has focus                  |
-| `key:up`              | `{ source }`             | Keyboard event while the viewport has focus                  |
-| `selection:changed`   | `{ elements, sections }` | Any mutation to the selection set                            |
-| `focus:changed`       | `FocusState`             | The focused element changes or is cleared                    |
+| Event                 | Payload                           | When                                                         |
+| --------------------- | --------------------------------- | ------------------------------------------------------------ |
+| `element:picked`      | `{ element, source }`             | Fired on `pointerdown` over an element                       |
+| `element:pointerDown` | `{ element, source }`             | Same tick as `element:picked`                                |
+| `element:pointerUp`   | `{ element, source }`             | Fired on `pointerup` over an element                         |
+| `section:picked`      | `{ section, source }`             | `pointerdown` on a section background (not over any element) |
+| `section:pointerDown` | `{ section, source }`             | Same tick as `section:picked`                                |
+| `section:pointerUp`   | `{ section, source }`             | `pointerup` on a section background                          |
+| `trigger:picked`      | `{ trigger, source }`             | `pointerdown` on a trigger band                              |
+| `key:down`            | `{ source }`                      | Keyboard event while the viewport has focus                  |
+| `key:up`              | `{ source }`                      | Keyboard event while the viewport has focus                  |
+| `selection:changed`   | `{ elements, sections, triggers}` | Any mutation to the selection set                            |
+| `focus:changed`       | `FocusState`                      | The focused element changes or is cleared                    |
 
 `element:picked` is the intended hook for click-to-select. The view does **not** mutate the selection itself — that is the caller's responsibility.
 
@@ -62,7 +63,7 @@ editor.events.on("key:down", ({ source }) => {
 
 ## Selection and focus
 
-`editor.selection` is an `EditorSelectionController`. Elements and sections are separate sets that are mutually exclusive — see [selection-model.md](selection-model.md) for the full model including the focused element.
+`editor.selection` is an `EditorSelectionController`. Elements, sections, and triggers are separate sets that are mutually exclusive — see [selection-model.md](selection-model.md) for the full model including the focused element.
 
 ## Tools
 
@@ -85,7 +86,7 @@ editor.setActiveTool(NullTool);
 
 Only one tool is active at a time. Swapping is a single call — no subscription management needed. Global `editor.events.on()` subscribers still receive all events regardless of which tool is active; tools are an additive layer, not a replacement.
 
-Events routed to tools: `element:picked`, `element:pointerDown`, `element:pointerUp`, `section:picked`, `section:pointerDown`, `section:pointerUp`, `key:down`, `key:up`. State-change events (`selection:changed`, `focus:changed`) are not routed to tools.
+Events routed to tools: `element:picked`, `element:pointerDown`, `element:pointerUp`, `section:picked`, `section:pointerDown`, `section:pointerUp`, `trigger:picked`, `key:down`, `key:up`. State-change events (`selection:changed`, `focus:changed`) are not routed to tools.
 
 ## Pin animations
 

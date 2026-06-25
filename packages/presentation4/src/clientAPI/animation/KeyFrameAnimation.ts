@@ -32,6 +32,15 @@ export interface KeyFrameAnimation extends Animation {
    * Throws if hasTarget is false.
    */
   get target(): SubComponentTarget;
+
+  /**
+   * Attach a sub-component target. Emits animation:targetChanged.
+   * Use clearTarget() to detach.
+   */
+  setTarget(target: SubComponentTarget): void;
+
+  /** Detach the sub-component target. No-op if hasTarget is false. Emits animation:targetChanged. */
+  clearTarget(): void;
 }
 
 /** Options supplied when adding a keyframe animation. */

@@ -47,5 +47,12 @@ export interface AnimationDriver {
    */
   setEnabled(enabled: boolean): void;
 
+  /**
+   * Transfers this animation to a different DOM element, preserving playback
+   * state. Called when EditorPinManager switches between the live element and
+   * its non-scrolling pin clone.
+   */
+  retarget(element: Element): void;
+
   destroy(): void;
 }

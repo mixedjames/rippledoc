@@ -9,11 +9,11 @@ import type { KeyFrameAnimationMemento } from "../../clientAPI/serialize/Present
 import type { EventContext } from "../EventContext";
 
 export class CoreKeyFrameAnimation implements KeyFrameAnimation {
-  private readonly trigger_: ScrollTrigger;
+  private trigger_: ScrollTrigger;
   private keyFrames_: readonly KeyFrame[];
-  private readonly duration_: number;
-  private readonly isScrollDriven_: boolean;
-  private readonly target_: SubComponentTarget | null;
+  private duration_: number;
+  private isScrollDriven_: boolean;
+  private target_: SubComponentTarget | null;
   private readonly eventContext_: EventContext;
 
   constructor(options: KeyFrameAnimationOptions, eventContext: EventContext) {
@@ -46,6 +46,23 @@ export class CoreKeyFrameAnimation implements KeyFrameAnimation {
     this.eventContext_.emit("animation:keyFramesChanged", { animation: this });
   }
 
+  setTrigger(trigger: ScrollTrigger): void {
+    this.trigger_ = trigger;
+    this.eventContext_.emit("animation:triggerChanged", { animation: this });
+  }
+
+  setDuration(ms: number): void {
+    this.duration_ = ms;
+    this.eventContext_.emit("animation:durationChanged", { animation: this });
+  }
+
+  setScrollDriven(driven: boolean): void {
+    this.isScrollDriven_ = driven;
+    this.eventContext_.emit("animation:scrollDrivenChanged", {
+      animation: this,
+    });
+  }
+
   get hasTarget(): boolean {
     return this.target_ !== null;
   }
@@ -57,6 +74,16 @@ export class CoreKeyFrameAnimation implements KeyFrameAnimation {
       );
     }
     return this.target_;
+  }
+
+  setTarget(target: SubComponentTarget): void {
+    this.target_ = target;
+    this.eventContext_.emit("animation:targetChanged", { animation: this });
+  }
+
+  clearTarget(): void {
+    this.target_ = null;
+    this.eventContext_.emit("animation:targetChanged", { animation: this });
   }
 
   toMemento(

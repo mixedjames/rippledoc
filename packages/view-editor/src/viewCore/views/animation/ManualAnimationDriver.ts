@@ -46,6 +46,13 @@ export abstract class ManualAnimationDriver implements AnimationDriver {
    */
   protected abstract clear(): void;
 
+  /**
+   * Switch the render target to a different element. Called when
+   * EditorPinManager activates or deactivates a pin clone. Subclasses must
+   * update whichever DOM reference they write to in tick().
+   */
+  abstract retarget(element: Element): void;
+
   start(progress: number): void {
     if (!this.enabled_) return;
     if (this.animation_.isScrollDriven) {

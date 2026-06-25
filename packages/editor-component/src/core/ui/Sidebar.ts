@@ -6,6 +6,7 @@ import { CollapsiblePanel } from "./panels/CollapsiblePanel";
 import { StylesPanel } from "./panels/StylesPanel";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { AnchorsPanel } from "./panels/AnchorsPanel";
+import { AnimationsPanel } from "./panels/AnimationsPanel";
 import type { SidebarPanel } from "./panels/SidebarPanel";
 
 /**
@@ -41,12 +42,14 @@ export class Sidebar {
     const styles = new StylesPanel(state, push);
     const properties = new PropertiesPanel(state, push, openMarkdownEditor);
     const anchors = new AnchorsPanel(state, push, requestPick);
-    this.panels_ = [styles, properties, anchors];
+    const animations = new AnimationsPanel(state, push);
+    this.panels_ = [styles, properties, anchors, animations];
 
     const panelDefs: [string, SidebarPanel][] = [
       ["Styles", styles],
       ["Anchors", anchors],
       ["Properties", properties],
+      ["Animations", animations],
     ];
     this.accordionPanels_ = panelDefs.map(
       ([title, panel], i) =>
@@ -59,7 +62,7 @@ export class Sidebar {
       this.element.appendChild(accordionPanel.element);
     }
 
-    // Properties open by default (index 2, last panel).
+    // Properties open by default (index 2).
     // TODO: restore last-active panel when persistence is added.
     this.openAccordionPanel_(2);
   }

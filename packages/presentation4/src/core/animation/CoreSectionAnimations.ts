@@ -33,6 +33,16 @@ export class CoreSectionAnimations implements SectionAnimations {
     return animation;
   }
 
+  removeKeyFrameAnimation(anim: KeyFrameAnimation): void {
+    const idx = this.keyFrameAnimations_.indexOf(anim as CoreKeyFrameAnimation);
+    if (idx < 0) return;
+    this.keyFrameAnimations_.splice(idx, 1);
+    this.eventContext_.emit("section:animationRemoved", {
+      section: this.section_,
+      animation: anim,
+    });
+  }
+
   toMemento(
     triggerIndex: ReadonlyMap<ScrollTrigger, number>,
   ): readonly KeyFrameAnimationMemento[] {

@@ -442,6 +442,107 @@ const EDITOR_CSS = `
   border-color: var(--re-sidebar-fg);
   color: #ffffff;
 }
+
+/* ── Animations panel ─────────────────────────────────────────────────────── */
+
+.re-anim-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  min-height: 22px;
+  font-size: 11px;
+  border-radius: 2px;
+}
+
+.re-anim-row__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  min-width: 0;
+}
+
+.re-anim-row__info:hover {
+  background: var(--re-panel-header-hover-bg);
+}
+
+.re-anim-row__trigger {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.re-anim-row__meta {
+  font-size: 10px;
+  color: var(--re-panel-empty-fg);
+}
+
+.re-anim-remove {
+  flex-shrink: 0;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: var(--re-panel-empty-fg);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.re-anim-remove:hover {
+  color: var(--re-sidebar-fg);
+  background: var(--re-panel-header-hover-bg);
+}
+
+.re-anim-add-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--re-panel-border);
+  padding-top: 8px;
+}
+
+.re-anim-mode-btn {
+  flex: 1;
+  padding: 2px 6px;
+  background: var(--re-input-bg);
+  border: 1px solid var(--re-input-border);
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--re-input-fg);
+  cursor: pointer;
+  text-align: left;
+}
+
+.re-anim-mode-btn:hover {
+  border-color: #999;
+}
+
+.re-anim-unit {
+  font-size: 10px;
+  color: var(--re-panel-empty-fg);
+}
+
+.re-anim-stub {
+  font-size: 10px;
+  color: var(--re-panel-empty-fg);
+  font-style: italic;
+}
+
+.re-anim-remove-btn {
+  margin-top: 12px;
+  color: #c0392b;
+  border-color: #e0a0a0;
+}
+
+.re-anim-remove-btn:hover {
+  background: #ffeaea;
+  border-color: #c0392b;
+}
 `;
 
 const INJECTED_ATTR = "data-rippledoc-editor-styles";

@@ -15,4 +15,16 @@ export interface Animation {
   get trigger(): ScrollTrigger;
   get duration(): number;
   get isScrollDriven(): boolean;
+
+  /** Replace the scroll trigger. Emits animation:triggerChanged. */
+  setTrigger(trigger: ScrollTrigger): void;
+
+  /** Replace the duration in milliseconds. Emits animation:durationChanged. */
+  setDuration(ms: number): void;
+
+  /**
+   * Switch between scroll-driven and time-based mode.
+   * Emits animation:scrollDrivenChanged.
+   */
+  setScrollDriven(driven: boolean): void;
 }

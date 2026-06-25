@@ -1,6 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorSectionView } from "../EditorSectionView";
-import { EditorPinManager, NullEditorPinManager } from "../EditorPinManager";
+import { EditorPinManager } from "../EditorPinManager";
 import { EditorAnimationManager } from "../animation/EditorAnimationManager";
 import { fillToCss, borderToCss } from "../../utils/colorToCss";
 
@@ -33,12 +33,14 @@ export class EditorElementView implements p4.ElementView {
   private readonly contentWrapper_: HTMLElement = document.createElement("div");
 
   private computedStyle_: p4.ComputedElementStyle | null = null;
-  private readonly pinManager_: EditorPinManager | NullEditorPinManager;
+  private readonly pinManager_: EditorPinManager;
   private readonly animationManager_: EditorAnimationManager;
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
   private readonly unsubscribeSelection_: () => void;
   private readonly unsubscribeFocus_: () => void;
+  private readonly unsubscribePinAdded_: () => void;
+  private readonly unsubscribePinRemoved_: () => void;
 
   constructor(owner: p4.ElementViewOwner, parent: EditorSectionView) {
     this.owner_ = owner;
@@ -87,20 +89,32 @@ export class EditorElementView implements p4.ElementView {
 
     this.initDOM_(parent);
 
-    this.pinManager_ =
-      owner.animations.pins.length > 0
-        ? new EditorPinManager({
-            elementDiv: this.element_,
-            owner,
-            presentationView: parent.presentationView,
-          })
-        : new NullEditorPinManager();
-
     this.animationManager_ = new EditorAnimationManager({
       owner,
       target: this.element_,
       host: parent.presentationView,
     });
+
+    this.pinManager_ = new EditorPinManager({
+      elementDiv: this.element_,
+      owner,
+      presentationView: parent.presentationView,
+      onRenderTargetChanged: (el) => this.animationManager_.retarget(el),
+    });
+
+    const pres = owner.sectionViewOwner.presentationViewOwner;
+    this.unsubscribePinAdded_ = pres.events.on(
+      "element:pinAdded",
+      ({ element, pin }) => {
+        if (element === this.owner_) this.pinManager_.addPin(pin);
+      },
+    );
+    this.unsubscribePinRemoved_ = pres.events.on(
+      "element:pinRemoved",
+      ({ element, pin }) => {
+        if (element === this.owner_) this.pinManager_.removePin(pin);
+      },
+    );
   }
 
   applyStyle(style: p4.ComputedElementStyle): void {
@@ -172,6 +186,8 @@ export class EditorElementView implements p4.ElementView {
     this.element_.removeEventListener("pointerup", this.onPointerUp_);
     this.unsubscribeSelection_();
     this.unsubscribeFocus_();
+    this.unsubscribePinAdded_();
+    this.unsubscribePinRemoved_();
     this.pinManager_.disconnect();
     this.animationManager_.destroy();
     this.element_.remove();
