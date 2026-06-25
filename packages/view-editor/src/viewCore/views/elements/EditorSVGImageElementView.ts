@@ -1,6 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import { sanitizeSVG } from "@rippledoc/sanitizer";
-import type { EditorSectionView } from "./EditorSectionView";
+import type { EditorSectionView } from "../EditorSectionView";
 import { EditorElementView } from "./EditorElementView";
 
 export class EditorSVGImageElementView extends EditorElementView {

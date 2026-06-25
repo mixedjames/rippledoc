@@ -5,7 +5,7 @@ import { PresentationDOM } from "./PresentationDOM";
 import { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
 import type { ViewMode } from "../../clientAPI/ViewMode";
-import type { EditorAnimationManager } from "./EditorAnimationManager";
+import type { EditorAnimationManager } from "./animation/EditorAnimationManager";
 
 export type EditorViewConfig = {
   /** The DOM element (or CSS selector) that the presentation renders into. */

@@ -1,8 +1,8 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
-import type { EditorSectionView } from "./EditorSectionView";
-import { EditorPinManager, NullEditorPinManager } from "./EditorPinManager";
-import { EditorAnimationManager } from "./EditorAnimationManager";
-import { fillToCss, borderToCss } from "./colorToCss";
+import type { EditorSectionView } from "../EditorSectionView";
+import { EditorPinManager, NullEditorPinManager } from "../EditorPinManager";
+import { EditorAnimationManager } from "../animation/EditorAnimationManager";
+import { fillToCss, borderToCss } from "../../utils/colorToCss";
 
 /**
  * Base element view for the editor. Renders a single absolutely-positioned

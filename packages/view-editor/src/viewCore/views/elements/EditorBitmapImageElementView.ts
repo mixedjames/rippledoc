@@ -1,5 +1,5 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
-import type { EditorSectionView } from "./EditorSectionView";
+import type { EditorSectionView } from "../EditorSectionView";
 import { EditorElementView } from "./EditorElementView";
 
 // Not yet implemented — rendering content is a future task.

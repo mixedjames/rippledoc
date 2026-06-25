@@ -1,10 +1,10 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorPresentationView } from "./EditorPresentationView";
-import { fillToCss, borderToCss } from "./colorToCss";
-import { EditorMarkdownElementView } from "./EditorMarkdownElementView";
-import { EditorBitmapImageElementView } from "./EditorBitmapImageElementView";
-import { EditorSVGImageElementView } from "./EditorSVGImageElementView";
-import type { EditorElementView } from "./EditorElementView";
+import { fillToCss, borderToCss } from "../utils/colorToCss";
+import { EditorMarkdownElementView } from "./elements/EditorMarkdownElementView";
+import { EditorBitmapImageElementView } from "./elements/EditorBitmapImageElementView";
+import { EditorSVGImageElementView } from "./elements/EditorSVGImageElementView";
+import type { EditorElementView } from "./elements/EditorElementView";
 
 /**
  * Section view for the editor.

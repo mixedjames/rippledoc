@@ -1,5 +1,5 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
-import { TypedEmitter } from "./TypedEmitter";
+import { TypedEmitter } from "./utils/TypedEmitter";
 import type { ViewMode } from "../clientAPI/ViewMode";
 import type {
   EditorViewEvents,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { TypedEmitter } from "../TypedEmitter";
+import { TypedEmitter } from "../utils/TypedEmitter";
 
 type Events = {
   a: { value: number };
