@@ -20,12 +20,17 @@ export class EditorTriggerBandView {
   private readonly unsubscribeNameChanged_: () => void;
   private readonly onPointerDown_: (e: PointerEvent) => void;
 
-  constructor(
-    trigger: p4.ScrollTrigger,
-    controller: EditorViewControllerImpl,
-    presentationEvents: p4.PresentationEventSource,
-    container: HTMLElement,
-  ) {
+  constructor({
+    trigger,
+    controller,
+    presentationEvents,
+    container,
+  }: {
+    trigger: p4.ScrollTrigger;
+    controller: EditorViewControllerImpl;
+    presentationEvents: p4.PresentationEventSource;
+    container: HTMLElement;
+  }) {
     this.trigger_ = trigger;
 
     this.label_.className = "trigger-band-label";

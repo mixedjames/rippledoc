@@ -45,12 +45,11 @@ export class EditorViewControllerImpl implements EditorViewController {
   private viewFactory_: p4.PresentationViewFactory | null = null;
 
   constructor() {
-    this.selection_ = new EditorSelectionControllerImpl(
-      this,
-      this.elementSet_,
-      this.sectionSet_,
-      this.triggerSet_,
-    );
+    this.selection_ = new EditorSelectionControllerImpl(this, {
+      elements: this.elementSet_,
+      sections: this.sectionSet_,
+      triggers: this.triggerSet_,
+    });
   }
 
   // Called once by createEditorView() to complete the bootstrap.
@@ -177,6 +176,12 @@ export class EditorViewControllerImpl implements EditorViewController {
   }
 }
 
+interface EntitySets {
+  elements: Set<p4.Element>;
+  sections: Set<p4.Section>;
+  triggers: Set<p4.ScrollTrigger>;
+}
+
 // Private to this module — consumers see only EditorSelectionController.
 class EditorSelectionControllerImpl implements EditorSelectionController {
   private readonly ctrl_: EditorViewControllerImpl;
@@ -187,14 +192,12 @@ class EditorSelectionControllerImpl implements EditorSelectionController {
 
   constructor(
     ctrl: EditorViewControllerImpl,
-    elementSet: Set<p4.Element>,
-    sectionSet: Set<p4.Section>,
-    triggerSet: Set<p4.ScrollTrigger>,
+    { elements, sections, triggers }: EntitySets,
   ) {
     this.ctrl_ = ctrl;
-    this.elementSet_ = elementSet;
-    this.sectionSet_ = sectionSet;
-    this.triggerSet_ = triggerSet;
+    this.elementSet_ = elements;
+    this.sectionSet_ = sections;
+    this.triggerSet_ = triggers;
   }
 
   // ── Element ops ─────────────────────────────────────────────────────────────

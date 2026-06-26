@@ -516,6 +516,7 @@ function makeRemoveSectionNamedOp(
  * that snapshots the before-state at construction time.
  */
 export class StylesPanel implements SidebarPanel {
+  readonly title = "Styles";
   readonly element: HTMLElement;
   private state_: EditorState;
   private push_: PushOperation;

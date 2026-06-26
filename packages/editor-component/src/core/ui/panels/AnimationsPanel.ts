@@ -4,6 +4,11 @@ import type {
   ScrollTrigger,
   KeyFrameAnimation,
   KeyFrameAnimationOptions,
+  KeyFrame,
+  TranslateStep,
+  RotateStep,
+  ScaleStep,
+  TransformStep,
   Pin,
   SVGImageElement,
 } from "@rippledoc/presentation4";
@@ -27,6 +32,21 @@ type AddingState = {
   subject: AnimSubject;
   type: AnimType;
 };
+
+interface KfCtx {
+  anim: KeyFrameAnimation;
+  frame: KeyFrame;
+  kfIdx: number;
+  isSVG: boolean;
+}
+
+interface KfNumberRowOpts {
+  label: string;
+  value: number | undefined;
+  unit: string;
+  clearable: boolean;
+  onCommit: (v: number) => void;
+}
 
 function isElement(subject: AnimSubject): subject is Element {
   return "setHorizontalAnchors" in subject;
@@ -63,11 +83,14 @@ function triggerLabel(trigger: ScrollTrigger): string {
  * view is shown instead.
  */
 export class AnimationsPanel implements SidebarPanel {
+  readonly title = "Animations";
   readonly element: HTMLElement;
   private state_: EditorState;
   private push_: PushOperation;
   private detail_: DetailState | null = null;
   private adding_: AddingState | null = null;
+  // Index of the expanded keyframe row within the detail view, or null if all collapsed.
+  private expandedKfIdx_: number | null = null;
 
   constructor(state: EditorState, push: PushOperation) {
     this.state_ = state;
@@ -92,6 +115,7 @@ export class AnimationsPanel implements SidebarPanel {
     if (this.detail_ !== null) {
       if (this.detail_.subject !== subject) {
         this.detail_ = null;
+        this.expandedKfIdx_ = null;
       } else if (subject !== null) {
         const { animType, animation } = this.detail_;
         const stillExists =
@@ -100,7 +124,10 @@ export class AnimationsPanel implements SidebarPanel {
             : subject.animations.keyFrameAnimations.includes(
                 animation as KeyFrameAnimation,
               );
-        if (!stillExists) this.detail_ = null;
+        if (!stillExists) {
+          this.detail_ = null;
+          this.expandedKfIdx_ = null;
+        }
       }
     }
 
@@ -341,6 +368,7 @@ export class AnimationsPanel implements SidebarPanel {
     back.textContent = `← ${animType === "pin" ? "Pin" : "Keyframe animation"}`;
     back.addEventListener("click", () => {
       this.detail_ = null;
+      this.expandedKfIdx_ = null;
       this.update();
     });
     this.element.appendChild(back);
@@ -358,7 +386,7 @@ export class AnimationsPanel implements SidebarPanel {
       if (isElement(subject) && isSVGImageElement(subject)) {
         this.renderSubComponentRow_(animation, subject);
       }
-      this.renderKeyframesStub_(animation);
+      this.renderKeyframesEditor_(animation, subject);
     }
 
     this.renderRemoveButton_(subject, animation, animType);
@@ -586,24 +614,605 @@ export class AnimationsPanel implements SidebarPanel {
     this.element.appendChild(row);
   }
 
-  private renderKeyframesStub_(anim: KeyFrameAnimation): void {
-    const count = anim.keyFrames.length;
+  // ── Keyframes editor ───────────────────────────────────────────────────────
 
+  private renderKeyframesEditor_(
+    anim: KeyFrameAnimation,
+    subject: AnimSubject,
+  ): void {
+    const frames = anim.keyFrames;
+    const isSVG = isElement(subject) && isSVGImageElement(subject);
+
+    // Section header row: label + count + add button.
+    const header = document.createElement("div");
+    header.className = "re-kf-section";
+
+    const headerLabel = document.createElement("span");
+    headerLabel.className = "re-anchor-row__name";
+    headerLabel.textContent = "keyframes";
+
+    const count = document.createElement("span");
+    count.className = "re-kf-count";
+    count.textContent =
+      frames.length === 0
+        ? "none"
+        : `${frames.length} frame${frames.length === 1 ? "" : "s"}`;
+
+    const addBtn = document.createElement("button");
+    addBtn.className = "re-kf-add-btn";
+    addBtn.textContent = "+ frame";
+    addBtn.addEventListener("click", () => this.addKeyframe_(anim));
+
+    header.appendChild(headerLabel);
+    header.appendChild(count);
+    header.appendChild(addBtn);
+    this.element.appendChild(header);
+
+    for (let i = 0; i < frames.length; i++) {
+      this.element.appendChild(
+        this.renderKfRow_({ anim, frame: frames[i]!, kfIdx: i, isSVG }),
+      );
+    }
+  }
+
+  private renderKfRow_(ctx: KfCtx): HTMLElement {
+    const { anim, frame, kfIdx: idx } = ctx;
+    const expanded = this.expandedKfIdx_ === idx;
+    const row = document.createElement("div");
+    row.className = "re-kf-row";
+
+    // Summary line (always visible, click to toggle expand).
+    const summary = document.createElement("div");
+    summary.className = "re-kf-summary";
+
+    const arrow = document.createElement("span");
+    arrow.className = "re-kf-arrow";
+    arrow.textContent = expanded ? "▼" : "▶";
+
+    const pos = document.createElement("span");
+    pos.className = "re-kf-pos";
+    pos.textContent = `${frame.position}ms`;
+
+    const props = this.kfPropSummary_(frame);
+    const propEl = document.createElement("span");
+    propEl.className = "re-kf-props-summary";
+    propEl.textContent = props || "—";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "re-anim-remove";
+    removeBtn.textContent = "×";
+    removeBtn.title = "Remove keyframe";
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.removeKeyframe_(anim, idx);
+    });
+
+    summary.appendChild(arrow);
+    summary.appendChild(pos);
+    summary.appendChild(propEl);
+    summary.appendChild(removeBtn);
+
+    summary.addEventListener("click", () => {
+      this.expandedKfIdx_ = expanded ? null : idx;
+      this.update();
+    });
+
+    row.appendChild(summary);
+
+    if (expanded) {
+      row.appendChild(this.renderKfDetail_(ctx));
+    }
+
+    return row;
+  }
+
+  private kfPropSummary_(frame: KeyFrame): string {
+    const parts: string[] = [];
+    if (frame.opacity !== undefined) parts.push("opacity");
+    if (frame.transform !== undefined && frame.transform.length > 0)
+      parts.push("transform");
+    if (
+      frame.backgroundPositionX !== undefined ||
+      frame.backgroundPositionY !== undefined
+    )
+      parts.push("bgPos");
+    if (frame.strokeDashoffset !== undefined) parts.push("dashoffset");
+    if (frame.traceStroke !== undefined) parts.push("trace");
+    return parts.join(", ");
+  }
+
+  private renderKfDetail_(ctx: KfCtx): HTMLElement {
+    const { anim, frame, kfIdx: idx, isSVG } = ctx;
+    const detail = document.createElement("div");
+    detail.className = "re-kf-detail";
+
+    detail.appendChild(
+      this.renderKfNumberRow_({
+        label: "position",
+        value: frame.position,
+        unit: "ms",
+        clearable: false,
+        onCommit: (v) => {
+          if (isNaN(v)) return;
+          const oldFrames = [...anim.keyFrames];
+          const newFrame = { ...frame, position: v };
+          const unsorted = [...oldFrames];
+          unsorted[idx] = newFrame;
+          const sorted = [...unsorted].sort((a, b) => a.position - b.position);
+          const newIdx = sorted.indexOf(newFrame);
+          const capturedIdx = idx;
+          this.push_({
+            execute: () => {
+              anim.setKeyFrames(sorted);
+              this.expandedKfIdx_ = newIdx;
+              this.update();
+            },
+            undo: () => {
+              anim.setKeyFrames(oldFrames);
+              this.expandedKfIdx_ = capturedIdx;
+              this.update();
+            },
+          });
+        },
+      }),
+    );
+
+    detail.appendChild(
+      this.renderKfNumberRow_({
+        label: "opacity",
+        value: frame.opacity,
+        unit: "",
+        clearable: true,
+        onCommit: (v) => this.editKfProp_(ctx, "opacity", v),
+      }),
+    );
+
+    detail.appendChild(
+      this.renderKfNumberRow_({
+        label: "bgPosX",
+        value: frame.backgroundPositionX,
+        unit: "bu",
+        clearable: true,
+        onCommit: (v) => this.editKfProp_(ctx, "backgroundPositionX", v),
+      }),
+    );
+
+    detail.appendChild(
+      this.renderKfNumberRow_({
+        label: "bgPosY",
+        value: frame.backgroundPositionY,
+        unit: "bu",
+        clearable: true,
+        onCommit: (v) => this.editKfProp_(ctx, "backgroundPositionY", v),
+      }),
+    );
+
+    detail.appendChild(
+      this.renderKfNumberRow_({
+        label: "dashoffset",
+        value: frame.strokeDashoffset,
+        unit: "",
+        clearable: true,
+        onCommit: (v) => this.editKfProp_(ctx, "strokeDashoffset", v),
+      }),
+    );
+
+    if (isSVG) {
+      detail.appendChild(
+        this.renderKfNumberRow_({
+          label: "traceStroke",
+          value: frame.traceStroke,
+          unit: "%",
+          clearable: true,
+          onCommit: (v) => this.editKfProp_(ctx, "traceStroke", v),
+        }),
+      );
+    }
+
+    detail.appendChild(this.renderTransformSteps_(ctx));
+
+    return detail;
+  }
+
+  /**
+   * A single-number property row.
+   * When clearable is true, an empty/NaN value removes the property from the keyframe.
+   */
+  private renderKfNumberRow_({
+    label,
+    value,
+    unit,
+    clearable,
+    onCommit,
+  }: KfNumberRowOpts): HTMLElement {
     const row = document.createElement("div");
     row.className = "re-anchor-edit-row";
 
-    const label = document.createElement("span");
-    label.className = "re-anchor-row__name";
-    label.textContent = "keyframes";
+    const labelEl = document.createElement("span");
+    labelEl.className = "re-anchor-row__name";
+    labelEl.textContent = label;
 
-    const val = document.createElement("span");
-    val.className = "re-anim-stub";
-    val.textContent =
-      count === 0 ? "none" : `${count} keyframe${count === 1 ? "" : "s"}`;
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "re-style-input re-style-input--number";
+    input.value = value !== undefined ? String(value) : "";
+    if (!clearable) input.required = true;
 
-    row.appendChild(label);
-    row.appendChild(val);
-    this.element.appendChild(row);
+    let committed = false;
+    const doCommit = () => {
+      if (committed) return;
+      committed = true;
+      const v = parseFloat(input.value);
+      if (isNaN(v) && !clearable) return;
+      onCommit(v); // NaN signals "clear" when clearable
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doCommit();
+      if (e.key === "Escape") {
+        committed = true;
+        this.update();
+      }
+    });
+    input.addEventListener("blur", doCommit);
+
+    row.appendChild(labelEl);
+    row.appendChild(input);
+
+    if (unit) {
+      const unitEl = document.createElement("span");
+      unitEl.className = "re-anim-unit";
+      unitEl.textContent = unit;
+      row.appendChild(unitEl);
+    }
+
+    return row;
+  }
+
+  /**
+   * Generic helper: replace one optional numeric property on a keyframe.
+   * NaN means remove the property.
+   */
+  private editKfProp_(ctx: KfCtx, key: keyof KeyFrame, value: number): void {
+    const { anim, frame, kfIdx: idx } = ctx;
+    const oldFrames = [...anim.keyFrames];
+    const newFrames = [...oldFrames];
+    if (isNaN(value)) {
+      const copy = { ...frame } as Partial<KeyFrame>;
+      delete copy[key];
+      newFrames[idx] = copy as KeyFrame;
+    } else {
+      newFrames[idx] = { ...frame, [key]: value };
+    }
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.update();
+      },
+    });
+  }
+
+  private renderTransformSteps_(ctx: KfCtx): HTMLElement {
+    const { frame } = ctx;
+    const container = document.createElement("div");
+    container.className = "re-transform-list";
+
+    const header = document.createElement("div");
+    header.className = "re-kf-transform-header";
+    const headerLabel = document.createElement("span");
+    headerLabel.className = "re-anchor-row__name";
+    headerLabel.textContent = "transform";
+    header.appendChild(headerLabel);
+    container.appendChild(header);
+
+    const steps = frame.transform ?? [];
+
+    for (let i = 0; i < steps.length; i++) {
+      container.appendChild(this.renderTransformStep_(ctx, steps[i]!, i));
+    }
+
+    // Add-step buttons.
+    const addRow = document.createElement("div");
+    addRow.className = "re-transform-add";
+
+    for (const type of ["translate", "rotate", "scale"] as const) {
+      const btn = document.createElement("button");
+      btn.className = "re-kf-add-btn";
+      btn.textContent = `+ ${type}`;
+      btn.addEventListener("click", () => this.addTransformStep_(ctx, type));
+      addRow.appendChild(btn);
+    }
+
+    container.appendChild(addRow);
+    return container;
+  }
+
+  private renderTransformStep_(
+    ctx: KfCtx,
+    step: TransformStep,
+    stepIdx: number,
+  ): HTMLElement {
+    const { frame } = ctx;
+    const row = document.createElement("div");
+    row.className = "re-transform-step";
+
+    const typeLabel = document.createElement("span");
+    typeLabel.className = "re-transform-step__type";
+    typeLabel.textContent = step.type;
+    row.appendChild(typeLabel);
+
+    const vals = document.createElement("span");
+    vals.className = "re-transform-step__vals";
+
+    if (step.type === "translate") {
+      vals.appendChild(
+        this.makeStepInput_("x", step.x ?? 0, (v) =>
+          this.editTransformStep_(ctx, stepIdx, {
+            ...step,
+            x: v,
+          } as TranslateStep),
+        ),
+      );
+      vals.appendChild(
+        this.makeStepInput_("y", step.y ?? 0, (v) =>
+          this.editTransformStep_(ctx, stepIdx, {
+            ...step,
+            y: v,
+          } as TranslateStep),
+        ),
+      );
+    } else if (step.type === "rotate") {
+      vals.appendChild(
+        this.makeStepInput_("°", step.degrees, (v) =>
+          this.editTransformStep_(ctx, stepIdx, {
+            type: "rotate",
+            degrees: v,
+          } as RotateStep),
+        ),
+      );
+    } else {
+      // scale
+      vals.appendChild(
+        this.makeStepInput_("x", step.x, (v) =>
+          this.editTransformStep_(ctx, stepIdx, {
+            ...step,
+            x: v,
+          } as ScaleStep),
+        ),
+      );
+      vals.appendChild(
+        this.makeStepInput_("y", step.y, (v) =>
+          this.editTransformStep_(ctx, stepIdx, {
+            ...step,
+            y: v,
+          } as ScaleStep),
+        ),
+      );
+    }
+
+    row.appendChild(vals);
+
+    // Reorder + remove buttons.
+    const controls = document.createElement("span");
+    controls.className = "re-transform-step__controls";
+
+    if (stepIdx > 0) {
+      const up = document.createElement("button");
+      up.className = "re-kf-step-btn";
+      up.textContent = "↑";
+      up.title = "Move up";
+      up.addEventListener("click", () =>
+        this.moveTransformStep_(ctx, stepIdx, true),
+      );
+      controls.appendChild(up);
+    }
+
+    if (stepIdx < (frame.transform?.length ?? 0) - 1) {
+      const down = document.createElement("button");
+      down.className = "re-kf-step-btn";
+      down.textContent = "↓";
+      down.title = "Move down";
+      down.addEventListener("click", () =>
+        this.moveTransformStep_(ctx, stepIdx, false),
+      );
+      controls.appendChild(down);
+    }
+
+    const remove = document.createElement("button");
+    remove.className = "re-kf-step-btn";
+    remove.textContent = "×";
+    remove.title = "Remove step";
+    remove.addEventListener("click", () =>
+      this.removeTransformStep_(ctx, stepIdx),
+    );
+    controls.appendChild(remove);
+
+    row.appendChild(controls);
+    return row;
+  }
+
+  private makeStepInput_(
+    label: string,
+    value: number,
+    onCommit: (v: number) => void,
+  ): HTMLElement {
+    const wrap = document.createElement("span");
+    wrap.className = "re-step-input-wrap";
+
+    const lbl = document.createElement("span");
+    lbl.className = "re-step-input-label";
+    lbl.textContent = label;
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "re-style-input re-step-input";
+    input.value = String(value);
+
+    let committed = false;
+    const doCommit = () => {
+      if (committed) return;
+      committed = true;
+      const v = parseFloat(input.value);
+      if (!isNaN(v) && v !== value) onCommit(v);
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doCommit();
+      if (e.key === "Escape") {
+        committed = true;
+        this.update();
+      }
+    });
+    input.addEventListener("blur", doCommit);
+
+    wrap.appendChild(lbl);
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  private addKeyframe_(anim: KeyFrameAnimation): void {
+    const oldFrames = [...anim.keyFrames];
+    const newPos = oldFrames.length === 0 ? 0 : Math.round(anim.duration / 2);
+    const newFrame: KeyFrame = { position: newPos };
+    const sorted = [...oldFrames, newFrame].sort(
+      (a, b) => a.position - b.position,
+    );
+    const newIdx = sorted.indexOf(newFrame);
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(sorted);
+        this.expandedKfIdx_ = newIdx;
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.expandedKfIdx_ = null;
+        this.update();
+      },
+    });
+  }
+
+  private removeKeyframe_(anim: KeyFrameAnimation, idx: number): void {
+    const oldFrames = [...anim.keyFrames];
+    const newFrames = oldFrames.filter((_, i) => i !== idx);
+    const capturedExpanded = this.expandedKfIdx_;
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        if (this.expandedKfIdx_ === idx) {
+          this.expandedKfIdx_ = null;
+        } else if (this.expandedKfIdx_ !== null && this.expandedKfIdx_ > idx) {
+          this.expandedKfIdx_--;
+        }
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.expandedKfIdx_ = capturedExpanded;
+        this.update();
+      },
+    });
+  }
+
+  private editTransformStep_(
+    ctx: KfCtx,
+    stepIdx: number,
+    newStep: TransformStep,
+  ): void {
+    const { anim, frame, kfIdx } = ctx;
+    const oldFrames = [...anim.keyFrames];
+    const newSteps = [...(frame.transform ?? [])];
+    newSteps[stepIdx] = newStep;
+    const newFrames = [...oldFrames];
+    newFrames[kfIdx] = { ...frame, transform: newSteps };
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.update();
+      },
+    });
+  }
+
+  private addTransformStep_(
+    ctx: KfCtx,
+    type: "translate" | "rotate" | "scale",
+  ): void {
+    const { anim, frame, kfIdx } = ctx;
+    const oldFrames = [...anim.keyFrames];
+    let newStep: TransformStep;
+    if (type === "translate") {
+      newStep = { type: "translate", x: 0, y: 0 };
+    } else if (type === "rotate") {
+      newStep = { type: "rotate", degrees: 0 };
+    } else {
+      newStep = { type: "scale", x: 1, y: 1 };
+    }
+    const newSteps = [...(frame.transform ?? []), newStep];
+    const newFrames = [...oldFrames];
+    newFrames[kfIdx] = { ...frame, transform: newSteps };
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.update();
+      },
+    });
+  }
+
+  private removeTransformStep_(ctx: KfCtx, stepIdx: number): void {
+    const { anim, frame, kfIdx } = ctx;
+    const oldFrames = [...anim.keyFrames];
+    const newSteps = (frame.transform ?? []).filter((_, i) => i !== stepIdx);
+    const newFrames = [...oldFrames];
+    newFrames[kfIdx] = { ...frame, transform: newSteps };
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.update();
+      },
+    });
+  }
+
+  private moveTransformStep_(
+    ctx: KfCtx,
+    stepIdx: number,
+    moveTowardFront: boolean,
+  ): void {
+    const { anim, frame, kfIdx } = ctx;
+    const oldFrames = [...anim.keyFrames];
+    const steps = [...(frame.transform ?? [])];
+    // 0 - 1 = -1 (both 0 and 1 are rule-exempt literals); 1 moves toward back.
+    const delta = moveTowardFront ? 0 - 1 : 1;
+    const targetIdx = stepIdx + delta;
+    if (targetIdx < 0 || targetIdx >= steps.length) return;
+    [steps[stepIdx], steps[targetIdx]] = [steps[targetIdx]!, steps[stepIdx]!];
+    const newFrames = [...oldFrames];
+    newFrames[kfIdx] = { ...frame, transform: steps };
+    this.push_({
+      execute: () => {
+        anim.setKeyFrames(newFrames);
+        this.update();
+      },
+      undo: () => {
+        anim.setKeyFrames(oldFrames);
+        this.update();
+      },
+    });
   }
 
   private renderRemoveButton_(

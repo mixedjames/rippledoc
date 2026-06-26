@@ -3,6 +3,10 @@ import {
   type Presentation,
   type PresentationOptions,
   type PresentationMemento,
+  type PresentationRoot,
+  type Section,
+  type Element,
+  type ScrollTrigger,
 } from "@rippledoc/presentation4";
 import { NullPresentationView } from "@rippledoc/presentation4/viewAPI";
 import { createEditorView } from "@rippledoc/view-editor";
@@ -82,14 +86,14 @@ export class EditorComponentImpl implements EditorComponent {
     presentation.attachView(viewController.viewFactory);
     this.state_ = new EditorState(presentation, viewController);
 
-    this.sidebar_ = new Sidebar(
-      this.state_,
-      (op) => this.pushOperation_(op),
-      (cb) => this.requestPick_(cb),
-      (el) => {
+    this.sidebar_ = new Sidebar(this.state_, {
+      push: (op) => this.pushOperation_(op),
+      requestPick: (cb) => this.requestPick_(cb),
+      requestAnchorPick: () => this.requestAnchorPick_(),
+      openMarkdownEditor: (el) => {
         void this.delegate_.requestMarkdownEdit(el);
       },
-    );
+    });
     this.layout_.element.appendChild(this.sidebar_.element);
 
     this.selectionUnsub_ = viewController.events.on(
@@ -234,6 +238,12 @@ export class EditorComponentImpl implements EditorComponent {
     const pickerTool = new AnchorPickerTool(onDone);
     this.activeTool_ = pickerTool;
     pickerTool.activate(this.makeContext_(vc));
+  }
+
+  private requestAnchorPick_(): Promise<
+    PresentationRoot | Section | Element | ScrollTrigger | null
+  > {
+    return this.delegate_.requestAnchorPick(this.state_.presentation);
   }
 
   private pushOperation_(op: EditOperation): void {

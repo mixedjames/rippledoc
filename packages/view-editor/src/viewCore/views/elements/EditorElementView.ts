@@ -99,6 +99,7 @@ export class EditorElementView implements p4.ElementView {
       elementDiv: this.element_,
       owner,
       presentationView: parent.presentationView,
+      host: parent.presentationView,
       onRenderTargetChanged: (el) => this.animationManager_.retarget(el),
     });
 
@@ -130,7 +131,7 @@ export class EditorElementView implements p4.ElementView {
     this.element_.style.height = `${anchors.height.value * scale}px`;
     this.applyStyles_();
     this.pinManager_.layout();
-    this.animationManager_.layout();
+    this.animationManager_.layout(scale);
   }
 
   private applyStyles_(): void {

@@ -1,4 +1,11 @@
-import type { MarkdownElement } from "@rippledoc/presentation4";
+import type {
+  MarkdownElement,
+  Presentation,
+  PresentationRoot,
+  Section,
+  Element,
+  ScrollTrigger,
+} from "@rippledoc/presentation4";
 
 /**
  * The contract the shell must satisfy for the editor to request OS-level
@@ -29,4 +36,14 @@ export interface EditorDelegate {
    * deleting sections.
    */
   requestConfirm(message: string): Promise<boolean>;
+
+  /**
+   * Open an anchor target picker showing the full presentation tree (root,
+   * sections, elements, scroll triggers). Returns the picked object, or `null`
+   * if the user cancels. Typically implemented by calling
+   * `dialogs.openAnchorPicker` and unwrapping the result.
+   */
+  requestAnchorPick(
+    presentation: Presentation,
+  ): Promise<PresentationRoot | Section | Element | ScrollTrigger | null>;
 }

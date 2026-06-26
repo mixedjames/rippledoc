@@ -1,4 +1,10 @@
-import type { MarkdownElement } from "@rippledoc/presentation4";
+import type {
+  MarkdownElement,
+  PresentationRoot,
+  Section,
+  Element,
+  ScrollTrigger,
+} from "@rippledoc/presentation4";
 import type { EditorState } from "../EditorState";
 import type { EditOperation } from "../history/EditOperation";
 import type { AnchorPickResult } from "../tools/AnchorPickerTool";
@@ -24,36 +30,46 @@ import type { SidebarPanel } from "./panels/SidebarPanel";
  * pick interrupt) rather than a reference to `EditorComponentImpl` directly,
  * keeping the coupling narrow and the panel interfaces easy to test.
  */
+interface SidebarCallbacks {
+  push: (op: EditOperation) => void;
+  requestPick: (callback: (result: AnchorPickResult) => void) => void;
+  requestAnchorPick: () => Promise<
+    PresentationRoot | Section | Element | ScrollTrigger | null
+  >;
+  openMarkdownEditor: (element: MarkdownElement) => void;
+}
+
 export class Sidebar {
   readonly element: HTMLElement;
   private panels_: SidebarPanel[];
   private accordionPanels_: CollapsiblePanel[];
   private activeAccordionPanel_: CollapsiblePanel | null = null;
 
-  constructor(
-    state: EditorState,
-    push: (op: EditOperation) => void,
-    requestPick: (callback: (result: AnchorPickResult) => void) => void,
-    openMarkdownEditor: (element: MarkdownElement) => void,
-  ) {
+  constructor(state: EditorState, callbacks: SidebarCallbacks) {
+    const { push, requestPick, requestAnchorPick, openMarkdownEditor } =
+      callbacks;
     this.element = document.createElement("div");
     this.element.className = "re-sidebar";
 
     const styles = new StylesPanel(state, push);
     const properties = new PropertiesPanel(state, push, openMarkdownEditor);
-    const anchors = new AnchorsPanel(state, push, requestPick);
+    const anchors = new AnchorsPanel(state, {
+      push,
+      requestPick,
+      requestAnchorPick,
+    });
     const animations = new AnimationsPanel(state, push);
     this.panels_ = [styles, properties, anchors, animations];
 
-    const panelDefs: [string, SidebarPanel][] = [
-      ["Styles", styles],
-      ["Anchors", anchors],
-      ["Properties", properties],
-      ["Animations", animations],
+    const orderedPanels: SidebarPanel[] = [
+      styles,
+      anchors,
+      animations,
+      properties,
     ];
-    this.accordionPanels_ = panelDefs.map(
-      ([title, panel], i) =>
-        new CollapsiblePanel(title, panel.element, () =>
+    this.accordionPanels_ = orderedPanels.map(
+      (panel, i) =>
+        new CollapsiblePanel(panel.title, panel.element, () =>
           this.openAccordionPanel_(i),
         ),
     );
@@ -62,9 +78,12 @@ export class Sidebar {
       this.element.appendChild(accordionPanel.element);
     }
 
-    // Properties open by default (index 2).
+    // Properties open by default.
     // TODO: restore last-active panel when persistence is added.
-    this.openAccordionPanel_(2);
+    const defaultIndex = orderedPanels.findIndex(
+      (p) => p.title === "Properties",
+    );
+    this.openAccordionPanel_(defaultIndex);
   }
 
   private openAccordionPanel_(index: number): void {

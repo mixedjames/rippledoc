@@ -3,6 +3,7 @@ import type {
   MarkdownElement,
   BitmapImageElement,
   ScrollTrigger,
+  Section,
 } from "@rippledoc/presentation4";
 import type { EditorState } from "../../EditorState";
 import type { SidebarPanel, PushOperation } from "./SidebarPanel";
@@ -27,6 +28,7 @@ function isBitmapImage(el: Element): el is BitmapImageElement {
  * selections show an empty-state message.
  */
 export class PropertiesPanel implements SidebarPanel {
+  readonly title = "Properties";
   readonly element: HTMLElement;
   private state_: EditorState;
   private push_: PushOperation;
@@ -46,32 +48,41 @@ export class PropertiesPanel implements SidebarPanel {
 
   update(): void {
     this.element.innerHTML = "";
-    const triggers = this.state_.viewController.selection.triggers;
+    const sel = this.state_.viewController.selection;
 
-    if (triggers.size === 1) {
-      const trigger = triggers.values().next().value as ScrollTrigger;
+    if (sel.triggers.size === 1) {
+      const trigger = sel.triggers.values().next().value as ScrollTrigger;
       this.renderTriggerNameRow_(trigger);
       this.renderTypeLabel_("Scroll trigger");
       return;
     }
-    if (triggers.size > 1) {
-      this.renderEmpty_(`${triggers.size} triggers selected.`);
+    if (sel.triggers.size > 1) {
+      this.renderEmpty_(`${sel.triggers.size} triggers selected.`);
       return;
     }
 
-    const sel = this.state_.viewController.selection.elements;
+    if (sel.sections.size === 1) {
+      const section = sel.sections.values().next().value as Section;
+      this.renderSectionNameRow_(section);
+      this.renderTypeLabel_("Section");
+      return;
+    }
+    if (sel.sections.size > 1) {
+      this.renderEmpty_(`${sel.sections.size} sections selected.`);
+      return;
+    }
 
-    if (sel.size === 0) {
+    if (sel.elements.size === 0) {
       this.renderEmpty_("No element selected.");
       return;
     }
-    if (sel.size > 1) {
-      this.renderEmpty_(`${sel.size} elements selected.`);
+    if (sel.elements.size > 1) {
+      this.renderEmpty_(`${sel.elements.size} elements selected.`);
       return;
     }
 
-    // sel.size === 1 is checked above; cast is safe
-    const element = sel.values().next().value as Element;
+    // sel.elements.size === 1 is checked above; cast is safe
+    const element = sel.elements.values().next().value as Element;
     this.renderNameRow_(element);
 
     if (isMarkdown(element)) {
@@ -193,6 +204,71 @@ export class PropertiesPanel implements SidebarPanel {
         input.blur();
       } else if (e.key === "Escape") {
         input.value = trigger.name;
+        input.blur();
+      }
+    });
+  }
+
+  private renderSectionNameRow_(section: Section): void {
+    const row = document.createElement("div");
+    row.className = "re-style-row";
+
+    const label = document.createElement("span");
+    label.className = "re-style-row__label";
+    label.textContent = "Name";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "re-style-input re-style-input--text";
+    input.value = section.name;
+
+    const valueWrap = document.createElement("div");
+    valueWrap.className = "re-style-row__value";
+    valueWrap.appendChild(input);
+
+    row.appendChild(label);
+    row.appendChild(valueWrap);
+    this.element.appendChild(row);
+
+    const error = document.createElement("div");
+    error.className = "re-prop-error";
+    error.style.display = "none";
+    this.element.appendChild(error);
+
+    const commit = () => {
+      const newName = input.value.trim();
+      if (newName === "" || newName === section.name) {
+        input.value = section.name;
+        error.style.display = "none";
+        return;
+      }
+
+      const isDuplicate = section.root
+        .getSections()
+        .some((other) => other !== section && other.name === newName);
+      if (isDuplicate) {
+        error.textContent = `"${newName}" is already in use.`;
+        error.style.display = "";
+        input.value = section.name;
+        return;
+      }
+
+      error.style.display = "none";
+      const oldName = section.name;
+      this.push_({
+        execute: () => section.setName(newName),
+        undo: () => section.setName(oldName),
+      });
+    };
+
+    input.addEventListener("blur", commit);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        input.blur();
+      } else if (e.key === "Escape") {
+        input.value = section.name;
+        error.style.display = "none";
         input.blur();
       }
     });

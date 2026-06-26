@@ -26,6 +26,11 @@ interface AnimationHost {
  * Registers itself with the host (EditorPresentationView) so the host can call
  * setEnabled() when the view mode changes.
  *
+ * Two subscription scopes:
+ *   unsubscribe_  — presentation-level events (animationAdded/Removed, triggerChanged, etc.)
+ *   animUnsubs_   — per-animation trigger events (start/scroll/end/reverseStart/reverseEnd),
+ *                   keyed by animation so individual animations can be cleanly removed.
+ *
  * Deferred driver types (not yet implemented):
  *   - Sub-component targeting (animation.hasTarget) — skipped for now
  *   - ManualAnimationDriver subclasses (traceStroke) — skipped for now
@@ -36,7 +41,12 @@ export class EditorAnimationManager {
   private readonly host_: AnimationHost;
   private readonly drivers_: Map<p4.KeyFrameAnimation, AnimationDriver> =
     new Map();
+  private scale_: number = 1;
+  // Presentation-level event subscriptions (animationAdded/Removed, triggerChanged, …).
   private readonly unsubscribe_: Array<() => void> = [];
+  // Per-animation trigger subscriptions, keyed so individual animations can be removed.
+  private readonly animUnsubs_: Map<p4.KeyFrameAnimation, Array<() => void>> =
+    new Map();
 
   constructor(options: {
     owner: p4.ElementViewOwner;
@@ -60,9 +70,28 @@ export class EditorAnimationManager {
           if (element === this.owner_) this.addDriver_(animation);
         },
       ),
+      presentation.events.on(
+        "element:animationRemoved",
+        ({ element, animation }) => {
+          if (element === this.owner_) this.removeDriver_(animation);
+        },
+      ),
       presentation.events.on("animation:keyFramesChanged", ({ animation }) => {
         const driver = this.drivers_.get(animation);
         if (driver) driver.onKeyFramesChanged();
+      }),
+      // When the user reassigns an animation's trigger, tear down the old trigger
+      // subscriptions for that animation and rebind to the new trigger. Without
+      // this the driver would keep firing on the trigger that no longer owns it.
+      presentation.events.on("animation:triggerChanged", ({ animation }) => {
+        const driver = this.drivers_.get(animation);
+        if (!driver) return;
+        const old = this.animUnsubs_.get(animation);
+        if (old) {
+          for (const fn of old) fn();
+          this.animUnsubs_.delete(animation);
+        }
+        this.bindTrigger_(animation, driver);
       }),
     );
 
@@ -83,9 +112,10 @@ export class EditorAnimationManager {
     }
   }
 
-  layout(): void {
+  layout(scale: number): void {
+    this.scale_ = scale;
     for (const driver of this.drivers_.values()) {
-      driver.onLayout();
+      driver.onLayout(scale);
     }
   }
 
@@ -93,6 +123,10 @@ export class EditorAnimationManager {
     this.host_.unregisterAnimationManager(this);
     for (const fn of this.unsubscribe_) fn();
     this.unsubscribe_.length = 0;
+    for (const unsubs of this.animUnsubs_.values()) {
+      for (const fn of unsubs) fn();
+    }
+    this.animUnsubs_.clear();
     for (const driver of this.drivers_.values()) {
       driver.destroy();
     }
@@ -104,6 +138,18 @@ export class EditorAnimationManager {
     if (!driver) return;
     this.drivers_.set(animation, driver);
     this.bindTrigger_(animation, driver);
+  }
+
+  private removeDriver_(animation: p4.KeyFrameAnimation): void {
+    const driver = this.drivers_.get(animation);
+    if (!driver) return;
+    const unsubs = this.animUnsubs_.get(animation);
+    if (unsubs) {
+      for (const fn of unsubs) fn();
+      this.animUnsubs_.delete(animation);
+    }
+    driver.destroy();
+    this.drivers_.delete(animation);
   }
 
   private createDriver_(
@@ -124,11 +170,10 @@ export class EditorAnimationManager {
       // until the driver is added.
       return null;
     }
-    return new WaapiAnimationDriver(
-      animation,
-      this.target_,
-      this.host_.animationEnabled,
-    );
+    return new WaapiAnimationDriver(animation, this.target_, {
+      enabled: this.host_.animationEnabled,
+      scale: this.scale_,
+    });
   }
 
   private bindTrigger_(
@@ -136,7 +181,7 @@ export class EditorAnimationManager {
     driver: AnimationDriver,
   ): void {
     const trigger = animation.trigger;
-    this.unsubscribe_.push(
+    this.animUnsubs_.set(animation, [
       trigger.on("start", ({ progress }) => {
         if (!this.host_.animationEnabled) return;
         driver.start(progress);
@@ -157,6 +202,6 @@ export class EditorAnimationManager {
         if (!this.host_.animationEnabled) return;
         driver.reverseEnd(progress);
       }),
-    );
+    ]);
   }
 }

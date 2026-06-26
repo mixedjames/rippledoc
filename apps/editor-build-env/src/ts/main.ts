@@ -25,6 +25,10 @@ const delegate: EditorDelegate = {
   async requestConfirm(message) {
     return window.confirm(message);
   },
+  async requestAnchorPick(presentation) {
+    const result = await dialogs.openAnchorPicker(presentation);
+    return result.committed ? result.value : null;
+  },
 };
 
 // ── Editor component ──────────────────────────────────────────────────────────
@@ -205,8 +209,8 @@ function seedPresentation(p: Presentation): void {
     duration: 1000,
     scrollDriven: true,
     keyFrames: [
-      { position: 0, opacity: 0, transform: "translateY(30px)" },
-      { position: 1000, opacity: 1, transform: "translateY(0px)" },
+      { position: 0, opacity: 0, transform: [{ type: "translate", y: 30 }] },
+      { position: 1000, opacity: 1, transform: [{ type: "translate", y: 0 }] },
     ],
   });
 }

@@ -3,11 +3,13 @@ import type {
   Presentation,
   StyleRegistry,
 } from "@rippledoc/presentation4";
+import type { AnchorPickTarget } from "../clientAPI/AnchorPickTarget";
 import type { Dialogs } from "../clientAPI/Dialogs";
 import type { DialogResult } from "../clientAPI/DialogResult";
 import type { OperationSink } from "../clientAPI/OperationSink";
 import { DialogHost } from "./infrastructure/DialogHost";
 import { injectDialogStyles } from "./infrastructure/DialogStyles";
+import { openAnchorPickerDialog } from "./dialogs/AnchorPickerDialog";
 import { openGlobalStylesDialog } from "./dialogs/GlobalStylesDialog";
 import { openMarkdownEditorDialog } from "./dialogs/MarkdownEditorDialog";
 import { openNamedStylesDialog } from "./dialogs/NamedStylesDialog";
@@ -32,5 +34,11 @@ export class DialogsImpl implements Dialogs {
 
   openMarkdownEditor(element: MarkdownElement): Promise<DialogResult<void>> {
     return openMarkdownEditorDialog(this.host_, element, this.sink_);
+  }
+
+  openAnchorPicker(
+    presentation: Presentation,
+  ): Promise<DialogResult<AnchorPickTarget>> {
+    return openAnchorPickerDialog(this.host_, presentation);
   }
 }

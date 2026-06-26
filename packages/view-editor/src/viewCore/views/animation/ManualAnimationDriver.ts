@@ -24,6 +24,8 @@ export abstract class ManualAnimationDriver implements AnimationDriver {
   private playingForward_: boolean = true;
   private currentT_: number = 0;
   private enabled_: boolean;
+  /** Current layout scale, available to subclasses via tick() for basis-unit conversions. */
+  protected scale_: number = 1;
 
   constructor(animation: p4.KeyFrameAnimation, enabled: boolean) {
     this.animation_ = animation;
@@ -103,7 +105,9 @@ export abstract class ManualAnimationDriver implements AnimationDriver {
     }
   }
 
-  onLayout(): void {
+  onLayout(scale: number): void {
+    // Store for potential use by subclasses (e.g. tick() may need scale for basis-unit values).
+    this.scale_ = scale;
     if (!this.enabled_ || !this.animation_.isScrollDriven) return;
     this.tick(this.currentT_);
   }

@@ -9,6 +9,7 @@ import type {
   AnchorExpression,
   HorizontalAnchorSet,
   Presentation,
+  PresentationRoot,
   VerticalAnchorSet,
 } from "@rippledoc/presentation4";
 import {
@@ -23,6 +24,16 @@ import type { EditOperation } from "../../history/EditOperation";
 type HSlot = "left" | "right" | "width";
 type VSlot = "top" | "bottom" | "height";
 type AnchorSlot = HSlot | VSlot;
+type ViewportSlot =
+  | "viewportWidth"
+  | "viewportHeight"
+  | "viewportLeft"
+  | "viewportRight";
+// Superset of AnchorSlot covering the extra anchors exposed by PresentationRoot.
+type PickSlot = AnchorSlot | ViewportSlot;
+
+// All objects that can be picked as an anchor target (canvas or tree dialog).
+type AnchorTarget = Element | Section | ScrollTrigger | PresentationRoot;
 
 type AnchorEntry = {
   name: AnchorSlot;
@@ -59,6 +70,10 @@ function isScrollTrigger(
 ): subject is ScrollTrigger {
   // ScrollTrigger has no addMarkdownElement (Section) and no setHorizontalAnchors (Element).
   return !isElement(subject) && !("addMarkdownElement" in subject);
+}
+
+function isPresentationRoot(target: AnchorTarget): target is PresentationRoot {
+  return "addSection" in target;
 }
 
 /** True for width and height — the size group whose anchors support fit-content mode. */
@@ -540,17 +555,16 @@ function buildAutoWidthPositionOp(
  * **Two-stage reference pick flow** (offset and fraction types):
  * Setting a reference-type expression requires knowing both (a) which element/section
  * to reference and (b) which anchor slot on that target. The panel handles this as a
- * two-stage flow managed by `pickInProgress_` and `anchorPickingTarget_`:
+ * two-stage flow managed by `pickFlowOpen_`, `canvasPickActive_`, and
+ * `anchorPickingTarget_`:
  *
- *   Stage 1 — `pickInProgress_ = true`: the panel auto-activates `AnchorPickerTool`
- *   via `requestPick_`, which interrupts the current selection tool. The panel renders
- *   a "click an element…" prompt. When the user clicks, the callback fires.
+ *   Stage 1 — both `pickFlowOpen_` and `canvasPickActive_` are false but inPickFlow is
+ *   true (driven by `pickFlowOpen_`), OR the expression type doesn't yet match: shows
+ *   two buttons — [Click in canvas] and [Browse…]. Clicking [Click in canvas] starts
+ *   `AnchorPickerTool`; clicking [Browse…] opens the tree dialog via `requestAnchorPick_`.
  *
  *   Stage 2 — `anchorPickingTarget_ !== null`: target is known; show available slots
- *   on that target. Clicking a slot builds and pushes the operation, then clears `anchorPickingTarget_`.
- *
- *   A cancel (Escape) during Stage 1 reverts `detailType_` to null if the anchor's
- *   actual expression doesn't yet match the chosen type, preventing a stale type display.
+ *   on that target. Clicking a slot builds and pushes the operation.
  *
  * **`detailType_`** shadows the expression's actual inferred type to allow the user
  * to change the type dropdown before committing a new expression. It is cleared when:
@@ -562,11 +576,19 @@ function buildAutoWidthPositionOp(
  * in fit-content mode. `buildFromFitContentVOp` / `buildFromFitContentHOp` and
  * `buildAutoHeight/WidthPositionOp` handle these transitions correctly.
  */
+interface AnchorsPanelCallbacks {
+  push: PushOperation;
+  requestPick: (callback: (result: AnchorPickResult) => void) => void;
+  requestAnchorPick: () => Promise<AnchorTarget | null>;
+}
+
 export class AnchorsPanel implements SidebarPanel {
+  readonly title = "Anchors";
   readonly element: HTMLElement;
   private state_: EditorState;
   private push_: PushOperation;
   private requestPick_: (callback: (result: AnchorPickResult) => void) => void;
+  private requestAnchorPick_: () => Promise<AnchorTarget | null>;
 
   private detail_: DetailState | null = null;
   // Tracks the user's type selection in the detail view. Null means "use the
@@ -575,20 +597,23 @@ export class AnchorsPanel implements SidebarPanel {
   private detailType_: ExprType | null = null;
   // True only on the first render after entering a detail view — drives auto-focus.
   private focusOnRender_ = false;
-  // True while the AnchorPickerTool is active waiting for a canvas click.
-  private pickInProgress_ = false;
-  // The element/section/trigger chosen in Stage 1. Cleared after the slot is
+  // True while the AnchorPickerTool is waiting for a canvas click.
+  private canvasPickActive_ = false;
+  // True when "change" was clicked on an existing expression, signalling that we
+  // want to show the pick-options UI without a canvas pick having started yet.
+  private pickFlowOpen_ = false;
+  // The element/section/trigger/root chosen in Stage 1. Cleared after the slot is
   // committed or when the pick flow is exited.
-  private anchorPickingTarget_: Element | Section | ScrollTrigger | null = null;
+  private anchorPickingTarget_: AnchorTarget | null = null;
 
   constructor(
     state: EditorState,
-    push: PushOperation,
-    requestPick: (callback: (result: AnchorPickResult) => void) => void,
+    { push, requestPick, requestAnchorPick }: AnchorsPanelCallbacks,
   ) {
     this.state_ = state;
     this.push_ = push;
     this.requestPick_ = requestPick;
+    this.requestAnchorPick_ = requestAnchorPick;
     this.element = document.createElement("div");
     this.update();
   }
@@ -616,7 +641,8 @@ export class AnchorsPanel implements SidebarPanel {
     if (this.detail_ && this.detail_.subject !== subject) {
       this.detail_ = null;
       this.detailType_ = null;
-      this.pickInProgress_ = false;
+      this.canvasPickActive_ = false;
+      this.pickFlowOpen_ = false;
       this.anchorPickingTarget_ = null;
       sel.clearFocusedElement();
     }
@@ -775,7 +801,8 @@ export class AnchorsPanel implements SidebarPanel {
     back.addEventListener("click", () => {
       this.detail_ = null;
       this.detailType_ = null;
-      this.pickInProgress_ = false;
+      this.canvasPickActive_ = false;
+      this.pickFlowOpen_ = false;
       this.anchorPickingTarget_ = null;
       this.state_.viewController.selection.clearFocusedElement();
       this.update();
@@ -824,7 +851,9 @@ export class AnchorsPanel implements SidebarPanel {
     // Disable the type selector while a pick is in progress so the user can't
     // inadvertently start a second pick by changing the type mid-flow.
     const inPickFlow =
-      this.pickInProgress_ || this.anchorPickingTarget_ !== null;
+      this.canvasPickActive_ ||
+      this.pickFlowOpen_ ||
+      this.anchorPickingTarget_ !== null;
     // Only size anchors on elements support fit-content mode.
     const showFitContent = isSizeSlot(entry.name) && isElement(subject);
 
@@ -859,6 +888,7 @@ export class AnchorsPanel implements SidebarPanel {
         } else {
           this.detailType_ = picked;
           this.anchorPickingTarget_ = null;
+          this.pickFlowOpen_ = false;
           this.update();
         }
       },
@@ -1085,31 +1115,68 @@ export class AnchorsPanel implements SidebarPanel {
       return;
     }
 
-    // Stage 1: auto-start the pick tool if not already waiting.
-    if (!this.pickInProgress_) {
-      this.pickInProgress_ = true;
+    // Canvas pick in flight — show a waiting prompt.
+    if (this.canvasPickActive_) {
+      const prompt = document.createElement("p");
+      prompt.className = "re-anchor-pick-prompt";
+      prompt.textContent =
+        "Click an element, section, or scroll trigger in the canvas, or press Escape to cancel.";
+      this.element.appendChild(prompt);
+      return;
+    }
+
+    // Stage 1: offer both canvas-click and tree-browse options.
+    const cancelPick = (matchesType: boolean): void => {
+      if (!matchesType) this.detailType_ = null;
+      this.pickFlowOpen_ = false;
+    };
+
+    const canvasBtn = document.createElement("button");
+    canvasBtn.className = "re-anchor-pick-btn";
+    canvasBtn.textContent = "Click in canvas";
+    canvasBtn.addEventListener("click", () => {
+      this.canvasPickActive_ = true;
+      this.pickFlowOpen_ = false;
       this.requestPick_((result) => {
-        this.pickInProgress_ = false;
+        this.canvasPickActive_ = false;
         if (result !== null) {
           this.anchorPickingTarget_ = result;
         } else {
-          // Cancelled — if the expression doesn't yet match the intended type,
-          // revert the type selection so the edit view reflects actual state.
           const matchesType =
             type === "offset"
               ? entry.anchor.expression instanceof OffsetAnchorExpression
               : entry.anchor.expression instanceof FractionAnchorExpression;
-          if (!matchesType) this.detailType_ = null;
+          cancelPick(matchesType);
         }
         this.update();
       });
-    }
+      this.update();
+    });
 
-    const prompt = document.createElement("p");
-    prompt.className = "re-anchor-pick-prompt";
-    prompt.textContent =
-      "Click an element, section, or scroll trigger in the canvas, or press Escape to cancel.";
-    this.element.appendChild(prompt);
+    const browseBtn = document.createElement("button");
+    browseBtn.className = "re-anchor-pick-btn";
+    browseBtn.textContent = "Browse…";
+    browseBtn.addEventListener("click", () => {
+      void this.requestAnchorPick_().then((result) => {
+        this.pickFlowOpen_ = false;
+        if (result !== null) {
+          this.anchorPickingTarget_ = result;
+        } else {
+          const matchesType =
+            type === "offset"
+              ? entry.anchor.expression instanceof OffsetAnchorExpression
+              : entry.anchor.expression instanceof FractionAnchorExpression;
+          cancelPick(matchesType);
+        }
+        this.update();
+      });
+    });
+
+    const opts = document.createElement("div");
+    opts.className = "re-anchor-pick-options";
+    opts.appendChild(canvasBtn);
+    opts.appendChild(browseBtn);
+    this.element.appendChild(opts);
   }
 
   private renderSlotList_(
@@ -1137,21 +1204,7 @@ export class AnchorsPanel implements SidebarPanel {
     changeBtn.textContent = "change";
     changeBtn.addEventListener("click", () => {
       this.anchorPickingTarget_ = null;
-      this.pickInProgress_ = true;
-      this.requestPick_((result) => {
-        this.pickInProgress_ = false;
-        if (result !== null) {
-          this.anchorPickingTarget_ = result;
-        } else {
-          // Same revert logic as auto-start cancel.
-          const matchesType =
-            type === "offset"
-              ? entry.anchor.expression instanceof OffsetAnchorExpression
-              : entry.anchor.expression instanceof FractionAnchorExpression;
-          if (!matchesType) this.detailType_ = null;
-        }
-        this.update();
-      });
+      this.pickFlowOpen_ = true;
       this.update();
     });
     targetRow.appendChild(targetLabel);
@@ -1178,9 +1231,7 @@ export class AnchorsPanel implements SidebarPanel {
     this.element.appendChild(slotTitle);
 
     for (const slot of slots) {
-      const base = (
-        pickedTarget.anchors as Record<AnchorSlot, Anchor | undefined>
-      )[slot];
+      const base = getAnchorForPickSlot(pickedTarget, slot);
       if (!base) continue;
 
       const row = document.createElement("div");
@@ -1204,6 +1255,7 @@ export class AnchorsPanel implements SidebarPanel {
             : (b: Anchor) => new FractionAnchorExpression(b, 1);
         const onDone = () => {
           this.anchorPickingTarget_ = null;
+          this.pickFlowOpen_ = false;
           this.update();
         };
         // When exiting fit-content mode via a reference anchor, use a specialized
@@ -1243,13 +1295,19 @@ export class AnchorsPanel implements SidebarPanel {
 
   /** Renders the anchor slot list for `target` inline, highlighting `currentBase`.
    *  Clicking a non-current slot calls `onSlotSelected` with the new base anchor. */
-  private renderInlineSlotList_(
-    subject: Element | Section | ScrollTrigger,
-    entry: AnchorEntry,
-    currentBase: Anchor,
-    target: Element | Section | ScrollTrigger,
-    onSlotSelected: (base: Anchor) => void,
-  ): void {
+  private renderInlineSlotList_({
+    subject,
+    entry,
+    currentBase,
+    target,
+    onSlotSelected,
+  }: {
+    subject: Element | Section | ScrollTrigger;
+    entry: AnchorEntry;
+    currentBase: Anchor;
+    target: AnchorTarget;
+    onSlotSelected: (base: Anchor) => void;
+  }): void {
     const group = slotPickGroup(entry.name);
     const isSelf = target === subject;
     const slots =
@@ -1269,9 +1327,7 @@ export class AnchorsPanel implements SidebarPanel {
     this.element.appendChild(slotTitle);
 
     for (const slot of slots) {
-      const base = (target.anchors as Record<AnchorSlot, Anchor | undefined>)[
-        slot
-      ];
+      const base = getAnchorForPickSlot(target, slot);
       if (!base) continue;
 
       const isCurrent = base === currentBase;
@@ -1334,12 +1390,7 @@ export class AnchorsPanel implements SidebarPanel {
     changeElBtn.textContent = "change";
     changeElBtn.addEventListener("click", () => {
       this.anchorPickingTarget_ = null;
-      this.pickInProgress_ = true;
-      this.requestPick_((result) => {
-        this.pickInProgress_ = false;
-        if (result !== null) this.anchorPickingTarget_ = result;
-        this.update();
-      });
+      this.pickFlowOpen_ = true;
       this.update();
     });
     elRow.appendChild(elLabel);
@@ -1349,12 +1400,12 @@ export class AnchorsPanel implements SidebarPanel {
 
     // Always-visible anchor slot list for the current target.
     if (info !== null) {
-      this.renderInlineSlotList_(
+      this.renderInlineSlotList_({
         subject,
         entry,
-        base,
-        info.target,
-        (newBase) => {
+        currentBase: base,
+        target: info.target,
+        onSlotSelected: (newBase) => {
           const newExpr = new OffsetAnchorExpression(newBase, expr.offset);
           const onDone = () => this.update();
           const op = sizeInFitContent
@@ -1400,7 +1451,7 @@ export class AnchorsPanel implements SidebarPanel {
                 );
           this.push_(op);
         },
-      );
+      });
     }
 
     this.renderNumberEdit_({
@@ -1483,12 +1534,7 @@ export class AnchorsPanel implements SidebarPanel {
     changeElBtn.textContent = "change";
     changeElBtn.addEventListener("click", () => {
       this.anchorPickingTarget_ = null;
-      this.pickInProgress_ = true;
-      this.requestPick_((result) => {
-        this.pickInProgress_ = false;
-        if (result !== null) this.anchorPickingTarget_ = result;
-        this.update();
-      });
+      this.pickFlowOpen_ = true;
       this.update();
     });
     elRow.appendChild(elLabel);
@@ -1498,12 +1544,12 @@ export class AnchorsPanel implements SidebarPanel {
 
     // Always-visible anchor slot list for the current target.
     if (info !== null) {
-      this.renderInlineSlotList_(
+      this.renderInlineSlotList_({
         subject,
         entry,
-        base,
-        info.target,
-        (newBase) => {
+        currentBase: base,
+        target: info.target,
+        onSlotSelected: (newBase) => {
           const newExpr = new FractionAnchorExpression(newBase, expr.fraction);
           const onDone = () => this.update();
           const op = sizeInFitContent
@@ -1549,7 +1595,7 @@ export class AnchorsPanel implements SidebarPanel {
                 );
           this.push_(op);
         },
-      );
+      });
     }
 
     this.renderNumberEdit_({
@@ -1683,8 +1729,16 @@ function slotPickGroup(slot: AnchorSlot): PickGroup {
 /** Anchor slots on `target` that are valid picks for `group`. */
 function validSlotsForGroup(
   group: PickGroup,
-  target: Element | Section | ScrollTrigger,
-): AnchorSlot[] {
+  target: AnchorTarget,
+): PickSlot[] {
+  if (isPresentationRoot(target)) {
+    // Root has the standard six slots plus viewport anchors.
+    // viewportLeft/Right are horizontal positions; viewportWidth/Height are sizes.
+    if (group === "h")
+      return ["left", "right", "viewportLeft", "viewportRight"];
+    if (group === "v") return ["top", "bottom"];
+    return ["width", "height", "viewportWidth", "viewportHeight"]; // "s"
+  }
   if (isScrollTrigger(target)) {
     // Triggers are vertical-only; no horizontal anchors exist on them.
     if (group === "h") return [];
@@ -1698,10 +1752,36 @@ function validSlotsForGroup(
   return isSection ? ["height"] : ["width", "height"];
 }
 
+/** Retrieve the `Anchor` object for a slot on any kind of pick target. */
+function getAnchorForPickSlot(
+  target: AnchorTarget,
+  slot: PickSlot,
+): Anchor | undefined {
+  if (isPresentationRoot(target)) {
+    switch (slot) {
+      case "viewportWidth":
+        return target.viewportWidth;
+      case "viewportHeight":
+        return target.viewportHeight;
+      case "viewportLeft":
+        return target.viewportLeft;
+      case "viewportRight":
+        return target.viewportRight;
+      default:
+        return (
+          target.anchors as unknown as Record<string, Anchor | undefined>
+        )[slot];
+    }
+  }
+  return (target.anchors as unknown as Record<AnchorSlot, Anchor | undefined>)[
+    slot as AnchorSlot
+  ];
+}
+
 type AnchorInfo = {
-  target: Element | Section | ScrollTrigger;
+  target: AnchorTarget;
   targetLabel: string;
-  slot: AnchorSlot;
+  slot: PickSlot;
 };
 
 /** Locate the owner and slot name of a base anchor within the presentation. */
@@ -1709,6 +1789,28 @@ function findAnchorInfo(anchor: Anchor, pres: Presentation): AnchorInfo | null {
   const vSlots: VSlot[] = ["top", "bottom", "height"];
   const hSlots: HSlot[] = ["left", "right", "width"];
   const allSlots: AnchorSlot[] = [...hSlots, ...vSlots];
+  const vpSlots: ViewportSlot[] = [
+    "viewportWidth",
+    "viewportHeight",
+    "viewportLeft",
+    "viewportRight",
+  ];
+
+  // Check presentation root (standard slots + viewport anchors).
+  const root = pres.root;
+  const rootAnchors = root.anchors as unknown as Record<
+    string,
+    Anchor | undefined
+  >;
+  for (const slot of allSlots) {
+    if (rootAnchors[slot] === anchor)
+      return { target: root, targetLabel: "Presentation Root", slot };
+  }
+  for (const slot of vpSlots) {
+    if (getAnchorForPickSlot(root, slot) === anchor)
+      return { target: root, targetLabel: "Presentation Root", slot };
+  }
+
   for (const section of pres.root.getSections()) {
     const sa = section.anchors as Record<AnchorSlot, Anchor | undefined>;
     for (const slot of vSlots) {
@@ -1740,10 +1842,8 @@ function findAnchorInfo(anchor: Anchor, pres: Presentation): AnchorInfo | null {
 }
 
 /** Human-readable label for a picked target object. */
-function resolveTargetLabel(
-  target: Element | Section | ScrollTrigger,
-  pres: Presentation,
-): string {
+function resolveTargetLabel(target: AnchorTarget, pres: Presentation): string {
+  if (isPresentationRoot(target)) return "Presentation Root";
   if (isScrollTrigger(target)) return target.name || "Trigger";
   for (const section of pres.root.getSections()) {
     if (section === target) return section.name;

@@ -1,4 +1,10 @@
 export type { SubComponentTarget } from "./SubComponentTarget";
+export type {
+  TranslateStep,
+  RotateStep,
+  ScaleStep,
+  TransformStep,
+} from "./Transform";
 export type { KeyFrame } from "./KeyFrame";
 export type { Animation } from "./Animation";
 export type {

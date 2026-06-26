@@ -306,6 +306,55 @@ const DIALOG_CSS = `
   border-color: hsl(220 80% 52%);
 }
 
+/* Anchor picker dialog */
+.rdoc-ap-body {
+  padding: 6px 0;
+  min-height: 180px;
+}
+
+.rdoc-ap-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a8a8a;
+  padding: 8px 14px 3px;
+}
+
+.rdoc-ap-row {
+  padding: 5px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #1a1a1a;
+  border-radius: 3px;
+  margin: 0 6px;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rdoc-ap-row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.rdoc-ap-row:focus-visible {
+  box-shadow: 0 0 0 2px hsl(220 80% 52%);
+}
+
+.rdoc-ap-row--indented {
+  padding-left: 28px;
+}
+
+.rdoc-ap-row--selected {
+  background: hsl(220 80% 94%);
+  color: hsl(220 80% 32%);
+}
+
+.rdoc-ap-row--selected:hover {
+  background: hsl(220 80% 90%);
+}
+
 /* Named styles dialog */
 .rdoc-dlg-box--wide {
   min-width: 680px;

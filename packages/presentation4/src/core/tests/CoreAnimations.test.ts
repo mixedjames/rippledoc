@@ -166,7 +166,9 @@ describe("KeyFrameAnimation — setKeyFrames", () => {
     const listener = vi.fn();
     p.events.on("animation:keyFramesChanged", listener);
 
-    anim.setKeyFrames([{ position: 0, transform: "scale(2)" }]);
+    anim.setKeyFrames([
+      { position: 0, transform: [{ type: "scale", x: 2, y: 2 }] },
+    ]);
 
     expect(listener).toHaveBeenCalledOnce();
     expect(listener).toHaveBeenCalledWith({ animation: anim });

@@ -27,10 +27,12 @@ export interface AnimationDriver {
   reverseEnd(progress: number): void;
 
   /**
-   * Called after every layout pass. Scroll-driven drivers re-sync their
-   * internal time to the new scale without waiting for the next scroll event.
+   * Called after every layout pass with the current basis→pixel scale factor.
+   * Drivers that use basis-unit values (translate, backgroundPosition) rebuild
+   * their CSS keyframes so the animation scales correctly with the viewport.
+   * Scroll-driven drivers also re-sync internal time to the new scale.
    */
-  onLayout(): void;
+  onLayout(scale: number): void;
 
   /**
    * Called when the animation's keyframes change. Drivers should rebuild any

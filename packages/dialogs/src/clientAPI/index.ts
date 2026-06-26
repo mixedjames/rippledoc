@@ -7,3 +7,4 @@
 export type { DialogResult } from "./DialogResult";
 export type { OperationSink } from "./OperationSink";
 export type { Dialogs } from "./Dialogs";
+export type { AnchorPickTarget } from "./AnchorPickTarget";

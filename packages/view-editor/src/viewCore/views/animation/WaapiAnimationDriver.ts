@@ -2,24 +2,47 @@ import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { AnimationDriver } from "./AnimationDriver";
 
 /**
+ * Convert one TransformStep to a CSS transform function string.
+ * TranslateStep values are in basis units and are multiplied by scale.
+ */
+function stepToCSS(step: p4.TransformStep, scale: number): string {
+  switch (step.type) {
+    case "translate": {
+      const x = (step.x ?? 0) * scale;
+      const y = (step.y ?? 0) * scale;
+      return `translate(${x}px, ${y}px)`;
+    }
+    case "rotate":
+      return `rotate(${step.degrees}deg)`;
+    case "scale":
+      return step.x === step.y
+        ? `scale(${step.x})`
+        : `scale(${step.x}, ${step.y})`;
+  }
+}
+
+/**
  * Build a WAAPI Keyframe array from the model's KeyFrame array.
  *
- * position (ms) is converted to offset (0–1 fraction of duration). Only
- * properties that map directly to CSS are included. traceStroke is omitted —
- * it is handled by ManualAnimationDriver subclasses.
+ * position (ms) is converted to offset (0–1 fraction of duration).
+ * backgroundPositionX/Y and transform translate values are in basis units and
+ * are scaled by the current LayoutTransform.scale so the animation tracks the
+ * physical viewport size. traceStroke is omitted — ManualAnimationDriver handles it.
  */
 function buildKeyframes(
   frames: readonly p4.KeyFrame[],
   duration: number,
+  scale: number,
 ): Keyframe[] {
   return frames.map((f) => {
     const kf: Keyframe = { offset: f.position / duration };
     if (f.opacity !== undefined) kf.opacity = f.opacity;
-    if (f.transform !== undefined) kf.transform = f.transform;
+    if (f.transform !== undefined)
+      kf.transform = f.transform.map((s) => stepToCSS(s, scale)).join(" ");
     if (f.backgroundPositionX !== undefined)
-      kf.backgroundPositionX = `${f.backgroundPositionX}px`;
+      kf.backgroundPositionX = `${f.backgroundPositionX * scale}px`;
     if (f.backgroundPositionY !== undefined)
-      kf.backgroundPositionY = `${f.backgroundPositionY}px`;
+      kf.backgroundPositionY = `${f.backgroundPositionY * scale}px`;
     if (f.strokeDashoffset !== undefined)
       kf.strokeDashoffset = f.strokeDashoffset;
     return kf;
@@ -42,20 +65,26 @@ function buildKeyframes(
  * fill:'both' means the element holds the first keyframe before the animation
  * plays and the last keyframe after it finishes — the standard scrollytelling
  * convention (start hidden / off-screen, hold final state when done).
+ *
+ * Scale tracking: when onLayout(scale) reports a changed scale factor, keyframes
+ * are rebuilt so basis-unit translate and backgroundPosition values map to the
+ * correct physical pixels at the new viewport size.
  */
 export class WaapiAnimationDriver implements AnimationDriver {
   private readonly animation_: p4.KeyFrameAnimation;
   private target_: Element;
   private waapi_: globalThis.Animation | null = null;
   private lastProgress_: number = 0;
+  private scale_: number;
 
   constructor(
     animation: p4.KeyFrameAnimation,
     target: Element,
-    enabled: boolean,
+    { enabled, scale = 1 }: { enabled: boolean; scale?: number },
   ) {
     this.animation_ = animation;
     this.target_ = target;
+    this.scale_ = scale;
     if (enabled) this.buildAnimation_();
   }
 
@@ -105,10 +134,28 @@ export class WaapiAnimationDriver implements AnimationDriver {
     }
   }
 
-  onLayout(): void {
-    if (!this.waapi_ || !this.animation_.isScrollDriven) return;
-    // Re-sync after a scale change so WAAPI's stored time matches scroll position.
-    this.waapi_.currentTime = this.lastProgress_ * this.animation_.duration;
+  onLayout(scale: number): void {
+    const scaleChanged = scale !== this.scale_;
+    this.scale_ = scale;
+    if (!this.waapi_) return;
+    if (scaleChanged) {
+      // Rebuild keyframes so basis-unit translations map to the new pixel size.
+      const progress = this.lastProgress_;
+      const playState = this.waapi_.playState;
+      const playbackRate = this.waapi_.playbackRate;
+      this.clearAnimation_();
+      this.buildAnimation_();
+      if (this.animation_.isScrollDriven) {
+        this.waapi_.currentTime = progress * this.animation_.duration;
+      } else {
+        this.waapi_.currentTime = progress * this.animation_.duration;
+        this.waapi_.playbackRate = playbackRate;
+        if (playState === "running") this.waapi_.play();
+      }
+    } else if (this.animation_.isScrollDriven) {
+      // Re-sync time to scroll position without rebuilding.
+      this.waapi_.currentTime = this.lastProgress_ * this.animation_.duration;
+    }
   }
 
   onKeyFramesChanged(): void {
@@ -163,6 +210,7 @@ export class WaapiAnimationDriver implements AnimationDriver {
     const keyframes = buildKeyframes(
       this.animation_.keyFrames,
       this.animation_.duration,
+      this.scale_,
     );
     this.waapi_ = this.target_.animate(keyframes, {
       duration: this.animation_.duration,

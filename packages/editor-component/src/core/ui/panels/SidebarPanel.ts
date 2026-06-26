@@ -13,6 +13,7 @@ export type PushOperation = (op: EditOperation) => void;
  * constructor. The DOM element is discarded by the caller after `dispose`.
  */
 export interface SidebarPanel {
+  readonly title: string;
   readonly element: HTMLElement;
   update(): void;
   dispose(): void;

@@ -23,10 +23,23 @@ const STYLE_PRECISION = 2;
  * Per-pin trigger subscriptions are tracked in pinUnsubs_ so individual pins
  * can be cleanly removed via element:pinRemoved.
  */
+/**
+ * What EditorPinManager needs from the presentation view.
+ *
+ * Mirrors AnimationHost in EditorAnimationManager — structural interface so
+ * EditorPresentationView is not imported as a value (avoiding circular deps).
+ */
+export interface PinHost {
+  readonly animationEnabled: boolean;
+  registerPinManager(manager: EditorPinManager): void;
+  unregisterPinManager(manager: EditorPinManager): void;
+}
+
 export class EditorPinManager {
   private readonly targetWrapper_: HTMLElement;
   private readonly owner_: p4.ElementViewOwner;
   private readonly presentationView_: EditorPresentationView;
+  private readonly host_: PinHost;
   private readonly elementDiv_: HTMLElement;
   private readonly unsubscribe_: Array<() => void> = [];
   // Per-pin trigger subscriptions, keyed by pin for selective removal.
@@ -48,15 +61,21 @@ export class EditorPinManager {
   // Non-null while a pin transition is active (clone visible, original hidden).
   private activePin_: p4.Pin | null = null;
 
+  // Mirrors animationEnabled on the host — set by setEnabled() on mode changes.
+  private enabled_: boolean;
+
   constructor(options: {
     elementDiv: HTMLElement;
     owner: p4.ElementViewOwner;
     presentationView: EditorPresentationView;
+    host: PinHost;
     onRenderTargetChanged?: (element: HTMLElement) => void;
   }) {
     this.elementDiv_ = options.elementDiv;
     this.owner_ = options.owner;
     this.presentationView_ = options.presentationView;
+    this.host_ = options.host;
+    this.enabled_ = options.host.animationEnabled;
     this.onRenderTargetChanged_ = options.onRenderTargetChanged;
 
     this.targetWrapper_ = document.createElement("div");
@@ -90,10 +109,82 @@ export class EditorPinManager {
         }
       }),
     );
+
+    this.host_.registerPinManager(this);
   }
 
   get hasPins(): boolean {
     return this.pinUnsubs_.size > 0;
+  }
+
+  setEnabled(enabled: boolean): void {
+    this.enabled_ = enabled;
+    if (!enabled) {
+      if (this.activePin_ !== null) {
+        // Mode switched to editor while a pin was mid-transition.
+        // deltaY_ is preserved: it reflects only completed pins, which is the
+        // correct wrapper offset for editor mode. The interrupted pin's height
+        // is NOT included (it was never completed).
+        this.activePin_ = null;
+        this.onRenderTargetChanged_?.(this.elementDiv_);
+        this.showOriginal_();
+        this.hideClone_();
+        const { scale } = this.layoutTransform_();
+        this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;
+      }
+    } else {
+      // Entering player mode — the trigger's start event may have already fired
+      // while we were in editor mode (and was blocked). Resync now so any pin
+      // whose range contains the current scroll position activates immediately.
+      this.resync_();
+    }
+  }
+
+  /**
+   * Recomputes pin state from the current scroll position without relying on
+   * trigger events. Called when enabling so that pins whose start boundary was
+   * crossed while disabled immediately show the correct state.
+   *
+   * Pins are processed in trigger.top order. deltaY_ is rebuilt from scratch.
+   */
+  private resync_(): void {
+    if (this.pinUnsubs_.size === 0) return;
+
+    const { scale } = this.layoutTransform_();
+    const scrollY =
+      scale > 0
+        ? this.presentationView_.dom.viewportContainer.scrollTop / scale
+        : 0;
+
+    this.deltaY_ = 0;
+
+    const pins = [...this.pinUnsubs_.keys()].sort(
+      (a, b) => a.trigger.top - b.trigger.top,
+    );
+
+    for (const pin of pins) {
+      const triggerEnd = pin.trigger.top + pin.trigger.height;
+
+      if (scrollY >= triggerEnd) {
+        // Pin fully scrolled past — accumulate its contribution to deltaY_.
+        this.deltaY_ += pin.trigger.height;
+      } else if (scrollY >= pin.trigger.top) {
+        // Scroll is inside this pin's range — activate it directly.
+        this.activePin_ = pin;
+        this.refreshClone_();
+        this.onRenderTargetChanged_?.(this.clone_);
+        this.positionClone_(pin);
+        this.showClone_();
+        this.hideOriginal_();
+        return;
+      } else {
+        break;
+      }
+    }
+
+    // No pin is currently active — apply accumulated deltaY_ to the wrapper.
+    this.showOriginal_();
+    this.targetWrapper_.style.transform = `translateY(${(scale * this.deltaY_).toFixed(STYLE_PRECISION)}px)`;
   }
 
   layout(): void {
@@ -119,6 +210,7 @@ export class EditorPinManager {
   }
 
   disconnect(): void {
+    this.host_.unregisterPinManager(this);
     for (const fn of this.unsubscribe_) fn();
     this.unsubscribe_.length = 0;
 
@@ -165,10 +257,18 @@ export class EditorPinManager {
   addPin(pin: p4.Pin): void {
     const trigger = pin.trigger;
     const unsubs = [
-      trigger.on("start", () => this.pinForward_(pin)),
-      trigger.on("reverseStart", () => this.pinReverse_(pin)),
-      trigger.on("end", () => this.unpinForward_(pin)),
-      trigger.on("reverseEnd", () => this.unpinReverse_(pin)),
+      trigger.on("start", () => {
+        if (this.enabled_) this.pinForward_(pin);
+      }),
+      trigger.on("reverseStart", () => {
+        if (this.enabled_) this.pinReverse_(pin);
+      }),
+      trigger.on("end", () => {
+        if (this.enabled_) this.unpinForward_(pin);
+      }),
+      trigger.on("reverseEnd", () => {
+        if (this.enabled_) this.unpinReverse_(pin);
+      }),
     ];
     this.pinUnsubs_.set(pin, unsubs);
   }

@@ -105,6 +105,9 @@ function makePresentationView(
     pinsContainer,
     controller: ctrl,
     dom: { viewportContainer: document.createElement("div") },
+    animationEnabled: true,
+    registerPinManager: () => {},
+    unregisterPinManager: () => {},
   } as unknown as EditorPresentationView;
 }
 
@@ -127,7 +130,12 @@ beforeEach(() => {
 function build(pins: p4.Pin[], owner?: p4.ElementViewOwner): EditorPinManager {
   const o = owner ?? makeOwner(pins);
   const pv = makePresentationView(ctrl, pinsContainer);
-  return new EditorPinManager({ elementDiv, owner: o, presentationView: pv });
+  return new EditorPinManager({
+    elementDiv,
+    owner: o,
+    presentationView: pv,
+    host: pv,
+  });
 }
 
 /** The current clone in the pins overlay. */

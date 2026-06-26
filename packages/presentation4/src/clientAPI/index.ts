@@ -50,6 +50,12 @@ export type {
   ScrollTriggerOptions,
 } from "./ScrollTrigger";
 export type { SubComponentTarget } from "./animation/SubComponentTarget";
+export type {
+  TranslateStep,
+  RotateStep,
+  ScaleStep,
+  TransformStep,
+} from "./animation/Transform";
 export type { KeyFrame } from "./animation/KeyFrame";
 export type { Animation } from "./animation/Animation";
 export type {
