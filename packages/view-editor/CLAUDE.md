@@ -34,6 +34,10 @@ Two layers with a hard import direction:
 
 `viewCore/` imports `clientAPI/`. `clientAPI/` never imports `viewCore/`. The controller (`EditorViewControllerImpl`) references the view only through the local `AttachedView` structural interface to prevent a circular import.
 
+## Sanitizer
+
+All user-supplied content rendered into the DOM must be sanitized via `@rippledoc/sanitizer` before insertion. See [`packages/sanitizer/CLAUDE.md`](../sanitizer/CLAUDE.md) and the repo-level [`CLAUDE.md`](../../CLAUDE.md) for the full constraint. The short version: never import DOMPurify directly, never skip or reorder a sanitize call, and propose any change to sanitization behaviour before writing code.
+
 ## Public Interface Changes
 
 Changes to anything in `clientAPI/` — adding, removing, or modifying types, interfaces, or function signatures — are **breaking changes**. Do not make them without explicit approval from the user, even if the change seems like a natural fix or unblocking move. Propose the change and the rationale first, then wait for a go-ahead before touching the interface.

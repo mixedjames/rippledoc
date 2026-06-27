@@ -4,6 +4,22 @@ import type { EditorPresentationView } from "./EditorPresentationView";
 const STYLE_PRECISION = 2;
 
 /**
+ * No-op pin manager for elements that have no pins. Avoids null checks at call
+ * sites while adding zero overhead for the common unpinned case.
+ */
+export class NullEditorPinManager {
+  get hasPins(): boolean {
+    return false;
+  }
+
+  layout(): void {}
+
+  onContentChanged(): void {}
+
+  disconnect(): void {}
+}
+
+/**
  * Implements the non-scrolling-overlay clone technique ported from presentation2.
  *
  * The viewport scrolls; the overlay/pins container does not. By placing a clone

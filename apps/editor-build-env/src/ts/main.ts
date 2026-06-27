@@ -10,6 +10,7 @@ import {
   type Presentation,
   type ScrollTrigger,
 } from "@rippledoc/presentation4";
+import demoSvgUrl from "../assets/demo.svg";
 import { createDialogs, type OperationSink } from "@rippledoc/dialogs";
 
 // ── Delegate ──────────────────────────────────────────────────────────────────
@@ -82,6 +83,9 @@ const btnMultiSelect = document.getElementById(
 const btnUndo = document.getElementById("btnUndo")! as HTMLButtonElement;
 const btnRedo = document.getElementById("btnRedo")! as HTMLButtonElement;
 const btnNew = document.getElementById("btnNew")! as HTMLButtonElement;
+const btnSaveJson = document.getElementById(
+  "btnSaveJson",
+)! as HTMLButtonElement;
 const btnGlobalStyles = document.getElementById(
   "btnGlobalStyles",
 )! as HTMLButtonElement;
@@ -124,6 +128,17 @@ btnNew.addEventListener("click", () => {
   btnPlay.dataset.active = "false";
   currentPresentation = editor.newPresentation();
   seedPresentation(currentPresentation);
+});
+
+btnSaveJson.addEventListener("click", () => {
+  const json = JSON.stringify(currentPresentation.toMemento(), null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "presentation.json";
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 btnGlobalStyles.addEventListener("click", () => {
@@ -197,28 +212,15 @@ function seedPresentation(p: Presentation): void {
     height: constant(80),
   });
 
-  // Demo bitmap image element — self-contained SVG data URI, no external fetch needed.
-  const demoImg = s1.addBitmapImageElement();
-  demoImg.setSrc(
-    "data:image/svg+xml," +
-      encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">' +
-          '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
-          '<stop offset="0" stop-color="#4488ff"/>' +
-          '<stop offset="1" stop-color="#44ddaa"/>' +
-          "</linearGradient></defs>" +
-          '<rect width="300" height="200" fill="url(#g)" rx="8"/>' +
-          '<text x="150" y="108" text-anchor="middle" fill="white" ' +
-          'font-family="sans-serif" font-size="20">Image element</text>' +
-          "</svg>",
-      ),
-  );
-  demoImg.setAlt("Demo gradient image");
-  demoImg.setObjectFit("contain");
-  demoImg.setHorizontalAnchors({ left: constant(700), width: constant(300) });
-  demoImg.setVerticalAnchors({
-    top: offsetFrom(s1.anchors.top, 40),
-    height: constant(200),
+  // SVG image element — demonstrates sub-component animation targeting.
+  // Each circle (#dot-a/b/c) and its label fade in independently as the
+  // heading focus trigger progresses.
+  const demoSvg = s1.addSVGImageElement();
+  demoSvg.setSrc(demoSvgUrl);
+  demoSvg.setHorizontalAnchors({ left: constant(680), width: constant(320) });
+  demoSvg.setVerticalAnchors({
+    top: offsetFrom(s1.anchors.top, 30),
+    height: constant(220),
   });
 
   const s2title = s2.addMarkdownElement("## Section Two");
@@ -235,7 +237,7 @@ function seedPresentation(p: Presentation): void {
   const headingFocusTrigger: ScrollTrigger = p.addScrollTrigger({
     name: "Heading Focus",
     top: offsetFrom(s1.anchors.top, 0),
-    bottom: offsetFrom(s1.anchors.top, 400),
+    bottom: offsetFrom(s1.anchors.top, 600),
   });
   p.addScrollTrigger({
     name: "Crossfade",
@@ -256,6 +258,17 @@ function seedPresentation(p: Presentation): void {
       { position: 0, opacity: 0, transform: [{ type: "translate", y: 30 }] },
       { position: 1000, opacity: 1, transform: [{ type: "translate", y: 0 }] },
     ],
+  });
+
+  demoSvg.animations.addKeyFrameAnimation({
+    trigger: headingFocusTrigger,
+    duration: 1000,
+    scrollDriven: true,
+    keyFrames: [
+      { position: 0, opacity: 0 },
+      { position: 1000, opacity: 1 },
+    ],
+    target: demoSvg.subComponent("#dot-a"),
   });
 }
 

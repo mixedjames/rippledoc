@@ -10,8 +10,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { createPresentation } from "@rippledoc/presentation4";
-import type { ViewablePresentation } from "@rippledoc/presentation4";
+import { createPresentation, constant } from "@rippledoc/presentation4";
+import type { Presentation } from "@rippledoc/presentation4";
 import { createEditorView } from "../views/EditorPresentationView";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
 
@@ -40,7 +40,7 @@ const VALID_SVG =
 // ── Shared setup ─────────────────────────────────────────────────────────────
 
 let container: HTMLDivElement;
-let presentation: ViewablePresentation;
+let presentation: Presentation;
 let editor: EditorViewController;
 
 beforeEach(() => {
@@ -150,6 +150,184 @@ describe("failed SVG fetch", () => {
 
     // Placeholder SVG was inserted in the constructor and never replaced.
     expect(getSVGInElement(container)).not.toBeNull();
+  });
+});
+
+// ── Sub-component animation targeting ────────────────────────────────────────
+
+/**
+ * Returns a minimal mock Web Animations API Animation object.
+ * WaapiAnimationDriver calls pause() and sets currentTime immediately after
+ * animate(), so those must exist.
+ */
+function makeFakeWaapi() {
+  return {
+    pause: vi.fn(),
+    cancel: vi.fn(),
+    play: vi.fn(),
+    reverse: vi.fn(),
+    finish: vi.fn(),
+    currentTime: 0 as CSSNumberish | null,
+    playbackRate: 1,
+    playState: "paused" as AnimationPlayState,
+  };
+}
+
+const SVG_WITH_PATH =
+  '<svg xmlns="http://www.w3.org/2000/svg"><path id="my-path" d="M0,0"/></svg>';
+
+describe("sub-component animation targeting", () => {
+  // happy-dom doesn't implement Element.prototype.animate. Install a
+  // call-tracking stub so WaapiAnimationDriver can call it, and record which
+  // element was the receiver so we can assert the correct target.
+  let animateCalls: Element_[];
+
+  beforeEach(() => {
+    animateCalls = [];
+    Object.defineProperty(Element.prototype, "animate", {
+      configurable: true,
+      writable: true,
+      value: function (this: Element_) {
+        animateCalls.push(this);
+        return makeFakeWaapi();
+      },
+    });
+  });
+
+  afterEach(() => {
+    delete (Element.prototype as unknown as Record<string, unknown>)["animate"];
+  });
+
+  it("calls animate() on the SVG sub-element, not the outer div", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: vi.fn().mockResolvedValue(SVG_WITH_PATH),
+      }),
+    );
+
+    const section = presentation.root.addSection();
+    const svgEl = section.addSVGImageElement();
+    svgEl.setSrc("diagram.svg");
+
+    const trigger = presentation.addScrollTrigger({
+      top: constant(0),
+      height: constant(200),
+    });
+    svgEl.animations.addKeyFrameAnimation({
+      trigger,
+      keyFrames: [
+        { position: 0, opacity: 0 },
+        { position: 500, opacity: 1 },
+      ],
+      duration: 500,
+      scrollDriven: true,
+      target: svgEl.subComponent("#my-path"),
+    });
+
+    // Attach view in player mode so animations are enabled.
+    presentation.attachView(editor.viewFactory);
+    editor.setMode("player");
+    await flushPromises();
+
+    // animate() must have been called exactly once — on the sub-element.
+    expect(animateCalls).toHaveLength(1);
+    expect(animateCalls[0]?.id).toBe("my-path");
+  });
+
+  it("defers driver creation until SVG loads", async () => {
+    // Hold the fetch resolution so we can verify the pre-load state.
+    let resolveFetch!: () => void;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockReturnValue(
+        new Promise<{ ok: boolean; text: () => Promise<string> }>((resolve) => {
+          resolveFetch = () =>
+            resolve({ ok: true, text: async () => SVG_WITH_PATH });
+        }),
+      ),
+    );
+
+    const section = presentation.root.addSection();
+    const svgEl = section.addSVGImageElement();
+    svgEl.setSrc("diagram.svg");
+
+    const trigger = presentation.addScrollTrigger({
+      top: constant(0),
+      height: constant(200),
+    });
+    svgEl.animations.addKeyFrameAnimation({
+      trigger,
+      keyFrames: [
+        { position: 0, opacity: 0 },
+        { position: 500, opacity: 1 },
+      ],
+      duration: 500,
+      scrollDriven: true,
+      target: svgEl.subComponent("#my-path"),
+    });
+
+    presentation.attachView(editor.viewFactory);
+    editor.setMode("player");
+    await flushPromises(); // fetch still pending — no animate() call yet
+
+    expect(animateCalls).toHaveLength(0);
+
+    resolveFetch();
+    await flushPromises(); // SVG loads → driver created
+
+    expect(animateCalls).toHaveLength(1);
+    expect(animateCalls[0]?.id).toBe("my-path");
+  });
+
+  it("rebuilds the driver on animation:targetChanged", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        text: vi
+          .fn()
+          .mockResolvedValue(
+            '<svg xmlns="http://www.w3.org/2000/svg"><path id="path-a" d="M0,0"/><path id="path-b" d="M1,1"/></svg>',
+          ),
+      }),
+    );
+
+    const section = presentation.root.addSection();
+    const svgEl = section.addSVGImageElement();
+    svgEl.setSrc("diagram.svg");
+
+    const trigger = presentation.addScrollTrigger({
+      top: constant(0),
+      height: constant(200),
+    });
+    const anim = svgEl.animations.addKeyFrameAnimation({
+      trigger,
+      keyFrames: [
+        { position: 0, opacity: 0 },
+        { position: 500, opacity: 1 },
+      ],
+      duration: 500,
+      scrollDriven: true,
+      target: svgEl.subComponent("#path-a"),
+    });
+
+    presentation.attachView(editor.viewFactory);
+    editor.setMode("player");
+    await flushPromises();
+
+    // First driver targets #path-a.
+    expect(animateCalls).toHaveLength(1);
+    expect(animateCalls[0]?.id).toBe("path-a");
+
+    animateCalls.length = 0;
+
+    // Reassign the target — should tear down the old driver and create a new one.
+    anim.setTarget(svgEl.subComponent("#path-b"));
+
+    expect(animateCalls).toHaveLength(1);
+    expect(animateCalls[0]?.id).toBe("path-b");
   });
 });
 

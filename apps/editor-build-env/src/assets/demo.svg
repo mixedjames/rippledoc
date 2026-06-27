@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <rect id="bg" width="300" height="200" fill="#f0f4ff" rx="8"/>
+
+  <circle id="dot-a" cx="60"  cy="90" r="32" fill="#4488ff"/>
+  <circle id="dot-b" cx="150" cy="90" r="32" fill="#ff8844"/>
+  <circle id="dot-c" cx="240" cy="90" r="32" fill="#44bb88"/>
+
+  <text id="label-a" x="60"  y="148" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="13">Alpha</text>
+  <text id="label-b" x="150" y="148" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="13">Beta</text>
+  <text id="label-c" x="240" y="148" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="13">Gamma</text>
+
+  <text x="150" y="185" text-anchor="middle" fill="#999" font-family="sans-serif" font-size="10">sub-component demo</text>
+</svg>

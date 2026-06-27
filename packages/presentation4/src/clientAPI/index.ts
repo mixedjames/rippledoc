@@ -89,3 +89,4 @@ export {
   SYSTEM_DEFAULT_SECTION_STYLE,
 } from "./styles/index";
 export type { PresentationMemento } from "./serialize/index";
+export { fromMemento } from "./fromMemento";

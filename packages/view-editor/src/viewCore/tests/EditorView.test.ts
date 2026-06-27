@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createPresentation } from "@rippledoc/presentation4";
-import type { ViewablePresentation } from "@rippledoc/presentation4";
+import type { Presentation } from "@rippledoc/presentation4";
 import { createEditorView } from "../views/EditorPresentationView";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
 import type { Element, Section } from "@rippledoc/presentation4/viewAPI";
@@ -53,7 +53,7 @@ function getSelectedSectionBackgrounds(
 // ── Shared setup ─────────────────────────────────────────────────────────────
 
 let container: HTMLDivElement;
-let presentation: ViewablePresentation;
+let presentation: Presentation;
 let editor: EditorViewController;
 
 beforeEach(() => {

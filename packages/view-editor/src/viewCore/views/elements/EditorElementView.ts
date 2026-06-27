@@ -1,6 +1,6 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { EditorSectionView } from "../EditorSectionView";
-import { EditorPinManager } from "../EditorPinManager";
+import { EditorPinManager, NullEditorPinManager } from "../EditorPinManager";
 import { EditorAnimationManager } from "../animation/EditorAnimationManager";
 import { fillToCss, borderToCss } from "../../utils/colorToCss";
 
@@ -33,7 +33,7 @@ export class EditorElementView implements p4.ElementView {
   private readonly contentWrapper_: HTMLElement = document.createElement("div");
 
   private computedStyle_: p4.ComputedElementStyle | null = null;
-  private readonly pinManager_: EditorPinManager;
+  private pinManager_: EditorPinManager | NullEditorPinManager;
   private readonly animationManager_: EditorAnimationManager;
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
@@ -93,27 +93,51 @@ export class EditorElementView implements p4.ElementView {
       owner,
       target: this.element_,
       host: parent.presentationView,
+      resolveSubTarget: this.getSubTargetResolver(),
     });
 
-    this.pinManager_ = new EditorPinManager({
-      elementDiv: this.element_,
-      owner,
-      presentationView: parent.presentationView,
-      host: parent.presentationView,
-      onRenderTargetChanged: (el) => this.animationManager_.retarget(el),
-    });
+    this.pinManager_ =
+      owner.animations.pins.length > 0
+        ? new EditorPinManager({
+            elementDiv: this.element_,
+            owner,
+            presentationView: parent.presentationView,
+            host: parent.presentationView,
+            onRenderTargetChanged: (el) => this.animationManager_.retarget(el),
+          })
+        : new NullEditorPinManager();
 
     const pres = owner.sectionViewOwner.presentationViewOwner;
     this.unsubscribePinAdded_ = pres.events.on(
       "element:pinAdded",
       ({ element, pin }) => {
-        if (element === this.owner_) this.pinManager_.addPin(pin);
+        if (element !== this.owner_) return;
+        if (this.pinManager_ instanceof NullEditorPinManager) {
+          // Constructor iterates owner.animations.pins, which already includes
+          // this pin — so we skip the manual addPin call below.
+          this.pinManager_ = new EditorPinManager({
+            elementDiv: this.element_,
+            owner: this.owner_,
+            presentationView: parent.presentationView,
+            host: parent.presentationView,
+            onRenderTargetChanged: (el) => this.animationManager_.retarget(el),
+          });
+        } else {
+          this.pinManager_.addPin(pin);
+        }
       },
     );
     this.unsubscribePinRemoved_ = pres.events.on(
       "element:pinRemoved",
       ({ element, pin }) => {
-        if (element === this.owner_) this.pinManager_.removePin(pin);
+        if (element !== this.owner_) return;
+        if (this.pinManager_ instanceof EditorPinManager) {
+          this.pinManager_.removePin(pin);
+          if (!this.pinManager_.hasPins) {
+            this.pinManager_.disconnect();
+            this.pinManager_ = new NullEditorPinManager();
+          }
+        }
       },
     );
   }
@@ -180,6 +204,28 @@ export class EditorElementView implements p4.ElementView {
           ? rect.width / scale
           : 0;
     this.owner_.notifyMeasuredSize(size);
+  }
+
+  /**
+   * Override in subclasses that host an SVG DOM to provide a resolver for
+   * sub-component animation targets. The returned function is called with a
+   * CSS selector and should return the matching Element inside the SVG, or
+   * null if the SVG is not yet loaded or the selector matches nothing.
+   */
+  protected getSubTargetResolver():
+    | ((selector: string) => Element | null)
+    | undefined {
+    return undefined;
+  }
+
+  /**
+   * Call from subclasses when the SVG DOM changes asynchronously (e.g. after
+   * a fetch completes). Notifies the animation manager so it can retry driver
+   * creation for any animations that were deferred because the SVG wasn't
+   * ready when they were first added.
+   */
+  protected notifySubComponentsChanged(): void {
+    this.animationManager_.onSubComponentsChanged();
   }
 
   destroy(): void {

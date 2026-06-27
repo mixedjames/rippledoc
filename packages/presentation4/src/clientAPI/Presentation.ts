@@ -3,6 +3,12 @@ import type { LayoutManager } from "./LayoutManager";
 import type { PresentationEventSource } from "./PresentationEvents";
 import type { ScrollTrigger, ScrollTriggerOptions } from "./ScrollTrigger";
 import type { StyleRegistry } from "./styles/StyleRegistry";
+import type { PresentationMemento } from "./serialize/PresentationMemento";
+// Deliberate cross-layer import: attachView is the seam where client code meets
+// the view system. PresentationViewFactory is imported directly from the viewAPI
+// source file (not the barrel) to avoid a circular dependency — the viewAPI barrel
+// re-exports clientAPI, so importing from the barrel here would be circular.
+import type { PresentationViewFactory } from "../viewAPI/PresentationView";
 
 /** Options supplied when creating a new presentation. */
 export interface PresentationOptions {
@@ -48,4 +54,17 @@ export interface Presentation {
    * presentation (e.g. offsetFrom(section.anchors.top, 100)).
    */
   addScrollTrigger(options: ScrollTriggerOptions): ScrollTrigger;
+
+  /**
+   * Connect a renderer to this presentation. The factory is called immediately
+   * with this presentation as the owner; the returned view drives rendering until
+   * the next attachView call or the presentation is discarded.
+   *
+   * Calling attachView a second time tears down the previous view before
+   * constructing the new one.
+   */
+  attachView(factory: PresentationViewFactory): void;
+
+  /** Produce a JSON-serializable snapshot of the presentation's current state. */
+  toMemento(): PresentationMemento;
 }

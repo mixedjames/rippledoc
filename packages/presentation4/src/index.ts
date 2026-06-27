@@ -17,9 +17,9 @@ export type * from "./clientAPI/index";
 export {
   SYSTEM_DEFAULT_ELEMENT_STYLE,
   SYSTEM_DEFAULT_SECTION_STYLE,
+  fromMemento,
 } from "./clientAPI/index";
 export { createPresentation } from "./createPresentation";
-export type { ViewablePresentation } from "./createPresentation";
 export { constant, offsetFrom, fractionOf } from "./anchors/factories";
 export { ConstantAnchorExpression } from "./anchors/expressions/ConstantAnchorExpression";
 export { OffsetAnchorExpression } from "./anchors/expressions/OffsetAnchorExpression";

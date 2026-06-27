@@ -1,4 +1,4 @@
-import type { ViewablePresentation } from "@rippledoc/presentation4";
+import type { Presentation } from "@rippledoc/presentation4";
 import type { EditorViewController } from "@rippledoc/view-editor";
 import type { EditorToolId } from "../clientAPI/EditorCommands";
 
@@ -16,7 +16,7 @@ export class EditorState {
   isDirty = false;
 
   constructor(
-    public presentation: ViewablePresentation,
+    public presentation: Presentation,
     public viewController: EditorViewController,
   ) {}
 }
