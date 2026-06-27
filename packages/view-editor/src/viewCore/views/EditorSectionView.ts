@@ -5,6 +5,7 @@ import { EditorMarkdownElementView } from "./elements/EditorMarkdownElementView"
 import { EditorBitmapImageElementView } from "./elements/EditorBitmapImageElementView";
 import { EditorSVGImageElementView } from "./elements/EditorSVGImageElementView";
 import type { EditorElementView } from "./elements/EditorElementView";
+import { EditorSectionAnimationManager } from "./animation/EditorSectionAnimationManager";
 
 /**
  * Section view for the editor.
@@ -39,6 +40,7 @@ export class EditorSectionView implements p4.SectionView {
 
   private readonly elementViews_: EditorElementView[] = [];
   private computedStyle_: p4.ComputedSectionStyle | null = null;
+  private readonly animationManager_: EditorSectionAnimationManager;
 
   private readonly onPointerDown_: (e: PointerEvent) => void;
   private readonly onPointerUp_: (e: PointerEvent) => void;
@@ -76,6 +78,12 @@ export class EditorSectionView implements p4.SectionView {
     );
 
     this.initDOM_(parent);
+
+    this.animationManager_ = new EditorSectionAnimationManager({
+      owner,
+      target: this.backgroundElement_,
+      host: parent,
+    });
   }
 
   applyStyle(style: p4.ComputedSectionStyle): void {
@@ -87,6 +95,7 @@ export class EditorSectionView implements p4.SectionView {
     this.backgroundElement_.style.top = `${this.owner_.anchors.top.value * scale}px`;
     this.backgroundElement_.style.height = `${this.owner_.anchors.height.value * scale}px`;
     this.applyStyles_();
+    this.animationManager_.layout(scale);
   }
 
   private applyStyles_(): void {
@@ -137,6 +146,7 @@ export class EditorSectionView implements p4.SectionView {
     );
     this.backgroundElement_.removeEventListener("pointerup", this.onPointerUp_);
     this.unsubscribeSelection_();
+    this.animationManager_.destroy();
 
     // Full-tree cascade. Spread so that each ev.destroy() can safely call
     // onElementViewDestroyed() (mutating elementViews_) without corrupting iteration.

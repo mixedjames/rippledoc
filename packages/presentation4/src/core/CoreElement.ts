@@ -37,6 +37,7 @@ import {
   type SerializeContext,
 } from "./serialize/SerializeContext";
 import { serializeElementLayoutGeometry } from "./serialize/serializeGeometry";
+import { serializeElementStyles } from "./serialize/serializeStyles";
 
 /**
  * Abstract base for all concrete element types.
@@ -135,7 +136,7 @@ export abstract class CoreElement
     }
   }
 
-  /** Serializes the geometry and animation state common to all element types. */
+  /** Serializes the geometry, animation, and style state common to all element types. */
   protected elementMementoBase_(ctx: SerializeContext): {
     layouts: readonly ElementLayoutGeometryMemento[];
     keyFrameAnimations: ReturnType<
@@ -143,6 +144,8 @@ export abstract class CoreElement
     >["keyFrameAnimations"];
     pins: ReturnType<CoreElementAnimations["toMemento"]>["pins"];
     name: string;
+    ownStyle?: ElementStyleProps;
+    namedStyles: readonly string[];
   } {
     const { keyFrameAnimations, pins } = this.animations_.toMemento(
       ctx.triggerIndex,
@@ -164,6 +167,7 @@ export abstract class CoreElement
       }),
       keyFrameAnimations,
       pins,
+      ...serializeElementStyles(this.ownStyle_, this.namedStyles_),
     };
   }
 

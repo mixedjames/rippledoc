@@ -2,6 +2,8 @@ import type {
   Element,
   MarkdownElement,
   BitmapImageElement,
+  SVGImageElement,
+  ImageFit,
   ScrollTrigger,
   Section,
 } from "@rippledoc/presentation4";
@@ -13,19 +15,15 @@ function isMarkdown(el: Element): el is MarkdownElement {
 }
 
 function isBitmapImage(el: Element): el is BitmapImageElement {
-  // BitmapImageElement is the only element type with `alt`
   return "alt" in el;
+}
+
+function isSVGImage(el: Element): el is SVGImageElement {
+  return "subComponent" in el;
 }
 
 /**
  * Sidebar panel that shows element-type-specific properties for a single selected element.
- *
- * Currently a placeholder: markdown elements show a read-only content preview;
- * bitmap image elements show the src URL. The full implementations (inline markdown
- * editor, image re-import) will delegate to `EditorDelegate` and are tracked in CLAUDE.md.
- *
- * Only renders when exactly one element is selected. Multi-selection and section
- * selections show an empty-state message.
  */
 export class PropertiesPanel implements SidebarPanel {
   readonly title = "Properties";
@@ -33,15 +31,18 @@ export class PropertiesPanel implements SidebarPanel {
   private state_: EditorState;
   private push_: PushOperation;
   private openMarkdownEditor_: (element: MarkdownElement) => void;
+  private requestImageImport_: () => Promise<{ src: string } | null>;
 
   constructor(
     state: EditorState,
     push: PushOperation,
     openMarkdownEditor: (element: MarkdownElement) => void,
+    requestImageImport: () => Promise<{ src: string } | null>,
   ) {
     this.state_ = state;
     this.push_ = push;
     this.openMarkdownEditor_ = openMarkdownEditor;
+    this.requestImageImport_ = requestImageImport;
     this.element = document.createElement("div");
     this.update();
   }
@@ -88,9 +89,9 @@ export class PropertiesPanel implements SidebarPanel {
     if (isMarkdown(element)) {
       this.renderMarkdownProps_(element);
     } else if (isBitmapImage(element)) {
-      this.renderImageProps_(element);
-    } else {
-      this.renderTypeLabel_("SVG image");
+      this.renderBitmapImageProps_(element);
+    } else if (isSVGImage(element)) {
+      this.renderSVGImageProps_(element);
     }
   }
 
@@ -294,14 +295,127 @@ export class PropertiesPanel implements SidebarPanel {
     this.element.appendChild(btn);
   }
 
-  private renderImageProps_(el: BitmapImageElement): void {
+  private renderBitmapImageProps_(el: BitmapImageElement): void {
     this.renderTypeLabel_("Image element");
 
     const src = document.createElement("div");
-    src.style.cssText =
-      "margin-top:4px;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+    src.className = "re-prop-src";
     src.textContent = el.src || "(no source)";
     this.element.appendChild(src);
+
+    const changeBtn = document.createElement("button");
+    changeBtn.className = "re-panel-action-btn";
+    changeBtn.textContent = "Change source…";
+    changeBtn.addEventListener("click", () => {
+      void this.requestImageImport_().then((result) => {
+        if (!result) return;
+        const oldSrc = el.src;
+        this.push_({
+          execute: () => el.setSrc(result.src),
+          undo: () => el.setSrc(oldSrc),
+        });
+        src.textContent = result.src;
+      });
+    });
+    this.element.appendChild(changeBtn);
+
+    // Alt text
+    const altRow = document.createElement("div");
+    altRow.className = "re-style-row";
+    const altLabel = document.createElement("span");
+    altLabel.className = "re-style-row__label";
+    altLabel.textContent = "Alt";
+    const altWrap = document.createElement("div");
+    altWrap.className = "re-style-row__value";
+    const altInput = document.createElement("input");
+    altInput.type = "text";
+    altInput.className = "re-style-input re-style-input--text";
+    altInput.value = el.alt;
+    altWrap.appendChild(altInput);
+    altRow.appendChild(altLabel);
+    altRow.appendChild(altWrap);
+    this.element.appendChild(altRow);
+
+    const commitAlt = () => {
+      const newAlt = altInput.value;
+      if (newAlt === el.alt) return;
+      const oldAlt = el.alt;
+      this.push_({
+        execute: () => el.setAlt(newAlt),
+        undo: () => el.setAlt(oldAlt),
+      });
+    };
+    altInput.addEventListener("blur", commitAlt);
+    altInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        altInput.blur();
+      } else if (e.key === "Escape") {
+        altInput.value = el.alt;
+        altInput.blur();
+      }
+    });
+
+    // Fit selector
+    const fitRow = document.createElement("div");
+    fitRow.className = "re-style-row";
+    const fitLabel = document.createElement("span");
+    fitLabel.className = "re-style-row__label";
+    fitLabel.textContent = "Fit";
+    const fitWrap = document.createElement("div");
+    fitWrap.className = "re-style-row__value";
+    const fitSelect = document.createElement("select");
+    fitSelect.className = "re-style-select";
+    const fitOptions: { value: ImageFit; label: string }[] = [
+      { value: "contain", label: "Contain" },
+      { value: "cover", label: "Cover" },
+      { value: "fill", label: "Fill" },
+      { value: "none", label: "None" },
+    ];
+    for (const { value, label } of fitOptions) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = label;
+      if (value === el.objectFit) opt.selected = true;
+      fitSelect.appendChild(opt);
+    }
+    fitSelect.addEventListener("change", () => {
+      const newFit = fitSelect.value as ImageFit;
+      const oldFit = el.objectFit;
+      this.push_({
+        execute: () => el.setObjectFit(newFit),
+        undo: () => el.setObjectFit(oldFit),
+      });
+    });
+    fitWrap.appendChild(fitSelect);
+    fitRow.appendChild(fitLabel);
+    fitRow.appendChild(fitWrap);
+    this.element.appendChild(fitRow);
+  }
+
+  private renderSVGImageProps_(el: SVGImageElement): void {
+    this.renderTypeLabel_("SVG image");
+
+    const src = document.createElement("div");
+    src.className = "re-prop-src";
+    src.textContent = el.src || "(no source)";
+    this.element.appendChild(src);
+
+    const changeBtn = document.createElement("button");
+    changeBtn.className = "re-panel-action-btn";
+    changeBtn.textContent = "Change source…";
+    changeBtn.addEventListener("click", () => {
+      void this.requestImageImport_().then((result) => {
+        if (!result) return;
+        const oldSrc = el.src;
+        this.push_({
+          execute: () => el.setSrc(result.src),
+          undo: () => el.setSrc(oldSrc),
+        });
+        src.textContent = result.src;
+      });
+    });
+    this.element.appendChild(changeBtn);
   }
 
   dispose(): void {}

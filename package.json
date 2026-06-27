@@ -30,7 +30,9 @@
     "build:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js",
     "watch:p4-build-env": "webpack --config apps/p4-build-env/webpack.config.js --watch",
     "build:editor-build-env": "webpack --config apps/editor-build-env/webpack.config.js",
-    "watch:editor-build-env": "webpack --config apps/editor-build-env/webpack.config.js --watch"
+    "watch:editor-build-env": "webpack --config apps/editor-build-env/webpack.config.js --watch",
+    "build:electron-test": "webpack --config apps/electron-test/webpack.main.js && webpack --config apps/electron-test/webpack.renderer.js",
+    "start:electron-test": "electron apps/electron-test"
   },
   "private": true,
   "workspaces": [

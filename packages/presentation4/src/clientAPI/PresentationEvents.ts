@@ -3,6 +3,7 @@ import type { Element } from "./Element";
 import type { MarkdownElement } from "./elements/MarkdownElement";
 import type { BitmapImageElement } from "./elements/BitmapImageElement";
 import type { SVGImageElement } from "./elements/SVGImageElement";
+import type { ImageFit } from "./styles/ImageFit";
 import type { PresentationRoot } from "./PresentationRoot";
 import type { Layout } from "./Layout";
 import type { Pin } from "./animation/Pin";
@@ -22,6 +23,10 @@ export type PresentationEvents = {
     src: string;
   };
   "element:altChanged": { element: BitmapImageElement; alt: string };
+  "element:objectFitChanged": {
+    element: BitmapImageElement;
+    objectFit: ImageFit;
+  };
   /**
    * Emitted when an object's anchor expressions are updated, and for every object
    * whose anchor values are transitively affected via the dependency graph.

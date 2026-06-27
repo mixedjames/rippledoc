@@ -1,6 +1,7 @@
 import type * as p4 from "@rippledoc/presentation4/viewAPI";
 import type { AnimationDriver } from "./AnimationDriver";
 import { WaapiAnimationDriver } from "./WaapiAnimationDriver";
+import { KeyFrameDriverPool } from "./KeyFrameDriverPool";
 
 /**
  * What EditorAnimationManager needs from the presentation view.
@@ -17,19 +18,13 @@ interface AnimationHost {
 /**
  * Manages all keyframe animation drivers for a single element view.
  *
- * Subscriptions to trigger events and presentation events are established at
- * construction and kept alive until destroy() — they are structural relationships,
- * not something torn down and rebuilt on mode changes. The animationEnabled flag
- * on the host is the single gate: event handlers return early when it is false,
- * and setEnabled() clears or recreates animation state when the flag changes.
- *
- * Registers itself with the host (EditorPresentationView) so the host can call
- * setEnabled() when the view mode changes.
- *
- * Two subscription scopes:
- *   unsubscribe_  — presentation-level events (animationAdded/Removed, triggerChanged, etc.)
- *   animUnsubs_   — per-animation trigger events (start/scroll/end/reverseStart/reverseEnd),
- *                   keyed by animation so individual animations can be cleanly removed.
+ * Delegates driver lifecycle, trigger subscriptions, and presentation-level
+ * animation events to KeyFrameDriverPool. This class handles only the
+ * element-specific concerns:
+ *   - which entity-level events to subscribe to (element:animationAdded/Removed)
+ *   - element-specific driver creation (hasTarget / traceStroke guards)
+ *   - retarget() for live-element ↔ pin-clone switching
+ *   - registration with the animation host
  *
  * Deferred driver types (not yet implemented):
  *   - Sub-component targeting (animation.hasTarget) — skipped for now
@@ -39,14 +34,8 @@ export class EditorAnimationManager {
   private readonly owner_: p4.ElementViewOwner;
   private target_: HTMLElement;
   private readonly host_: AnimationHost;
-  private readonly drivers_: Map<p4.KeyFrameAnimation, AnimationDriver> =
-    new Map();
-  private scale_: number = 1;
-  // Presentation-level event subscriptions (animationAdded/Removed, triggerChanged, …).
+  private readonly pool_: KeyFrameDriverPool;
   private readonly unsubscribe_: Array<() => void> = [];
-  // Per-animation trigger subscriptions, keyed so individual animations can be removed.
-  private readonly animUnsubs_: Map<p4.KeyFrameAnimation, Array<() => void>> =
-    new Map();
 
   constructor(options: {
     owner: p4.ElementViewOwner;
@@ -59,97 +48,56 @@ export class EditorAnimationManager {
 
     const presentation = options.owner.sectionViewOwner.presentationViewOwner;
 
+    this.pool_ = new KeyFrameDriverPool(
+      presentation.events,
+      () => this.host_.animationEnabled,
+    );
+
     for (const anim of options.owner.animations.keyFrameAnimations) {
-      this.addDriver_(anim);
+      const driver = this.createDriver_(anim);
+      if (driver) this.pool_.add(anim, driver);
     }
 
     this.unsubscribe_.push(
       presentation.events.on(
         "element:animationAdded",
         ({ element, animation }) => {
-          if (element === this.owner_) this.addDriver_(animation);
+          if (element !== this.owner_) return;
+          const driver = this.createDriver_(animation);
+          if (driver) this.pool_.add(animation, driver);
         },
       ),
       presentation.events.on(
         "element:animationRemoved",
         ({ element, animation }) => {
-          if (element === this.owner_) this.removeDriver_(animation);
+          if (element !== this.owner_) return;
+          this.pool_.remove(animation);
         },
       ),
-      presentation.events.on("animation:keyFramesChanged", ({ animation }) => {
-        const driver = this.drivers_.get(animation);
-        if (driver) driver.onKeyFramesChanged();
-      }),
-      // When the user reassigns an animation's trigger, tear down the old trigger
-      // subscriptions for that animation and rebind to the new trigger. Without
-      // this the driver would keep firing on the trigger that no longer owns it.
-      presentation.events.on("animation:triggerChanged", ({ animation }) => {
-        const driver = this.drivers_.get(animation);
-        if (!driver) return;
-        const old = this.animUnsubs_.get(animation);
-        if (old) {
-          for (const fn of old) fn();
-          this.animUnsubs_.delete(animation);
-        }
-        this.bindTrigger_(animation, driver);
-      }),
     );
 
     options.host.registerAnimationManager(this);
   }
 
   setEnabled(enabled: boolean): void {
-    for (const driver of this.drivers_.values()) {
-      driver.setEnabled(enabled);
-    }
+    this.pool_.setEnabled(enabled);
   }
 
   /** Redirect all drivers to a new DOM element (live element ↔ pin clone). */
   retarget(element: HTMLElement): void {
     this.target_ = element;
-    for (const driver of this.drivers_.values()) {
-      driver.retarget(element);
-    }
+    this.pool_.retarget(element);
   }
 
   layout(scale: number): void {
-    this.scale_ = scale;
-    for (const driver of this.drivers_.values()) {
-      driver.onLayout(scale);
-    }
+    this.pool_.layout(scale);
   }
 
   destroy(): void {
     this.host_.unregisterAnimationManager(this);
     for (const fn of this.unsubscribe_) fn();
     this.unsubscribe_.length = 0;
-    for (const unsubs of this.animUnsubs_.values()) {
-      for (const fn of unsubs) fn();
-    }
-    this.animUnsubs_.clear();
-    for (const driver of this.drivers_.values()) {
-      driver.destroy();
-    }
-    this.drivers_.clear();
-  }
-
-  private addDriver_(animation: p4.KeyFrameAnimation): void {
-    const driver = this.createDriver_(animation);
-    if (!driver) return;
-    this.drivers_.set(animation, driver);
-    this.bindTrigger_(animation, driver);
-  }
-
-  private removeDriver_(animation: p4.KeyFrameAnimation): void {
-    const driver = this.drivers_.get(animation);
-    if (!driver) return;
-    const unsubs = this.animUnsubs_.get(animation);
-    if (unsubs) {
-      for (const fn of unsubs) fn();
-      this.animUnsubs_.delete(animation);
-    }
-    driver.destroy();
-    this.drivers_.delete(animation);
+    this.pool_.destroy();
   }
 
   private createDriver_(
@@ -172,36 +120,7 @@ export class EditorAnimationManager {
     }
     return new WaapiAnimationDriver(animation, this.target_, {
       enabled: this.host_.animationEnabled,
-      scale: this.scale_,
+      scale: this.pool_.scale,
     });
-  }
-
-  private bindTrigger_(
-    animation: p4.KeyFrameAnimation,
-    driver: AnimationDriver,
-  ): void {
-    const trigger = animation.trigger;
-    this.animUnsubs_.set(animation, [
-      trigger.on("start", ({ progress }) => {
-        if (!this.host_.animationEnabled) return;
-        driver.start(progress);
-      }),
-      trigger.on("scroll", ({ progress }) => {
-        if (!this.host_.animationEnabled) return;
-        driver.seek(progress);
-      }),
-      trigger.on("end", ({ progress }) => {
-        if (!this.host_.animationEnabled) return;
-        driver.end(progress);
-      }),
-      trigger.on("reverseStart", ({ progress }) => {
-        if (!this.host_.animationEnabled) return;
-        driver.reverseStart(progress);
-      }),
-      trigger.on("reverseEnd", ({ progress }) => {
-        if (!this.host_.animationEnabled) return;
-        driver.reverseEnd(progress);
-      }),
-    ]);
   }
 }

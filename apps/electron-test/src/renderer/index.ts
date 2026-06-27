@@ -28,7 +28,6 @@ const delegate: EditorDelegate = {
         },
         { once: true },
       );
-      // Resolve null if the picker is dismissed without selecting (via focus return)
       window.addEventListener(
         "focus",
         () => {
@@ -56,16 +55,11 @@ const delegate: EditorDelegate = {
 const editor = createEditorComponent(delegate);
 document.getElementById("editorMount")!.appendChild(editor.element);
 
-// Dev-harness cast: EditorComponentImpl.setViewMode() is not on the public
-// EditorComponent interface. Access it here without changing the public API.
 type PlayToggle = { setViewMode(mode: "editor" | "player"): void };
 const editorImpl = editor as unknown as PlayToggle;
 
 // ── Dialogs ───────────────────────────────────────────────────────────────────
 
-// No-op sink: dialog changes apply immediately but aren't yet tracked in
-// undo/redo history. editor-component needs to expose pushOperation() in its
-// clientAPI before this can be properly wired.
 const sink: OperationSink = { push() {} };
 const dialogs = createDialogs(document.body, sink);
 
@@ -187,7 +181,6 @@ function seedPresentation(p: Presentation): void {
   s1body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
   s1body.setAutoHeight({ top: offsetFrom(s1title.anchors.bottom, 20) });
 
-  // Animated demo element: fades and slides in as the trigger progresses.
   const animBox = s1.addMarkdownElement(
     "**Animated element** — scroll to reveal in player mode.",
   );
@@ -197,7 +190,6 @@ function seedPresentation(p: Presentation): void {
     height: constant(80),
   });
 
-  // Demo bitmap image element — self-contained SVG data URI, no external fetch needed.
   const demoImg = s1.addBitmapImageElement();
   demoImg.setSrc(
     "data:image/svg+xml," +
@@ -231,7 +223,6 @@ function seedPresentation(p: Presentation): void {
   s2body.setHorizontalAnchors({ left: constant(60), width: constant(600) });
   s2body.setAutoHeight({ top: offsetFrom(s2title.anchors.bottom, 20) });
 
-  // Demo scroll triggers.
   const headingFocusTrigger: ScrollTrigger = p.addScrollTrigger({
     name: "Heading Focus",
     top: offsetFrom(s1.anchors.top, 0),

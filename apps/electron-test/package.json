@@ -1,8 +1,7 @@
 {
   "name": "electron-test",
-  "main": "src/main.js",
+  "main": "dist/main/main.js",
   "scripts": {
-    "dev": "electron .",
     "start": "electron ."
   },
   "dependencies": {

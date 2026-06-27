@@ -186,7 +186,13 @@ export class FillControl {
   private readonly setView_: HTMLElement;
 
   constructor(initial: Fill | undefined) {
-    this.type_ = initial === undefined ? "unset" : initial.type;
+    // FillControl only handles solid/none; treat image fills as none.
+    this.type_ =
+      initial === undefined
+        ? "unset"
+        : initial.type === "image"
+          ? "none"
+          : initial.type;
     const initColor =
       initial?.type === "solid" ? initial.color : DEFAULT_FILL_COLOR;
 

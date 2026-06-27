@@ -35,6 +35,7 @@ import { DerivedAnchorExpression } from "../anchors/expressions/DerivedAnchorExp
 import { EventController } from "../common/EventController";
 import { EventContext } from "./EventContext";
 import type { SerializeContext } from "./serialize/SerializeContext";
+import { serializeStyleRegistry } from "./serialize/serializeStyles";
 
 const DEFAULT_BASIS_WIDTH = 1000;
 const DEFAULT_BASIS_HEIGHT = 1000;
@@ -233,9 +234,6 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
       this.triggers_.map((t, i) => [t, i] as const),
     );
     const ctx: SerializeContext = { layouts, anchorLookups, triggerIndex };
-    // TODO: styles not yet serialized — PresentationMemento needs elementStyles,
-    // sectionStyles, globalElementStyle, globalSectionStyle, and per-element/section
-    // ownStyle and namedStyles (stored as name strings, re-linked by object on load).
     return {
       version: 1,
       layouts: layouts.map((l) => ({
@@ -244,6 +242,12 @@ export class CorePresentation implements Presentation, PresentationViewOwner {
       })),
       triggers: this.triggers_.map((t) => t.toMemento(ctx)),
       sections: this.root_.coreSections.map((s) => s.toMemento(ctx)),
+      ...serializeStyleRegistry({
+        elementStyles: this.styles_.elementStyles,
+        sectionStyles: this.styles_.sectionStyles,
+        globalElementStyle: this.styles_.globalElementStyle,
+        globalSectionStyle: this.styles_.globalSectionStyle,
+      }),
     };
   }
 

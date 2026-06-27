@@ -140,6 +140,20 @@ const EDITOR_CSS = `
   padding: 0 2px;
 }
 
+.re-prop-src {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--re-panel-empty-fg);
+  background: var(--re-input-bg);
+  border: 1px solid var(--re-panel-border);
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Styles panel ─────────────────────────────────────────────────────────── */
 
 .re-style-section {

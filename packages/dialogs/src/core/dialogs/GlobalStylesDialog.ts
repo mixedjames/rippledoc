@@ -54,6 +54,7 @@ function renderDefaultColor(c: Color): HTMLElement {
 
 function renderDefaultFill(f: Fill): HTMLElement {
   if (f.type === "none") return renderDefaultText("None");
+  if (f.type === "image") return renderDefaultText("Image");
   const label = el("span", "rdoc-dlg-default-val");
   label.textContent = "Solid";
   const wrap = el("div", "rdoc-dlg-group");

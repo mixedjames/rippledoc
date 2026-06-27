@@ -6,6 +6,7 @@ import { EditorViewControllerImpl } from "../EditorViewControllerImpl";
 import type { EditorViewController } from "../../clientAPI/EditorViewController";
 import type { ViewMode } from "../../clientAPI/ViewMode";
 import type { EditorAnimationManager } from "./animation/EditorAnimationManager";
+import type { EditorSectionAnimationManager } from "./animation/EditorSectionAnimationManager";
 import type { EditorPinManager } from "./EditorPinManager";
 
 export type EditorViewConfig = {
@@ -60,6 +61,8 @@ export class EditorPresentationView implements p4.PresentationView {
   // in sync with the current view mode and notifies all registered managers.
   private animationEnabled_: boolean = false;
   private readonly animationManagers_: Set<EditorAnimationManager> = new Set();
+  private readonly sectionAnimationManagers_: Set<EditorSectionAnimationManager> =
+    new Set();
   private readonly pinManagers_: Set<EditorPinManager> = new Set();
 
   constructor(
@@ -137,6 +140,9 @@ export class EditorPresentationView implements p4.PresentationView {
     for (const manager of this.animationManagers_) {
       manager.setEnabled(enabled);
     }
+    for (const manager of this.sectionAnimationManagers_) {
+      manager.setEnabled(enabled);
+    }
     for (const manager of this.pinManagers_) {
       manager.setEnabled(enabled);
     }
@@ -152,6 +158,18 @@ export class EditorPresentationView implements p4.PresentationView {
 
   unregisterAnimationManager(manager: EditorAnimationManager): void {
     this.animationManagers_.delete(manager);
+  }
+
+  registerSectionAnimationManager(
+    manager: EditorSectionAnimationManager,
+  ): void {
+    this.sectionAnimationManagers_.add(manager);
+  }
+
+  unregisterSectionAnimationManager(
+    manager: EditorSectionAnimationManager,
+  ): void {
+    this.sectionAnimationManagers_.delete(manager);
   }
 
   registerPinManager(manager: EditorPinManager): void {

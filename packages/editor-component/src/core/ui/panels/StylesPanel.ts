@@ -4,6 +4,7 @@ import type {
   MarkdownElement,
   Color,
   Fill,
+  ImageFit,
   Border,
   BorderEdgeStyle,
   ComputedBorder,
@@ -106,6 +107,8 @@ function fillsEqual(a: Fill, b: Fill): boolean {
   if (a.type !== b.type) return false;
   if (a.type === "solid" && b.type === "solid")
     return colorsEqual(a.color, b.color);
+  if (a.type === "image" && b.type === "image")
+    return a.src === b.src && a.fit === b.fit;
   return true;
 }
 
@@ -520,10 +523,16 @@ export class StylesPanel implements SidebarPanel {
   readonly element: HTMLElement;
   private state_: EditorState;
   private push_: PushOperation;
+  private requestImageImport_: () => Promise<{ src: string } | null>;
 
-  constructor(state: EditorState, push: PushOperation) {
+  constructor(
+    state: EditorState,
+    push: PushOperation,
+    requestImageImport: () => Promise<{ src: string } | null>,
+  ) {
     this.state_ = state;
     this.push_ = push;
+    this.requestImageImport_ = requestImageImport;
     this.element = document.createElement("div");
     this.update();
   }
@@ -937,10 +946,12 @@ export class StylesPanel implements SidebarPanel {
           { value: "mixed", label: "—" },
           { value: "none", label: "None" },
           { value: "solid", label: "Solid" },
+          { value: "image", label: "Image" },
         ]
       : [
           { value: "none", label: "None" },
           { value: "solid", label: "Solid" },
+          { value: "image", label: "Image" },
         ];
     const { row: typeRow, value: typeValue } = this.createRow_("Type");
     const typeSelect = this.createSelect_(
@@ -959,18 +970,60 @@ export class StylesPanel implements SidebarPanel {
       );
     }
 
-    // v1: no "unset to inherited" — only None or Solid can be set.
+    if (!isMixed && fill.type === "image") {
+      const currentFill = fill;
+
+      const srcRow = document.createElement("div");
+      srcRow.className = "re-prop-src";
+      srcRow.textContent = currentFill.src || "(no source)";
+      body.appendChild(srcRow);
+
+      const chooseBtn = document.createElement("button");
+      chooseBtn.className = "re-panel-action-btn";
+      chooseBtn.textContent = "Choose image…";
+      chooseBtn.addEventListener("click", () => {
+        void this.requestImageImport_().then((result) => {
+          if (!result) return;
+          onChange({ type: "image", src: result.src, fit: currentFill.fit });
+          srcRow.textContent = result.src;
+        });
+      });
+      body.appendChild(chooseBtn);
+
+      const { row: fitRow, value: fitWrap } = this.createRow_("Fit");
+      const fitSelect = this.createSelect_(
+        [
+          { value: "contain", label: "Contain" },
+          { value: "cover", label: "Cover" },
+          { value: "fill", label: "Fill" },
+          { value: "none", label: "None" },
+        ],
+        currentFill.fit,
+      );
+      fitSelect.addEventListener("change", () => {
+        onChange({
+          type: "image",
+          src: currentFill.src,
+          fit: fitSelect.value as ImageFit,
+        });
+      });
+      fitWrap.appendChild(fitSelect);
+      body.appendChild(fitRow);
+    }
+
     typeSelect.addEventListener("change", () => {
-      const newType = typeSelect.value as "none" | "solid" | "mixed";
+      const newType = typeSelect.value as "none" | "solid" | "image" | "mixed";
       if (newType === "mixed") return;
       if (newType === "none") {
         onChange({ type: "none" });
-      } else {
+      } else if (newType === "solid") {
         const defaultColor =
           !isMixed && fill.type === "solid"
             ? fill.color
             : { r: 255, g: 255, b: 255, a: 1 };
         onChange({ type: "solid", color: defaultColor });
+      } else {
+        onChange({ type: "image", src: "", fit: "contain" });
       }
     });
   }

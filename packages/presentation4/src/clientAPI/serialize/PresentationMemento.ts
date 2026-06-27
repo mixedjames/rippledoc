@@ -10,6 +10,9 @@
  */
 
 import type { KeyFrame } from "../animation/KeyFrame";
+import type { ImageFit } from "../styles/ImageFit";
+import type { ElementStyleProps } from "../styles/ElementStyleProps";
+import type { SectionStyleProps } from "../styles/SectionStyleProps";
 
 // ── Anchor addressing ─────────────────────────────────────────────────────────
 
@@ -161,6 +164,25 @@ export type TriggerLayoutGeometryMemento = {
   readonly vertical: VerticalAnchorsMemento;
 };
 
+// ── Style mementos ────────────────────────────────────────────────────────────
+
+/**
+ * Serialized form of a named element style.
+ *
+ * ElementStyleProps is reused directly — it is already a plain value type
+ * composed entirely of JSON-serializable primitives and discriminated unions.
+ */
+export type NamedElementStyleMemento = {
+  readonly name: string;
+  readonly props: ElementStyleProps;
+};
+
+/** Serialized form of a named section style. */
+export type NamedSectionStyleMemento = {
+  readonly name: string;
+  readonly props: SectionStyleProps;
+};
+
 // ── Animation mementos ────────────────────────────────────────────────────────
 
 /**
@@ -205,6 +227,10 @@ type BaseElementMemento = {
   readonly keyFrameAnimations: readonly KeyFrameAnimationMemento[];
   readonly pins: readonly PinMemento[];
   readonly name: string;
+  /** Omitted when no own style is set on this element. */
+  readonly ownStyle?: ElementStyleProps;
+  /** Names of applied named styles in cascade priority order. */
+  readonly namedStyles: readonly string[];
 };
 
 export type MarkdownElementMemento = BaseElementMemento & {
@@ -216,6 +242,8 @@ export type BitmapImageElementMemento = BaseElementMemento & {
   readonly type: "bitmap";
   readonly src: string;
   readonly alt: string;
+  /** Omitted when value is the default ('contain'). */
+  readonly objectFit?: ImageFit;
 };
 
 export type SVGImageElementMemento = BaseElementMemento & {
@@ -240,6 +268,10 @@ export type SectionMemento = {
   readonly keyFrameAnimations: readonly KeyFrameAnimationMemento[];
   readonly elements: readonly ElementMemento[];
   readonly name: string;
+  /** Omitted when no own style is set on this section. */
+  readonly ownStyle?: SectionStyleProps;
+  /** Names of applied named styles in cascade priority order. */
+  readonly namedStyles: readonly string[];
 };
 
 /** Serialized form of a Layout. */
@@ -264,4 +296,10 @@ export type PresentationMemento = {
   readonly layouts: readonly LayoutMemento[];
   readonly triggers: readonly ScrollTriggerMemento[];
   readonly sections: readonly SectionMemento[];
+  readonly elementStyles: readonly NamedElementStyleMemento[];
+  readonly sectionStyles: readonly NamedSectionStyleMemento[];
+  /** Omitted when the author has not set a global element style override. */
+  readonly globalElementStyle?: ElementStyleProps;
+  /** Omitted when the author has not set a global section style override. */
+  readonly globalSectionStyle?: SectionStyleProps;
 };

@@ -37,6 +37,7 @@ interface SidebarCallbacks {
     PresentationRoot | Section | Element | ScrollTrigger | null
   >;
   openMarkdownEditor: (element: MarkdownElement) => void;
+  requestImageImport: () => Promise<{ src: string } | null>;
 }
 
 export class Sidebar {
@@ -46,13 +47,23 @@ export class Sidebar {
   private activeAccordionPanel_: CollapsiblePanel | null = null;
 
   constructor(state: EditorState, callbacks: SidebarCallbacks) {
-    const { push, requestPick, requestAnchorPick, openMarkdownEditor } =
-      callbacks;
+    const {
+      push,
+      requestPick,
+      requestAnchorPick,
+      openMarkdownEditor,
+      requestImageImport,
+    } = callbacks;
     this.element = document.createElement("div");
     this.element.className = "re-sidebar";
 
-    const styles = new StylesPanel(state, push);
-    const properties = new PropertiesPanel(state, push, openMarkdownEditor);
+    const styles = new StylesPanel(state, push, requestImageImport);
+    const properties = new PropertiesPanel(
+      state,
+      push,
+      openMarkdownEditor,
+      requestImageImport,
+    );
     const anchors = new AnchorsPanel(state, {
       push,
       requestPick,

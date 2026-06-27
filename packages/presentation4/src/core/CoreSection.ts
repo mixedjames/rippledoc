@@ -41,6 +41,7 @@ import {
   type SerializeContext,
 } from "./serialize/SerializeContext";
 import { serializeSectionLayoutGeometry } from "./serialize/serializeGeometry";
+import { serializeSectionStyles } from "./serialize/serializeStyles";
 
 /**
  * Concrete implementation of Section and SectionViewOwner.
@@ -332,6 +333,7 @@ export class CoreSection
       }),
       keyFrameAnimations: this.animations_.toMemento(ctx.triggerIndex),
       elements: this.elements_.map((el) => el.toMemento(ctx)),
+      ...serializeSectionStyles(this.ownStyle_, this.namedStyles_),
     };
   }
 }

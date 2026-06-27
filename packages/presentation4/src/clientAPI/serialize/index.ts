@@ -18,6 +18,8 @@ export type {
   KeyFrameAnimationMemento,
   PinMemento,
   ScrollTriggerMemento,
+  NamedElementStyleMemento,
+  NamedSectionStyleMemento,
   MarkdownElementMemento,
   BitmapImageElementMemento,
   SVGImageElementMemento,

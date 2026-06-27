@@ -1,15 +1,17 @@
 # Image Support — Implementation Plan
 
+**Status: COMPLETE** — TypeScript clean, 384/384 tests passing.
+
 Session context: This plan was designed before implementation started. Await user
 answers to the three open questions (marked **PENDING**) before starting Area 2/3 work.
 
 ---
 
-## Open Questions (PENDING user answers)
+## Open Questions (RESOLVED)
 
-- [ ] **Q1** — `objectFit` on `BitmapImageElement` directly (recommended) or in `ElementStyleProps` cascade?
-- [ ] **Q2** — Extend `Fill` with image variant (recommended) or add separate `backgroundImage` property to style props?
-- [ ] **Q3** — `backgroundPositionX/Y` in AnimationsPanel: keep visible for all elements (current) or only when target has an image fill?
+- [x] **Q1** — `objectFit` on `BitmapImageElement` directly. ✓
+- [x] **Q2** — Extend `Fill` with image variant (more variants likely to be added over time). ✓
+- [x] **Q3** — Keep `backgroundPositionX/Y` visible for all elements; refine later. ✓
 
 ---
 

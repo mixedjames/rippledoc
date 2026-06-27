@@ -1,5 +1,6 @@
 export type { Color } from "./Color";
 export type { Fill } from "./Fill";
+export type { ImageFit } from "./ImageFit";
 export type { StyleValue } from "./StyleValue";
 export type { BorderEdgeStyle, Border, ComputedBorder } from "./Border";
 export type { FontWeight } from "./Font";

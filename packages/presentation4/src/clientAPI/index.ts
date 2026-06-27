@@ -68,6 +68,7 @@ export type { ElementAnimations } from "./animation/ElementAnimations";
 export type {
   Color,
   Fill,
+  ImageFit,
   StyleValue,
   BorderEdgeStyle,
   Border,

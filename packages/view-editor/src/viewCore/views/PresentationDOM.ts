@@ -161,6 +161,11 @@ export class PresentationDOM {
         outline-offset: 1px;
       }
 
+      /* Pin clones: clickable in editor mode, transparent to events in player mode
+         so wheel/scroll events reach the viewport scroll container. */
+      .rdoc-pin-clone { pointer-events: none; }
+      .pins[data-mode="editor"] .rdoc-pin-clone { pointer-events: auto; }
+
       /* Trigger bands: hidden outside editor mode.
          Rendered as a bracket — top line, bottom line, left-edge connector —
          with no fill so they don't obscure content. */

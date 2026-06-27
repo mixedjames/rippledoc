@@ -7,6 +7,8 @@ import {
   type Section,
   type Element,
   type ScrollTrigger,
+  type BitmapImageElement,
+  type SVGImageElement,
 } from "@rippledoc/presentation4";
 import { NullPresentationView } from "@rippledoc/presentation4/viewAPI";
 import { createEditorView } from "@rippledoc/view-editor";
@@ -93,6 +95,7 @@ export class EditorComponentImpl implements EditorComponent {
       openMarkdownEditor: (el) => {
         void this.delegate_.requestMarkdownEdit(el);
       },
+      requestImageImport: () => this.delegate_.requestImageImport(),
     });
     this.layout_.element.appendChild(this.sidebar_.element);
 
@@ -189,11 +192,24 @@ export class EditorComponentImpl implements EditorComponent {
       this.switchTool_(toolId);
       return;
     }
+    if (command === "importImage") {
+      void this.execImportImage_();
+      return;
+    }
   }
 
   canExec(command: EditorCommandId): boolean {
     if (command === "undo") return this.history_.canUndo();
     if (command === "redo") return this.history_.canRedo();
+    if (command === "importImage") {
+      const { elements, sections } = this.state_.viewController.selection;
+      if (sections.size === 1) return true;
+      if (elements.size === 1) {
+        const el = elements.values().next().value as Element;
+        return this.isBitmapImage_(el) || this.isSVGImage_(el);
+      }
+      return false;
+    }
     return true;
   }
 
@@ -244,6 +260,62 @@ export class EditorComponentImpl implements EditorComponent {
     PresentationRoot | Section | Element | ScrollTrigger | null
   > {
     return this.delegate_.requestAnchorPick(this.state_.presentation);
+  }
+
+  private isBitmapImage_(el: Element): el is BitmapImageElement {
+    return "alt" in el;
+  }
+
+  private isSVGImage_(el: Element): el is SVGImageElement {
+    return "subComponent" in el;
+  }
+
+  private async execImportImage_(): Promise<void> {
+    const result = await this.delegate_.requestImageImport();
+    if (!result) return;
+
+    const { src } = result;
+    const { elements, sections } = this.state_.viewController.selection;
+
+    if (elements.size === 1) {
+      const el = elements.values().next().value as Element;
+      if (this.isBitmapImage_(el) || this.isSVGImage_(el)) {
+        const oldSrc = el.src;
+        this.pushOperation_({
+          execute: () => el.setSrc(src),
+          undo: () => el.setSrc(oldSrc),
+        });
+        this.sidebar_.update();
+        return;
+      }
+    }
+
+    if (sections.size === 1) {
+      const section = sections.values().next().value as Section;
+      const isSvg =
+        src.split("?")[0]!.toLowerCase().endsWith(".svg") ||
+        src.startsWith("data:image/svg+xml");
+
+      let added: Element | null = null;
+      this.pushOperation_({
+        execute: () => {
+          if (isSvg) {
+            const el = section.addSVGImageElement();
+            el.setSrc(src);
+            added = el;
+          } else {
+            const el = section.addBitmapImageElement();
+            el.setSrc(src);
+            added = el;
+          }
+        },
+        undo: () => {
+          if (added) section.removeElement(added);
+        },
+      });
+      this.sidebar_.update();
+      this.emitter_.emit("commandStateChanged", {});
+    }
   }
 
   private pushOperation_(op: EditOperation): void {

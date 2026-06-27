@@ -4,10 +4,16 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node"]
   },
 
-  "references": [],
+  "references": [
+    { "path": "../../packages/presentation4" },
+    { "path": "../../packages/view-editor" },
+    { "path": "../../packages/editor-component" },
+    { "path": "../../packages/dialogs" }
+  ],
 
   "include": ["src"]
 }

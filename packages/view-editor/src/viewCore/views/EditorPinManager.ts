@@ -247,8 +247,6 @@ export class EditorPinManager {
   private initCloneStyles_(clone: HTMLElement): void {
     clone.style.position = "absolute";
     clone.style.visibility = "hidden";
-    // Override the overlay's pointer-events:none so the clone is clickable.
-    clone.style.pointerEvents = "auto";
     clone.classList.add("rdoc-pin-clone");
   }
 
